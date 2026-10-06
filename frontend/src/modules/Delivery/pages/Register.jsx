@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiMail, FiLock, FiEye, FiEyeOff, FiUser, FiPhone, FiTruck, FiMapPin, FiFileText } from 'react-icons/fi';
+import { FiMail, FiLock, FiEye, FiEyeOff, FiUser, FiPhone, FiMapPin, FiFileText } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import brandLogo from '../../../assets/kuro-agro-logo.png';
 import { useDeliveryAuthStore } from '../store/deliveryStore';
 
 const DeliveryRegister = () => {
@@ -80,9 +81,7 @@ const DeliveryRegister = () => {
         className="glass-card rounded-3xl p-8 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto"
       >
         <div className="text-center mb-8">
-          <div className="w-16 h-16 gradient-green rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-glow-green">
-            <FiTruck className="text-white text-2xl" />
-          </div>
+          <img src={brandLogo} alt="KuroAgro" className="h-20 w-auto object-contain mx-auto mb-4" />
           <h1 className="text-3xl font-extrabold text-gray-800 mb-2">Join as Delivery Partner</h1>
           <p className="text-gray-600">Register your account and wait for admin approval</p>
         </div>

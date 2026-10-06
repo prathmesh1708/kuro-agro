@@ -6,10 +6,11 @@ import { useVendorAuthStore } from "../../store/vendorAuthStore";
 import { useVendorProductStore } from "../../store/vendorProductStore";
 import { useCategoryStore } from "../../../../shared/store/categoryStore";
 import { useBrandStore } from "../../../../shared/store/brandStore";
-import { uploadVendorImage, uploadVendorImages, getEffectiveGstPreview, getCategoryDefaultGst } from "../../services/vendorService";
+import { uploadVendorImage, uploadVendorImages, uploadVendorVideo, getEffectiveGstPreview, getCategoryDefaultGst } from "../../services/vendorService";
 import CategorySelector from "../../../Admin/components/CategorySelector";
 import AnimatedSelect from "../../../Admin/components/AnimatedSelect";
 import toast from "react-hot-toast";
+import ProductVideoUploader from "../../../../shared/components/ProductVideoUploader";
 import {
   parseVariantAxis,
   buildVariantCombinations,
@@ -96,6 +97,7 @@ const ProductForm = () => {
     originalPrice: "",
     image: "",
     images: [],
+    videos: [],
     categoryId: null,
     subcategoryId: null,
     brandId: null,
@@ -275,6 +277,7 @@ const ProductForm = () => {
       originalPrice: product.originalPrice || product.price || "",
       image: product.image || "",
       images: product.images || [],
+      videos: product.videos || [],
       categoryId: isSubcategory
         ? normalizedParentCategoryId
         : normalizedCategoryId || null,
@@ -927,6 +930,12 @@ const ProductForm = () => {
 
             {/* Product Gallery */}
             <div className="bg-white rounded-lg p-3 border border-primary-200">
+              <ProductVideoUploader
+                videos={formData.videos || []}
+                onChange={(videos) => setFormData((prev) => ({ ...prev, videos }))}
+                uploadFn={(file) => uploadVendorVideo(file)}
+                inputId="product-video-upload"
+              />
               <h3 className="text-sm font-semibold text-gray-800 mb-2">
                 Product Gallery
               </h3>

@@ -117,7 +117,7 @@ const PickupLocations = () => {
       sortable: true,
       render: (value, row) => (
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-purple-50 text-purple-700 rounded-lg">
+          <div className="p-2 bg-primary-50 text-primary-700 rounded-lg">
             <FiMapPin className="text-base" />
           </div>
           <div>
@@ -130,7 +130,7 @@ const PickupLocations = () => {
               )}
             </div>
             {row.shiprocketLocationName && (
-              <p className="text-xs text-purple-700 font-mono mt-0.5 flex items-center gap-1">
+              <p className="text-xs text-primary-700 font-mono mt-0.5 flex items-center gap-1">
                 <FiTruck className="text-[11px]" /> SR Nickname: {row.shiprocketLocationName}
               </p>
             )}
@@ -199,7 +199,7 @@ const PickupLocations = () => {
           {!row.isDefault && (
             <button
               onClick={() => handleSetDefault(row._id || row.id)}
-              className="px-2.5 py-1 text-xs font-semibold text-purple-700 hover:bg-purple-50 rounded-lg transition-colors border border-purple-200"
+              className="px-2.5 py-1 text-xs font-semibold text-primary-700 hover:bg-primary-50 rounded-lg transition-colors border border-primary-200"
               title="Set as default pickup location"
             >
               Make Default

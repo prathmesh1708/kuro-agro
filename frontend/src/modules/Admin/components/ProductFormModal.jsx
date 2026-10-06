@@ -10,6 +10,7 @@ import {
   updateProduct,
   getAllVendors,
   uploadAdminImage,
+  uploadAdminVideo,
   getProductReviewAnalytics,
   removeProductByReview,
   restoreProductByReview,
@@ -18,6 +19,7 @@ import CategorySelector from "./CategorySelector";
 import AnimatedSelect from "./AnimatedSelect";
 import toast from "react-hot-toast";
 import Button from "./Button";
+import ProductVideoUploader from "../../../shared/components/ProductVideoUploader";
 
 const ProductFormModal = ({ isOpen, onClose, productId, onSuccess }) => {
   const location = useLocation();
@@ -56,6 +58,7 @@ const ProductFormModal = ({ isOpen, onClose, productId, onSuccess }) => {
     originalPrice: "",
     image: "",
     images: [],
+    videos: [],
     categoryId: null,
     subcategoryId: null,
     brandId: null,
@@ -146,6 +149,7 @@ const ProductFormModal = ({ isOpen, onClose, productId, onSuccess }) => {
             originalPrice: product.originalPrice || product.price || "",
             image: product.image || "",
             images: product.images || [],
+            videos: product.videos || [],
             categoryId: isSubcategory
               ? category.parentId
               : productCategoryId || null,
@@ -211,6 +215,7 @@ const ProductFormModal = ({ isOpen, onClose, productId, onSuccess }) => {
         originalPrice: "",
         image: "",
         images: [],
+        videos: [],
         categoryId: null,
         subcategoryId: null,
         brandId: null,
@@ -960,6 +965,16 @@ const ProductFormModal = ({ isOpen, onClose, productId, onSuccess }) => {
                             </div>
                           )}
                         </div>
+                      </div>
+
+                      {/* Product Videos */}
+                      <div className="bg-white rounded-lg p-4 border border-primary-200">
+                        <ProductVideoUploader
+                          videos={formData.videos || []}
+                          onChange={(videos) => setFormData((prev) => ({ ...prev, videos }))}
+                          uploadFn={(file) => uploadAdminVideo(file)}
+                          inputId="admin-product-video-upload"
+                        />
                       </div>
 
                       {/* Product Gallery */}

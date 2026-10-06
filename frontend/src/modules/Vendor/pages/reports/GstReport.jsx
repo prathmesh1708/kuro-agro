@@ -196,8 +196,8 @@ const GstReport = () => {
           <span className="text-2xl font-black text-gray-900 mt-2 block">{formatPrice(gstDetails.totalSales)}</span>
         </div>
         <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
-          <span className="text-purple-600 text-xs font-bold uppercase tracking-wider block">Total GST Collected</span>
-          <span className="text-2xl font-black text-purple-600 mt-2 block">{formatPrice(gstDetails.totalTax)}</span>
+          <span className="text-primary-600 text-xs font-bold uppercase tracking-wider block">Total GST Collected</span>
+          <span className="text-2xl font-black text-primary-600 mt-2 block">{formatPrice(gstDetails.totalTax)}</span>
         </div>
         <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
           <span className="text-blue-600 text-xs font-bold uppercase tracking-wider block">CGST Collected</span>

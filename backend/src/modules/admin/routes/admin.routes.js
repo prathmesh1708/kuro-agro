@@ -13,6 +13,7 @@ import * as reportController from '../controllers/report.controller.js';
 import * as marketingController from '../controllers/marketing.controller.js';
 import * as notificationController from '../controllers/notification.controller.js';
 import * as uploadController from '../controllers/upload.controller.js';
+import * as settingsController from '../controllers/settings.controller.js';
 import * as payoutController from '../controllers/payout.controller.js';
 import * as gstController from '../controllers/gst.controller.js';
 import * as shipmentController from '../controllers/shipment.controller.js';
@@ -21,7 +22,7 @@ import { authenticate } from '../../../middlewares/authenticate.js';
 import { authorize, enforceAccountStatus } from '../../../middlewares/authorize.js';
 import { authLimiter } from '../../../middlewares/rateLimiter.js';
 import { validate } from '../../../middlewares/validate.js';
-import { uploadSingle, uploadVendorRegistrationDocuments } from '../../../middlewares/upload.js';
+import { uploadSingle, uploadVideoSingle, uploadVendorRegistrationDocuments } from '../../../middlewares/upload.js';
 import { refreshTokenSchema, logoutSchema } from '../validators/auth.validator.js';
 import {
     createProductSchema,
@@ -199,7 +200,12 @@ router.delete('/support/ticket-types/:id', ...adminAuth, supportController.delet
 router.get('/reviews', ...adminAuth, reviewController.getAllReviews);
 router.patch('/reviews/:id/status', ...adminAuth, reviewController.updateReviewStatus);
 router.delete('/reviews/:id', ...adminAuth, reviewController.deleteReview);
+// Store settings
+router.get('/settings', ...adminAuth, settingsController.getSettings);
+router.put('/settings', ...adminAuth, settingsController.updateSettings);
+
 router.post('/uploads/image', ...adminAuth, uploadSingle('image'), uploadController.uploadImage);
+router.post('/uploads/video', ...adminAuth, uploadVideoSingle('video'), uploadController.uploadVideo);
 
 // ─── Marketing & Promotions ──────────────────────────────────────────────────
 // Coupons

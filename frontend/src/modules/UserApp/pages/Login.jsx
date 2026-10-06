@@ -13,6 +13,7 @@ import {
 import toast from 'react-hot-toast';
 import MobileLayout from '../components/Layout/MobileLayout';
 import PageTransition from '../../../shared/components/PageTransition';
+import brandLogo from '../../../assets/kuro-agro-logo.png';
 
 const MobileLogin = () => {
   const navigate = useNavigate();
@@ -93,6 +94,7 @@ const MobileLogin = () => {
               
               {/* Header */}
               <div className="text-center mb-8">
+                <img src={brandLogo} alt="KuroAgro" className="h-20 w-auto object-contain mx-auto mb-4" />
                 <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h1>
                 <p className="text-sm text-gray-600">Log in with your phone number and password</p>
               </div>

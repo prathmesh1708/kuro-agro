@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { FiMail, FiLock, FiEye, FiEyeOff, FiTruck } from 'react-icons/fi';
+import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { useDeliveryAuthStore } from '../store/deliveryStore';
+import brandLogo from '../../../assets/kuro-agro-logo.png';
 import toast from 'react-hot-toast';
 import PageTransition from '../../../shared/components/PageTransition';
 
@@ -64,9 +65,7 @@ const DeliveryLogin = () => {
           <div className="glass-card rounded-2xl p-6 shadow-xl">
             {/* Header */}
             <div className="text-center mb-8">
-              <div className="w-16 h-16 gradient-green rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-glow-green">
-                <FiTruck className="text-white text-2xl" />
-              </div>
+              <img src={brandLogo} alt="KuroAgro" className="h-20 w-auto object-contain mx-auto mb-4" />
               <h1 className="text-2xl font-bold text-gray-800 mb-2">Delivery Login</h1>
               <p className="text-gray-600 text-sm">Sign in to manage your deliveries</p>
             </div>

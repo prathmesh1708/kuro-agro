@@ -6,18 +6,13 @@ import Admin from '../../../models/Admin.model.js';
 import { generateTokens } from '../../../utils/generateToken.js';
 import { createNotification } from '../../../services/notification.service.js';
 import { sendEmail } from '../../../services/email.service.js';
-import { cleanupLocalFiles } from '../../../services/upload.service.js';
+import { cleanupLocalFiles, uploadPrivateDocumentAndCleanup } from '../../../services/upload.service.js';
 import {
     clearRefreshSession,
     decodeRefreshTokenOrThrow,
     persistRefreshSession,
     rotateRefreshSession,
 } from '../../../services/refreshToken.service.js';
-
-const getUploadedPath = (file) => {
-    if (!file?.filename) return '';
-    return `/uploads/delivery-docs/${file.filename}`;
-};
 
 // POST /api/delivery/auth/register
 export const register = asyncHandler(async (req, res) => {
@@ -37,6 +32,12 @@ export const register = asyncHandler(async (req, res) => {
         const existing = await DeliveryBoy.findOne({ email: normalizedEmail });
         if (existing) throw new ApiError(409, 'Email already registered.');
 
+        // ID proofs are stored as private Cloudinary assets; admins view them through expiring links.
+        const [drivingLicenseRef, aadharCardRef] = await Promise.all([
+            uploadPrivateDocumentAndCleanup(drivingLicenseFile.path, 'delivery/documents'),
+            uploadPrivateDocumentAndCleanup(aadharCardFile.path, 'delivery/documents'),
+        ]);
+
         deliveryBoy = await DeliveryBoy.create({
             name: String(name || '').trim(),
             email: normalizedEmail,
@@ -46,8 +47,8 @@ export const register = asyncHandler(async (req, res) => {
             vehicleType: String(vehicleType || '').trim(),
             vehicleNumber: String(vehicleNumber || '').trim(),
             documents: {
-                drivingLicense: getUploadedPath(drivingLicenseFile),
-                aadharCard: getUploadedPath(aadharCardFile),
+                drivingLicense: drivingLicenseRef,
+                aadharCard: aadharCardRef,
             },
             applicationStatus: 'pending',
             isActive: false,

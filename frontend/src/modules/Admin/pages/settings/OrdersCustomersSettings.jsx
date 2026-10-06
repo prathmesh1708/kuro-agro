@@ -3,7 +3,6 @@ import { FiSave, FiShoppingBag, FiUsers } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { useSettingsStore } from '../../../../shared/store/settingsStore';
 import AnimatedSelect from '../../components/AnimatedSelect';
-import toast from 'react-hot-toast';
 
 const OrdersCustomersSettings = () => {
   const { settings, updateSettings, initialize } = useSettingsStore();
@@ -56,7 +55,6 @@ const OrdersCustomersSettings = () => {
     e.preventDefault();
     updateSettings('orders', ordersData);
     updateSettings('customers', customersData);
-    toast.success('Settings saved successfully');
   };
 
   const sections = [

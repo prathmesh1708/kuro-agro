@@ -14,25 +14,25 @@ const seedAdmin = async () => {
         await mongoose.connect(MONGO_URI);
         console.log('✅ Connected to MongoDB');
 
-        const existing = await Admin.findOne({ email: 'admin@admin.com' });
+        const existing = await Admin.findOne({ email: 'admin@gmail.com' });
 
         if (existing) {
             // Update password in case it changed
-            existing.password = 'admin123';
+            existing.password = '123456';
             existing.name = 'Super Admin';
             existing.role = 'superadmin';
             existing.isActive = true;
             await existing.save();
-            console.log('✅ Admin credentials updated: admin@admin.com / admin123');
+            console.log('✅ Admin credentials updated: admin@gmail.com / 123456');
         } else {
             await Admin.create({
                 name: 'Super Admin',
-                email: 'admin@admin.com',
-                password: 'admin123',
+                email: 'admin@gmail.com',
+                password: '123456',
                 role: 'superadmin',
                 isActive: true,
             });
-            console.log('✅ Admin created: admin@admin.com / admin123');
+            console.log('✅ Admin created: admin@gmail.com / 123456');
         }
     } catch (err) {
         console.error('❌ Seed failed:', err.message);

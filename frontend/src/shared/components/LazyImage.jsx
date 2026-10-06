@@ -1,6 +1,15 @@
 import { useState, useRef, useEffect } from "react";
 import { getPlaceholderImage } from "../utils/helpers";
 
+// Spacing and transform classes belong to the wrapper only; applying them to the <img> as well
+// doubled the padding (shrinking the image) and compounded hover zoom.
+const WRAPPER_ONLY_CLASS = /^(?:[a-z0-9-]+:)*-?(?:p|px|py|pt|pr|pb|pl|m|mx|my|mt|mr|mb|ml|scale|scale-x|scale-y|translate-x|translate-y|rotate)-/;
+const toImageClassName = (className = "") =>
+  className
+    .split(/\s+/)
+    .filter((cls) => cls && !WRAPPER_ONLY_CLASS.test(cls))
+    .join(" ");
+
 const LazyImage = ({
   src,
   alt,
@@ -87,7 +96,7 @@ const LazyImage = ({
           alt={alt}
           className={`transition-opacity duration-300 ${
             isLoaded ? "opacity-100" : "opacity-0"
-          } ${className || ""}`}
+          } ${toImageClassName(className)}`}
           onLoad={handleLoad}
           onError={handleError}
           loading="lazy"

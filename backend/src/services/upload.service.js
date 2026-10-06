@@ -75,6 +75,42 @@ export const uploadLocalFileToCloudinaryAndCleanupWithType = async (
     return uploaded;
 };
 
+const PRIVATE_DOC_PREFIX = 'cloudinary-private:';
+
+/**
+ * Upload a sensitive document (ID proofs) as a private Cloudinary asset and remove the temp file.
+ * Returns a reference string to store in the database; it is not a public URL.
+ * Use getPrivateDocumentUrl() to create a short-lived download link.
+ */
+export const uploadPrivateDocumentAndCleanup = async (localFilePath, folder) => {
+    ensureCloudinaryConfig();
+    try {
+        const result = await cloudinary.uploader.upload(localFilePath, {
+            folder,
+            resource_type: 'image', // images and PDFs are both handled as image resources
+            type: 'private',
+        });
+        return `${PRIVATE_DOC_PREFIX}${result.format}:${result.public_id}`;
+    } finally {
+        await fs.unlink(localFilePath).catch(() => {});
+    }
+};
+
+export const isPrivateDocumentRef = (value) => String(value || '').startsWith(PRIVATE_DOC_PREFIX);
+
+/**
+ * Signed, expiring download URL for a reference created by uploadPrivateDocumentAndCleanup().
+ */
+export const getPrivateDocumentUrl = (ref, ttlSeconds = 600) => {
+    ensureCloudinaryConfig();
+    const [format, ...idParts] = String(ref).slice(PRIVATE_DOC_PREFIX.length).split(':');
+    return cloudinary.utils.private_download_url(idParts.join(':'), format, {
+        resource_type: 'image',
+        type: 'private',
+        expires_at: Math.floor(Date.now() / 1000) + ttlSeconds,
+    });
+};
+
 /**
  * Delete a file from Cloudinary by public ID
  */

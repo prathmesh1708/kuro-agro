@@ -298,7 +298,7 @@ const PaymentSettlements = () => {
                 onClick={() => { setActiveTab(tab.id); setPage(1); }}
                 className={`px-6 py-4 border-b-2 font-semibold text-sm transition-colors whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'border-purple-600 text-purple-600'
+                    ? 'border-primary-600 text-primary-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
@@ -335,7 +335,7 @@ const PaymentSettlements = () => {
                       value={bankForm.accountName}
                       onChange={handleBankInputChange}
                       disabled={bankStatus === 'approved' || bankStatus === 'pending'}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-50 disabled:text-gray-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-gray-50 disabled:text-gray-500"
                     />
                   </div>
 
@@ -349,7 +349,7 @@ const PaymentSettlements = () => {
                       value={bankForm.bankName}
                       onChange={handleBankInputChange}
                       disabled={bankStatus === 'approved' || bankStatus === 'pending'}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-50 disabled:text-gray-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-gray-50 disabled:text-gray-500"
                     />
                   </div>
 
@@ -363,7 +363,7 @@ const PaymentSettlements = () => {
                       value={bankForm.accountNumber}
                       onChange={handleBankInputChange}
                       disabled={bankStatus === 'approved' || bankStatus === 'pending'}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-50 disabled:text-gray-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-gray-50 disabled:text-gray-500"
                     />
                   </div>
 
@@ -377,7 +377,7 @@ const PaymentSettlements = () => {
                       value={bankForm.confirmAccountNumber}
                       onChange={handleBankInputChange}
                       disabled={bankStatus === 'approved' || bankStatus === 'pending'}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-50 disabled:text-gray-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-gray-50 disabled:text-gray-500"
                     />
                   </div>
 
@@ -392,7 +392,7 @@ const PaymentSettlements = () => {
                       value={bankForm.ifscCode}
                       onChange={handleBankInputChange}
                       disabled={bankStatus === 'approved' || bankStatus === 'pending'}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 uppercase disabled:bg-gray-50 disabled:text-gray-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 uppercase disabled:bg-gray-50 disabled:text-gray-500"
                     />
                   </div>
 
@@ -405,7 +405,7 @@ const PaymentSettlements = () => {
                       value={bankForm.branchName}
                       onChange={handleBankInputChange}
                       disabled={bankStatus === 'approved' || bankStatus === 'pending'}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-50 disabled:text-gray-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-gray-50 disabled:text-gray-500"
                     />
                   </div>
 
@@ -418,7 +418,7 @@ const PaymentSettlements = () => {
                       value={bankForm.upiId}
                       onChange={handleBankInputChange}
                       disabled={bankStatus === 'approved' || bankStatus === 'pending'}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-50 disabled:text-gray-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-gray-50 disabled:text-gray-500"
                     />
                   </div>
 
@@ -431,7 +431,7 @@ const PaymentSettlements = () => {
                       value={bankForm.panNumber}
                       onChange={handleBankInputChange}
                       disabled={bankStatus === 'approved' || bankStatus === 'pending'}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-50 disabled:text-gray-500 uppercase"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-gray-50 disabled:text-gray-500 uppercase"
                     />
                   </div>
 
@@ -444,7 +444,7 @@ const PaymentSettlements = () => {
                       value={bankForm.gstNumber}
                       onChange={handleBankInputChange}
                       disabled={bankStatus === 'approved' || bankStatus === 'pending'}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-50 disabled:text-gray-500 uppercase"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-gray-50 disabled:text-gray-500 uppercase"
                     />
                   </div>
 
@@ -454,7 +454,7 @@ const PaymentSettlements = () => {
                     {bankForm.cancelledCheque && (
                       <div className="flex items-center gap-2 mb-2 p-2 bg-gray-50 border border-gray-200 rounded-lg">
                         <FiFileText className="text-gray-500 text-lg flex-shrink-0" />
-                        <a href={bankForm.cancelledCheque} target="_blank" rel="noreferrer" className="text-xs text-purple-650 hover:underline truncate">
+                        <a href={bankForm.cancelledCheque} target="_blank" rel="noreferrer" className="text-xs text-primary-650 hover:underline truncate">
                           View Cancelled Cheque
                         </a>
                       </div>
@@ -486,7 +486,7 @@ const PaymentSettlements = () => {
                     <button
                       type="submit"
                       disabled={isSubmitting || isUploading}
-                      className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-sm transition-colors flex items-center gap-2"
+                      className="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg shadow-sm transition-colors flex items-center gap-2"
                     >
                       {isSubmitting ? 'Submitting...' : 'Submit details'}
                     </button>

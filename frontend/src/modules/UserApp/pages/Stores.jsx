@@ -70,7 +70,7 @@ const Stores = () => {
       <MobileLayout showBottomNav={true} showCartBar={true}>
         <div className="w-full pb-24 lg:pb-12 max-w-7xl mx-auto min-h-screen bg-gray-50">
           {/* Top Header */}
-          <div className="bg-[#E8E2FF] border-b border-purple-100 sticky top-0 z-30 px-4 py-3">
+          <div className="bg-primary-50 border-b border-primary-100 sticky top-0 z-30 px-4 py-3">
             <div className="flex items-center gap-3 mb-3">
               <button
                 onClick={() => navigate(-1)}
@@ -92,7 +92,7 @@ const Stores = () => {
                 placeholder="Search shop name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm border border-purple-100"
+                className="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm border border-primary-100"
               />
               {searchQuery && (
                 <button
@@ -153,7 +153,7 @@ const Stores = () => {
                           onError={(e) => {
                             e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
                               vendor.storeName
-                            )}&background=7C3AED&color=fff&size=128`;
+                            )}&background=156B3B&color=F4DA95&size=128`;
                           }}
                         />
                       ) : (

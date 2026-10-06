@@ -34,6 +34,7 @@ const productBaseSchema = {
     originalPrice: Joi.number().min(0).allow(null).optional(),
     unit: Joi.string().trim().allow('').optional(),
     images: Joi.array().items(Joi.string().trim()).optional(),
+    videos: Joi.array().items(Joi.string().trim().uri()).max(3).optional(),
     image: Joi.string().trim().allow('').optional(),
     categoryId: objectId,
     brandId: objectId.allow(null, '').optional(),

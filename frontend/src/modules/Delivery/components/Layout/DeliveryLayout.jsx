@@ -6,10 +6,10 @@ import { useDeliveryNotificationStore } from "../../store/deliveryNotificationSt
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import DeliveryBottomNav from "./DeliveryBottomNav";
-import raathiLogo from "../../../../assets/raathifinalogo.png";
+import brandLogo from "../../../../assets/kuro-agro-logo.png";
 const appLogo = {
-  src: raathiLogo,
-  alt: "Rathi"
+  src: brandLogo,
+  alt: "KuroAgro"
 };
 import { useEffect } from "react";
 
@@ -66,7 +66,7 @@ const DeliveryLayout = () => {
                 <img
                   src={appLogo.src}
                   alt={appLogo.alt}
-                  className="h-6 sm:h-8 w-auto object-contain origin-left"
+                  className="h-9 sm:h-10 w-auto object-contain origin-left"
                   onError={(e) => {
                     // Hide image if logo doesn't exist
                     e.target.style.display = "none";
@@ -79,14 +79,14 @@ const DeliveryLayout = () => {
                         const fallback = document.createElement("span");
                         fallback.className =
                           "logo-text-fallback text-primary-600 font-bold text-sm sm:text-lg";
-                        fallback.textContent = "Rathi";
+                        fallback.textContent = "KuroAgro";
                         parent.appendChild(fallback);
                       }
                     }}
                   />
                 ) : (
                   <span className="logo-text-fallback text-primary-600 font-bold text-sm sm:text-lg">
-                    Rathi
+                    KuroAgro
                   </span>
                 )}
             </div>

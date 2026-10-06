@@ -707,11 +707,11 @@ const VendorDetail = () => {
                         : formatPrice(0)}
                     </p>
                   </div>
-                  <div className="bg-purple-50 rounded-lg p-4">
-                    <p className="text-xs text-purple-600 mb-1">
+                  <div className="bg-primary-50 rounded-lg p-4">
+                    <p className="text-xs text-primary-600 mb-1">
                       Commission Rate
                     </p>
-                    <p className="text-2xl font-bold text-purple-800">
+                    <p className="text-2xl font-bold text-primary-800">
                       {((vendor.commissionRate || 0) * 100).toFixed(1)}%
                     </p>
                   </div>

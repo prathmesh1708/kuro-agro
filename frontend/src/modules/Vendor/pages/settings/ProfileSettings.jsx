@@ -195,7 +195,7 @@ const ProfileSettings = () => {
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
                   className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b-2 transition-colors whitespace-nowrap text-xs sm:text-sm ${activeSection === section.id
-                    ? 'border-purple-600 text-purple-600 font-semibold'
+                    ? 'border-primary-600 text-primary-600 font-semibold'
                     : 'border-transparent text-gray-600 hover:text-gray-800'
                     }`}
                 >
@@ -222,7 +222,7 @@ const ProfileSettings = () => {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
 
@@ -236,7 +236,7 @@ const ProfileSettings = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
 
@@ -250,7 +250,7 @@ const ProfileSettings = () => {
                     value={formData.phone}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
               </div>
@@ -258,7 +258,7 @@ const ProfileSettings = () => {
               <div className="flex justify-end pt-4 border-t border-gray-200">
                 <button
                   type="submit"
-                  className="flex items-center gap-2 px-4 sm:px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all font-semibold text-sm sm:text-base"
+                  className="flex items-center gap-2 px-4 sm:px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all font-semibold text-sm sm:text-base"
                 >
                   <FiSave />
                   Save Profile
@@ -316,7 +316,7 @@ const ProfileSettings = () => {
                       value="non-gst"
                       checked={verificationData.businessType === 'non-gst'}
                       onChange={(e) => setVerificationData({ ...verificationData, businessType: e.target.value })}
-                      className="w-4 h-4 text-purple-650 focus:ring-purple-500"
+                      className="w-4 h-4 text-primary-650 focus:ring-primary-500"
                     />
                     Non-GST Registered
                   </label>
@@ -327,7 +327,7 @@ const ProfileSettings = () => {
                       value="gst"
                       checked={verificationData.businessType === 'gst'}
                       onChange={(e) => setVerificationData({ ...verificationData, businessType: e.target.value })}
-                      className="w-4 h-4 text-purple-650 focus:ring-purple-500"
+                      className="w-4 h-4 text-primary-650 focus:ring-primary-500"
                     />
                     GST Registered
                   </label>
@@ -346,7 +346,7 @@ const ProfileSettings = () => {
                         value={verificationData.legalBusinessName}
                         onChange={(e) => setVerificationData({ ...verificationData, legalBusinessName: e.target.value })}
                         placeholder="Legal Business Name"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm text-gray-800"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800"
                         required
                       />
                     </div>
@@ -357,7 +357,7 @@ const ProfileSettings = () => {
                         value={verificationData.gstin}
                         onChange={(e) => setVerificationData({ ...verificationData, gstin: e.target.value })}
                         placeholder="GSTIN"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm text-gray-800"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800"
                         required
                       />
                     </div>
@@ -373,7 +373,7 @@ const ProfileSettings = () => {
                           href={verificationData.gstCertificateUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-xs font-semibold text-purple-650 hover:text-purple-800 underline flex items-center gap-1">
+                          className="text-xs font-semibold text-primary-650 hover:text-primary-800 underline flex items-center gap-1">
                           <FiDownload /> View Current GST Certificate
                         </a>
                       </div>
@@ -398,7 +398,7 @@ const ProfileSettings = () => {
                             ...verificationData,
                             businessAddress: { ...verificationData.businessAddress, street: e.target.value }
                           })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm text-gray-800"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800"
                         />
                       </div>
                       <div>
@@ -410,7 +410,7 @@ const ProfileSettings = () => {
                             ...verificationData,
                             businessAddress: { ...verificationData.businessAddress, city: e.target.value }
                           })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm text-gray-800"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800"
                         />
                       </div>
                       <div>
@@ -422,7 +422,7 @@ const ProfileSettings = () => {
                             ...verificationData,
                             businessAddress: { ...verificationData.businessAddress, state: e.target.value }
                           })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm text-gray-800"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800"
                         />
                       </div>
                       <div>
@@ -434,7 +434,7 @@ const ProfileSettings = () => {
                             ...verificationData,
                             businessAddress: { ...verificationData.businessAddress, zipCode: e.target.value }
                           })}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm text-gray-800"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800"
                         />
                       </div>
                     </div>
@@ -452,7 +452,7 @@ const ProfileSettings = () => {
                     value={verificationData.panNumber}
                     onChange={(e) => setVerificationData({ ...verificationData, panNumber: e.target.value })}
                     placeholder="PAN Number"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm text-gray-800"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm text-gray-800"
                     required
                   />
                 </div>
@@ -466,7 +466,7 @@ const ProfileSettings = () => {
                         href={verificationData.panCardDocumentUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-xs font-semibold text-purple-650 hover:text-purple-800 underline flex items-center gap-1">
+                        className="text-xs font-semibold text-primary-650 hover:text-primary-800 underline flex items-center gap-1">
                         <FiDownload /> View Current PAN Card Document
                       </a>
                     </div>
@@ -485,7 +485,7 @@ const ProfileSettings = () => {
                 <button
                   type="submit"
                   disabled={isUploading}
-                  className="flex items-center gap-2 px-4 sm:px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all font-semibold text-sm sm:text-base disabled:opacity-60"
+                  className="flex items-center gap-2 px-4 sm:px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all font-semibold text-sm sm:text-base disabled:opacity-60"
                 >
                   {isUploading ? (
                     <span>Uploading...</span>
@@ -514,7 +514,7 @@ const ProfileSettings = () => {
                     value={formData.currentPassword}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
 
@@ -529,7 +529,7 @@ const ProfileSettings = () => {
                     onChange={handleChange}
                     required
                     minLength={6}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                   <p className="text-xs text-gray-500 mt-1">Must be at least 6 characters</p>
                 </div>
@@ -545,7 +545,7 @@ const ProfileSettings = () => {
                     onChange={handleChange}
                     required
                     minLength={6}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
               </div>
@@ -553,7 +553,7 @@ const ProfileSettings = () => {
               <div className="flex justify-end pt-4 border-t border-gray-200">
                 <button
                   type="submit"
-                  className="flex items-center gap-2 px-4 sm:px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all font-semibold text-sm sm:text-base"
+                  className="flex items-center gap-2 px-4 sm:px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all font-semibold text-sm sm:text-base"
                 >
                   <FiSave />
                   Change Password

@@ -3,7 +3,6 @@ import { FiSave, FiBell, FiSearch, FiMail } from "react-icons/fi";
 import { motion } from "framer-motion";
 import { useSettingsStore } from "../../../../shared/store/settingsStore";
 import AnimatedSelect from "../../components/AnimatedSelect";
-import toast from "react-hot-toast";
 
 const NotificationsSEOSettings = () => {
   const { settings, updateSettings, initialize } = useSettingsStore();
@@ -60,7 +59,6 @@ const NotificationsSEOSettings = () => {
     updateSettings("email", emailData);
     updateSettings("notifications", notificationsData);
     updateSettings("seo", seoData);
-    toast.success("Settings saved successfully");
   };
 
   const sections = [

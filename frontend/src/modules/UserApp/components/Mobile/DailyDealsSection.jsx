@@ -3,13 +3,20 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { FiClock, FiZap } from "react-icons/fi";
 import ProductCard from "../../../../shared/components/ProductCard";
+import { productGridItemClass } from "../../../../shared/utils/helpers";
 import { getDailyDeals } from "../../data/catalogData";
 
 const DailyDealsSection = ({ products = null }) => {
-  const fallback = getDailyDeals().slice(0, 5);
+  const fallback = getDailyDeals().slice(0, 6);
   const dailyDeals = Array.isArray(products) && products.length > 0
-    ? products.slice(0, 5)
+    ? products.slice(0, 6)
     : fallback;
+  // Headline uses the real best discount among the deals shown.
+  const maxDiscount = dailyDeals.reduce((max, p) => {
+    const original = Number(p.originalPrice) || 0;
+    const price = Number(p.price) || 0;
+    return original > price ? Math.max(max, Math.round(((original - price) / original) * 100)) : max;
+  }, 0);
   const [timeLeft, setTimeLeft] = useState({
     hours: 23,
     minutes: 59,
@@ -51,7 +58,7 @@ const DailyDealsSection = ({ products = null }) => {
   }
 
   return (
-    <div className="relative my-4 rounded-2xl overflow-hidden shadow-xl border-2 border-red-200 bg-gradient-to-br from-red-500 via-orange-500 to-yellow-500">
+    <div className="relative my-4 rounded-2xl overflow-hidden shadow-xl border-2 border-gold-300 bg-gradient-to-br from-primary-800 via-primary-700 to-gold-600">
       {/* Decorative Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full blur-3xl"></div>
@@ -72,7 +79,7 @@ const DailyDealsSection = ({ products = null }) => {
                   Daily Deals
                 </h2>
                 <p className="text-xs md:text-sm text-white/90 font-medium">
-                  Limited time offers - Up to 70% OFF
+                  {maxDiscount > 0 ? `Today only - up to ${maxDiscount}% OFF` : "Today's best prices"}
                 </p>
               </div>
             </div>
@@ -93,25 +100,25 @@ const DailyDealsSection = ({ products = null }) => {
                 Deal ends in
               </p>
               <div className="flex items-center gap-3">
-                <div className="bg-gradient-to-br from-red-500 to-orange-500 rounded-md p-1.5 shadow-md transform translate-y-[2px]">
+                <div className="bg-gradient-to-br from-gold-500 to-gold-600 rounded-md p-1.5 shadow-md transform translate-y-[2px]">
                   <FiClock className="text-white text-base" />
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="bg-gradient-to-br from-red-500 to-orange-500 text-white rounded-lg px-2.5 py-1.5 min-w-[2.8rem] text-center shadow-lg border border-white/20">
+                  <div className="bg-gradient-to-br from-gold-500 to-gold-600 text-white rounded-lg px-2.5 py-1.5 min-w-[2.8rem] text-center shadow-lg border border-white/20">
                     <div className="text-base font-extrabold leading-tight">
                       {formatTime(timeLeft.hours)}
                     </div>
                     <div className="text-[8px] opacity-90 font-medium uppercase">Hrs</div>
                   </div>
-                  <span className="text-red-500 font-bold text-lg">:</span>
-                  <div className="bg-gradient-to-br from-red-500 to-orange-500 text-white rounded-lg px-2.5 py-1.5 min-w-[2.8rem] text-center shadow-lg border border-white/20">
+                  <span className="text-gold-600 font-bold text-lg">:</span>
+                  <div className="bg-gradient-to-br from-gold-500 to-gold-600 text-white rounded-lg px-2.5 py-1.5 min-w-[2.8rem] text-center shadow-lg border border-white/20">
                     <div className="text-base font-extrabold leading-tight">
                       {formatTime(timeLeft.minutes)}
                     </div>
                     <div className="text-[8px] opacity-90 font-medium uppercase">Min</div>
                   </div>
-                  <span className="text-red-500 font-bold text-lg">:</span>
-                  <div className="bg-gradient-to-br from-red-500 to-orange-500 text-white rounded-lg px-2.5 py-1.5 min-w-[2.8rem] text-center shadow-lg border border-white/20 animate-pulse">
+                  <span className="text-gold-600 font-bold text-lg">:</span>
+                  <div className="bg-gradient-to-br from-gold-500 to-gold-600 text-white rounded-lg px-2.5 py-1.5 min-w-[2.8rem] text-center shadow-lg border border-white/20 animate-pulse">
                     <div className="text-base font-extrabold leading-tight">
                       {formatTime(timeLeft.seconds)}
                     </div>
@@ -131,7 +138,7 @@ const DailyDealsSection = ({ products = null }) => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="h-full">
+              className={`h-full ${productGridItemClass(index)}`}>
               <ProductCard product={product} isFlashSale={true} />
             </motion.div>
           ))}

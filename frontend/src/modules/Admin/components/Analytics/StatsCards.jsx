@@ -31,8 +31,8 @@ const StatsCards = ({ stats }) => {
       change: stats.productsChange,
       icon: FiPackage,
       color: 'text-white',
-      bgColor: 'bg-gradient-to-br from-purple-500 to-violet-600',
-      cardBg: 'bg-gradient-to-br from-purple-50 to-violet-50',
+      bgColor: 'bg-gradient-to-br from-primary-500 to-primary-600',
+      cardBg: 'bg-gradient-to-br from-primary-50 to-primary-50',
       iconBg: 'bg-white/20',
     },
     {

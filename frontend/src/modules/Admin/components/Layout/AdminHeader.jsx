@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 import Button from '../Button';
 import NotificationWindow from './NotificationWindow';
-import raathiLogo from "../../../../assets/raathifinalogo.png";
+import brandLogo from "../../../../assets/kuro-agro-logo.png";
 
 const AdminHeader = ({ onMenuClick }) => {
   const location = useLocation();
@@ -75,7 +75,7 @@ const AdminHeader = ({ onMenuClick }) => {
 
           {/* Logo */}
           <div className="flex items-center">
-            <img src={raathiLogo} alt="Rathi Logo" className="h-10 w-auto object-contain" />
+            <img src={brandLogo} alt="KuroAgro Logo" className="h-10 w-auto object-contain" />
           </div>
 
           {/* Page Heading - Desktop Only */}

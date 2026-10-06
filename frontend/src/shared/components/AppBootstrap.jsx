@@ -56,10 +56,8 @@ const AppBootstrap = () => {
           const list = Array.isArray(payload?.products)
             ? payload.products.map(normalizeProduct)
             : [];
-          if (list.length) {
-            localStorage.setItem(PRODUCTS_CACHE_KEY, JSON.stringify(list));
-            updated = true;
-          }
+          localStorage.setItem(PRODUCTS_CACHE_KEY, JSON.stringify(list));
+          updated = true;
         }
 
         if (vendorsRes.status === "fulfilled" && !cancelled) {
@@ -67,26 +65,22 @@ const AppBootstrap = () => {
           const list = Array.isArray(payload?.vendors)
             ? payload.vendors.map(normalizeVendor)
             : [];
-          if (list.length) {
-            localStorage.setItem(VENDORS_CACHE_KEY, JSON.stringify(list));
-            updated = true;
-          }
+          localStorage.setItem(VENDORS_CACHE_KEY, JSON.stringify(list));
+          updated = true;
         }
 
         if (brandsRes.status === "fulfilled" && !cancelled) {
           const payload = brandsRes.value?.data;
           const list = Array.isArray(payload) ? payload.map(normalizeBrand) : [];
-          if (list.length) {
-            localStorage.setItem(BRANDS_CACHE_KEY, JSON.stringify(list));
-            updated = true;
-          }
+          localStorage.setItem(BRANDS_CACHE_KEY, JSON.stringify(list));
+          updated = true;
         }
 
         if (updated && !cancelled) {
           window.dispatchEvent(new Event("catalog-cache-updated"));
         }
       } catch {
-        // Keep static fallback silently.
+        // Keep the last cached catalog if the API is unreachable.
       }
     };
 

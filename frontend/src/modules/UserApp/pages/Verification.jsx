@@ -116,9 +116,9 @@ const MobileVerification = () => {
                 {/* Verification Icon */}
                 <div className="flex justify-center mb-6">
                   <div className="relative">
-                    <div className="w-20 h-20 rounded-full bg-purple-100 flex items-center justify-center">
-                      <div className="w-16 h-16 rounded-full bg-purple-200 flex items-center justify-center">
-                        <div className="w-12 h-12 rounded-full bg-purple-500 flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-full bg-primary-100 flex items-center justify-center">
+                      <div className="w-16 h-16 rounded-full bg-primary-200 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-full bg-primary-500 flex items-center justify-center">
                           <FiCheck className="text-white" size={24} />
                         </div>
                       </div>
@@ -151,8 +151,8 @@ const MobileVerification = () => {
                       onKeyDown={(e) => handleKeyDown(index, e)}
                       onPaste={index === 0 ? handlePaste : undefined}
                       className={`w-14 h-14 rounded-full border-2 text-center text-xl font-semibold focus:outline-none transition-all ${code
-                          ? 'border-purple-500 bg-purple-50 text-purple-700'
-                          : 'border-gray-200 focus:border-purple-500 text-gray-900'
+                          ? 'border-primary-500 bg-primary-50 text-primary-700'
+                          : 'border-gray-200 focus:border-primary-500 text-gray-900'
                         }`}
                     />
                   ))}

@@ -3,7 +3,6 @@ import { FiSave, FiSettings, FiImage, FiGlobe } from "react-icons/fi";
 import { motion } from "framer-motion";
 import { useSettingsStore } from "../../../../shared/store/settingsStore";
 import AnimatedSelect from "../../components/AnimatedSelect";
-import toast from "react-hot-toast";
 
 const GeneralSettings = () => {
   const { settings, updateSettings, initialize } = useSettingsStore();
@@ -65,11 +64,10 @@ const GeneralSettings = () => {
     updateSettings("theme", {
       primaryColor: primaryColor || "#10B981",
       secondaryColor: secondaryColor || "#3B82F6",
-      accentColor: accentColor || "#FFE11B",
+      accentColor: accentColor || "#C9922A",
       fontFamily: fontFamily || "Inter",
     });
 
-    toast.success("Settings saved successfully");
   };
 
   const sections = [
@@ -410,14 +408,14 @@ const GeneralSettings = () => {
                     <input
                       type="color"
                       name="accentColor"
-                      value={formData.accentColor || "#FFE11B"}
+                      value={formData.accentColor || "#C9922A"}
                       onChange={handleChange}
                       className="w-12 sm:w-16 h-9 sm:h-10 border border-gray-300 rounded cursor-pointer flex-shrink-0"
                     />
                     <input
                       type="text"
                       name="accentColor"
-                      value={formData.accentColor || "#FFE11B"}
+                      value={formData.accentColor || "#C9922A"}
                       onChange={handleChange}
                       className="flex-1 min-w-0 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
                     />
@@ -461,7 +459,7 @@ const GeneralSettings = () => {
                   <div
                     className="w-20 h-20 rounded-lg"
                     style={{
-                      backgroundColor: formData.accentColor || "#FFE11B",
+                      backgroundColor: formData.accentColor || "#C9922A",
                     }}
                   />
                 </div>

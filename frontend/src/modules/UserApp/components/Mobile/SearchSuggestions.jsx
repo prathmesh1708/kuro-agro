@@ -160,13 +160,13 @@ const SearchSuggestions = ({
 
           {/* Matching Stores / Shops */}
           {trimmedQuery.length > 0 && matchingStores.length > 0 && (
-            <div className="p-2 border-b border-gray-100 bg-purple-50/40">
+            <div className="p-2 border-b border-gray-100 bg-primary-50/40">
               <div className="px-3 py-1.5 flex items-center justify-between">
-                <span className="text-xs font-bold text-purple-800 flex items-center gap-1.5">
-                  <FiShoppingBag className="text-purple-600" />
+                <span className="text-xs font-bold text-primary-800 flex items-center gap-1.5">
+                  <FiShoppingBag className="text-primary-600" />
                   Matching Stores
                 </span>
-                <span className="text-[10px] text-purple-600 font-medium">{matchingStores.length} found</span>
+                <span className="text-[10px] text-primary-600 font-medium">{matchingStores.length} found</span>
               </div>
               <div className="grid grid-cols-1 gap-1 mt-1">
                 {matchingStores.map((store) => (
@@ -176,9 +176,9 @@ const SearchSuggestions = ({
                       onClose?.();
                       navigate(`/seller/${store.id}`);
                     }}
-                    className="w-full flex items-center gap-3 p-2 hover:bg-purple-100/60 rounded-lg transition-colors text-left border border-purple-100 bg-white"
+                    className="w-full flex items-center gap-3 p-2 hover:bg-primary-100/60 rounded-lg transition-colors text-left border border-primary-100 bg-white"
                   >
-                    <div className="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden">
+                    <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden">
                       {store.storeLogo ? (
                         <img src={store.storeLogo} alt={store.storeName} className="w-full h-full object-cover" />
                       ) : (
@@ -192,7 +192,7 @@ const SearchSuggestions = ({
                       </div>
                       <span className="text-[10px] text-gray-500">{store.totalProducts} Products</span>
                     </div>
-                    <span className="text-[10px] text-purple-600 font-semibold bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+                    <span className="text-[10px] text-primary-600 font-semibold bg-primary-50 px-2 py-0.5 rounded-full border border-primary-200">
                       Visit Store
                     </span>
                   </button>

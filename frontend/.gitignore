@@ -90,3 +90,8 @@ storybook-static
 tmp/
 temp/
 
+
+# Temporary seed images (backend/src/scripts/seedAgro.js copies them here until Cloudinary is configured)
+public/images/agro/
+.vercel
+.env*

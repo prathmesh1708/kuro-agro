@@ -13,7 +13,7 @@ import { sendEmail, sendOTPEmail } from './email.service.js';
  */
 export const sendSMS = async ({ phone, otp, email }) => {
     const normalizedPhone = String(phone || '').replace(/\D/g, '').slice(-10);
-    const defaultMessage = `Your Raathi verification code is ${otp}. Valid for 10 minutes.`;
+    const defaultMessage = `Your KuroAgro verification code is ${otp}. Valid for 10 minutes.`;
 
     const provider = (process.env.SMS_PROVIDER || 'console').toLowerCase();
     let smsSent = false;
@@ -96,7 +96,7 @@ export function sendSMSIndiaHub({ apiKey, phone, otp, message }) {
         let text = message;
         if (process.env.SMS_INDIA_HUB_TEMPLATE_TEXT) {
             const template = process.env.SMS_INDIA_HUB_TEMPLATE_TEXT;
-            const appName = process.env.FROM_NAME || 'Raathi';
+            const appName = process.env.FROM_NAME || 'KuroAgro';
 
             // Find all variable placeholder patterns: {#var#}, {#var1#}, ##var##, etc.
             const varPattern = /({#var\d*#}|##var##|{{var\d*}}|{#val\d*#})/gi;

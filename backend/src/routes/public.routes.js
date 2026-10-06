@@ -10,6 +10,7 @@ import Vendor from '../models/Vendor.model.js';
 import Coupon from '../models/Coupon.model.js';
 import Banner from '../models/Banner.model.js';
 import Campaign from '../models/Campaign.model.js';
+import { loadSettings, PUBLIC_SETTINGS_SECTIONS } from '../modules/admin/controllers/settings.controller.js';
 import { calculateVendorShippingForGroups } from '../services/vendorShipping.service.js';
 
 const router = Router();
@@ -222,7 +223,7 @@ const listProducts = asyncHandler(async (req, res) => {
 
     const sortMap = { newest: { createdAt: -1 }, oldest: { createdAt: 1 }, 'price-asc': { price: 1 }, 'price-desc': { price: -1 }, popular: { reviewCount: -1 }, rating: { rating: -1 } };
 
-    const products = await Product.find(filter).populate('categoryId', 'name').populate('brandId', 'name').populate('vendorId', 'storeName').sort(sortMap[sort] || { createdAt: -1 }).skip(skip).limit(Number(limit));
+    const products = await Product.find(filter).populate('categoryId', 'name').populate('brandId', 'name logo').populate('vendorId', 'storeName').sort(sortMap[sort] || { createdAt: -1 }).skip(skip).limit(Number(limit));
     const total = await Product.countDocuments(filter);
     const enrichedProducts = await enrichProductsWithGst(products);
 
@@ -280,7 +281,7 @@ router.get('/new-arrivals', asyncHandler(async (req, res) => {
     const [products, total] = await Promise.all([
         Product.find(filter)
             .populate('categoryId', 'name')
-            .populate('brandId', 'name')
+            .populate('brandId', 'name logo')
             .populate('vendorId', 'storeName')
             .sort(sortMap[sort] || sortMap.newest)
             .skip(skip)
@@ -315,7 +316,7 @@ router.get('/similar/:id', asyncHandler(async (req, res) => {
 }));
 
 const getProductDetail = asyncHandler(async (req, res) => {
-    const product = await Product.findById(req.params.id).populate('categoryId', 'name').populate('brandId', 'name').populate('vendorId', 'storeName storeLogo rating');
+    const product = await Product.findById(req.params.id).populate('categoryId', 'name').populate('brandId', 'name logo').populate('vendorId', 'storeName storeLogo rating');
     if (!product) throw new ApiError(404, 'Product not found.');
     if (product.isReviewRemoved) {
         throw new ApiError(400, 'This product is currently unavailable.');
@@ -468,7 +469,7 @@ router.get('/vendors/:id/products', asyncHandler(async (req, res) => {
     const filter = { isActive: true, vendorId: req.params.id, isReviewRemoved: { $ne: true } };
     const products = await Product.find(filter)
         .populate('categoryId', 'name')
-        .populate('brandId', 'name')
+        .populate('brandId', 'name logo')
         .populate('vendorId', 'storeName')
         .sort(sortMap[sort] || { createdAt: -1 })
         .skip(skip)
@@ -611,6 +612,12 @@ router.get('/banners', asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200, banners, 'Banners fetched.'));
 }));
 
+// GET /api/settings (public): store settings without secrets
+router.get('/settings', asyncHandler(async (req, res) => {
+    const settings = await loadSettings(PUBLIC_SETTINGS_SECTIONS);
+    res.status(200).json(new ApiResponse(200, settings, 'Settings fetched.'));
+}));
+
 // GET /api/campaigns
 router.get('/campaigns', asyncHandler(async (req, res) => {
     const { type, limit = 20 } = req.query;
@@ -661,7 +668,7 @@ router.get('/campaigns/:slug', asyncHandler(async (req, res) => {
         isActive: true
     })
         .populate('categoryId', 'name')
-        .populate('brandId', 'name')
+        .populate('brandId', 'name logo')
         .populate('vendorId', 'storeName')
         .sort({ createdAt: -1 });
 

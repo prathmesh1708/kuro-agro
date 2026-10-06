@@ -695,6 +695,20 @@ export const uploadVendorImages = (files, folder = 'vendors/products') => {
 };
 
 /**
+ * Upload a product video to Cloudinary (resource_type: video)
+ * @param {File} file
+ * @param {string} folder
+ */
+export const uploadVendorVideo = (file, folder = 'vendors/videos') => {
+    const formData = new FormData();
+    formData.append('video', file);
+    formData.append('folder', folder);
+    return api.post('/vendor/uploads/video', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+};
+
+/**
  * Get vendor payout summary
  */
 export const getVendorPayoutSummary = () => api.get('/vendor/payouts/summary');

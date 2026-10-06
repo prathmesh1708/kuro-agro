@@ -88,7 +88,7 @@ const GstSettings = () => {
         <button
           type="submit"
           disabled={isSaving}
-          className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg hover:shadow-glow-purple transition-all font-semibold text-sm disabled:opacity-50 shrink-0"
+          className="flex items-center gap-2 px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg hover:shadow-glow-purple transition-all font-semibold text-sm disabled:opacity-50 shrink-0"
         >
           <FiSave />
           <span>{isSaving ? "Saving..." : "Save GST Settings"}</span>
@@ -134,7 +134,7 @@ const GstSettings = () => {
                         value={currentVal}
                         onChange={(e) => handleRateChange(category._id ?? category.id, e.target.value)}
                         placeholder="e.g. 18"
-                        className="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
+                        className="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent text-sm"
                       />
                       {currentVal !== "" && (
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-semibold text-xs">
@@ -161,7 +161,7 @@ const GstSettings = () => {
         <button
           type="submit"
           disabled={isSaving}
-          className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg hover:shadow-glow-purple transition-all font-semibold text-sm disabled:opacity-50"
+          className="flex items-center gap-2 px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg hover:shadow-glow-purple transition-all font-semibold text-sm disabled:opacity-50"
         >
           <FiSave />
           <span>{isSaving ? "Saving..." : "Save GST Settings"}</span>

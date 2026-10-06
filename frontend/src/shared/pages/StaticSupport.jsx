@@ -67,7 +67,7 @@ const StaticSupport = () => {
 
           {/* Card 3: Live Chat */}
           <div className="bg-white/80 backdrop-blur-md border border-gray-200 rounded-2xl p-6 text-center hover:border-primary-500/50 hover:shadow-sm transition-all duration-300">
-            <div className="inline-flex items-center justify-center p-3 bg-purple-50 text-purple-600 rounded-xl mb-4">
+            <div className="inline-flex items-center justify-center p-3 bg-primary-50 text-primary-600 rounded-xl mb-4">
               <FiMessageSquare className="w-6 h-6" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Quick FAQ</h3>

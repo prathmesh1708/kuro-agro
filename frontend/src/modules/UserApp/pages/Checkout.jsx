@@ -452,7 +452,7 @@ const MobileCheckout = () => {
             key: order.razorpay.razorpayKeyId,
             amount: order.razorpay.amount,
             currency: order.razorpay.currency || "INR",
-            name: "Raathi Store",
+            name: "KuroAgro Store",
             description: `Order #${order.id}`,
             order_id: order.razorpay.razorpayOrderId,
             prefill: {
@@ -523,7 +523,7 @@ const MobileCheckout = () => {
       <MobileLayout showBottomNav={false} showCartBar={false}>
         <div className="w-full pb-24 min-h-screen bg-gray-50">
           {/* Header */}
-          <div className="bg-[#E8E2FF] border-b border-purple-100 sticky top-0 z-30 shadow-sm">
+          <div className="bg-primary-50 border-b border-primary-100 sticky top-0 z-30 shadow-sm">
             {/* Title Bar */}
             <div className="px-4 py-3 flex items-center gap-3">
               <button

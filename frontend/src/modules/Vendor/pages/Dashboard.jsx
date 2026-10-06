@@ -210,9 +210,9 @@ const VendorDashboard = () => {
       icon: FiDollarSign,
       label: "Total Earnings",
       value: formatPrice(stats.totalEarnings || 0),
-      color: "bg-purple-500",
-      bgColor: "bg-purple-50",
-      textColor: "text-purple-700",
+      color: "bg-primary-500",
+      bgColor: "bg-primary-50",
+      textColor: "text-primary-700",
       link: "/vendor/earnings",
     },
   ];
@@ -477,8 +477,8 @@ const VendorDashboard = () => {
 
                 <button
                   onClick={() => navigate("/vendor/earnings")}
-                  className="flex items-center gap-3 p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors text-left w-full">
-                  <div className="bg-purple-500 p-2 rounded-lg flex-shrink-0">
+                  className="flex items-center gap-3 p-4 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors text-left w-full">
+                  <div className="bg-primary-500 p-2 rounded-lg flex-shrink-0">
                     <FiDollarSign className="text-white text-xl" />
                   </div>
                   <div>
@@ -494,7 +494,7 @@ const VendorDashboard = () => {
               <div>
                 <h2 className="text-lg font-bold text-gray-800 mb-4">Profile Completion</h2>
                 <div className="flex items-center gap-4 mb-5">
-                  <div className="w-16 h-16 rounded-full border-4 border-purple-500 flex items-center justify-center font-bold text-purple-700 text-lg flex-shrink-0">
+                  <div className="w-16 h-16 rounded-full border-4 border-primary-500 flex items-center justify-center font-bold text-primary-700 text-lg flex-shrink-0">
                     {['approved', 'pending'].includes(vendor?.bankDetails?.status) ? 100 : 80}%
                   </div>
                   <div className="text-xs sm:text-sm text-gray-600">
@@ -538,7 +538,7 @@ const VendorDashboard = () => {
                   className={`w-full mt-5 py-2 text-sm font-semibold rounded-xl text-white transition-colors ${
                     vendor?.bankDetails?.status === 'pending'
                       ? 'bg-blue-600 hover:bg-blue-700'
-                      : 'bg-purple-600 hover:bg-purple-700'
+                      : 'bg-primary-600 hover:bg-primary-700'
                   }`}>
                   {vendor?.bankDetails?.status === 'pending'
                     ? 'View Bank Details'

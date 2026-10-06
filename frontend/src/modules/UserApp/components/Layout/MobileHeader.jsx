@@ -10,10 +10,10 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useCartStore, useUIStore } from "../../../../shared/store/useStore";
 import { useAuthStore } from "../../../../shared/store/authStore";
 import { useLocationStore } from "../../../../shared/store/locationStore";
-import raathiLogo from "../../../../assets/raathifinalogo.png";
+import brandLogo from "../../../../assets/kuro-agro-logo.png";
 const appLogo = {
-  src: raathiLogo,
-  alt: "Rathi"
+  src: brandLogo,
+  alt: "KuroAgro"
 };
 import { motion } from "framer-motion";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
@@ -24,7 +24,7 @@ const categoryGradients = {
   2: "from-amber-50 via-amber-100 to-yellow-50", // Footwear - Brownish
   3: "from-orange-50 via-orange-100 to-orange-50", // Bags - Orangeish
   4: "from-green-50 via-emerald-50 to-teal-50", // Jewelry - Greenish
-  5: "from-purple-50 via-purple-100 to-indigo-50", // Accessories - Purple
+  5: "from-primary-50 via-primary-100 to-indigo-50", // Accessories - Purple
   6: "from-blue-50 via-cyan-50 to-teal-50", // Athletic
 };
 
@@ -215,7 +215,7 @@ const MobileHeader = () => {
   const headerContent = (
     <motion.header
       key="mobile-header" // Stable key to prevent re-mounting
-      className="fixed top-0 left-0 right-0 z-[9999] shadow-md overflow-visible md:hidden bg-[#E8E2FA] border-b border-purple-200"
+      className="fixed top-0 left-0 right-0 z-[9999] shadow-md overflow-visible md:hidden bg-white border-b-2 border-gold-300"
       initial={false}
       animate={{
         y: isTopRowVisible ? 0 : -(topRowHeight + 12),
@@ -268,8 +268,8 @@ const MobileHeader = () => {
               title="Click to select or manage address"
             >
               <div className="flex items-center gap-0.5 leading-none">
-                <span className="text-orange-500 font-bold text-sm">⚡</span>
-                <span className="text-gray-950 font-black text-xs tracking-wider uppercase">10 MINUTES</span>
+                <span className="text-gold-600 font-bold text-sm">📍</span>
+                <span className="text-primary-800 font-black text-xs tracking-wider uppercase">Deliver to</span>
               </div>
               <div className="flex items-center gap-0.5 text-gray-550 text-[9px] font-bold mt-1 ml-0.5 max-w-full">
                 <span className="truncate max-w-[150px]">
@@ -307,7 +307,7 @@ const MobileHeader = () => {
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 rounded-full flex items-center justify-center text-white text-[9px] font-bold"
-                  style={{ backgroundColor: "#ffc101" }}>
+                  style={{ backgroundColor: "#DFAA3A" }}>
                   {itemCount > 9 ? "9+" : itemCount}
                 </motion.span>
               )}
@@ -317,13 +317,13 @@ const MobileHeader = () => {
 
         {/* Second Row: Tab Navigation */}
         <div className="flex items-center gap-3">
-          <Link to="/home" className="flex-1 py-2 px-3 rounded-full bg-[#E5DDFB] border border-purple-300 text-center font-black text-[#5B21B6] text-xs shadow-sm flex items-center justify-center">
-            Rathi
+          <Link to="/home" className="flex-1 py-2 px-3 rounded-full bg-primary-700 border border-primary-800 text-center font-black text-gold-200 text-xs shadow-sm flex items-center justify-center">
+            KuroAgro
           </Link>
           <Link to="/categories" className="flex-1 py-2 px-3 rounded-full bg-white border border-gray-200 text-center font-bold text-gray-800 text-xs shadow-sm flex items-center justify-center">
             Categories
           </Link>
-          <Link to="/offers" className="flex-1 py-2 px-3 rounded-full bg-white border border-gray-200 text-center font-black text-emerald-700 text-xs shadow-sm flex items-center justify-center">
+          <Link to="/offers" className="flex-1 py-2 px-3 rounded-full bg-gold-50 border border-gold-300 text-center font-black text-gold-700 text-xs shadow-sm flex items-center justify-center">
             OFFER
           </Link>
         </div>
@@ -336,16 +336,16 @@ const MobileHeader = () => {
             className="flex-1 flex items-center gap-2 px-3.5 py-2.5 bg-white rounded-full border border-gray-200 shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
           >
             <FiSearch className="text-gray-400 text-base" />
-            <span className="text-gray-400 text-xs truncate">Search for "Earphones"</span>
+            <span className="text-gray-400 text-xs truncate">Search seeds, khad, sprayers...</span>
           </div>
 
           {/* Celebrate Offers Badge */}
           <Link 
             to="/offers" 
-            className="flex items-center gap-1.5 px-3 py-1 bg-[#FFFBEB] border border-amber-300 rounded-xl shadow-sm hover:bg-[#FEF3C7] transition-colors shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1 bg-gold-50 border border-gold-300 rounded-xl shadow-sm hover:bg-[#FEF3C7] transition-colors shrink-0"
           >
             <div className="flex flex-col text-left leading-none">
-              <span className="text-[7px] font-extrabold text-[#B45309] uppercase tracking-wider">CELEBRATE</span>
+              <span className="text-[7px] font-extrabold text-gold-700 uppercase tracking-wider">CELEBRATE</span>
               <span className="text-[10px] font-bold text-gray-850">Offers</span>
             </div>
             <span className="text-sm">🎁</span>

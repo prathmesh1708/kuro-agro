@@ -50,9 +50,9 @@ const DeliveryDashboard = () => {
       icon: FiTrendingUp,
       label: 'Earnings',
       value: formatPrice(stats.earnings),
-      color: 'bg-purple-500',
-      bgColor: 'bg-purple-50',
-      textColor: 'text-purple-700',
+      color: 'bg-primary-500',
+      bgColor: 'bg-primary-50',
+      textColor: 'text-primary-700',
     },
   ];
 

@@ -117,7 +117,7 @@ const CommissionRates = () => {
               currentRate: ((row.commissionRate || 0) * 100).toFixed(1),
             });
           }}
-          className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+          className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
           title="Update Commission Rate">
           <FiEdit />
         </button>

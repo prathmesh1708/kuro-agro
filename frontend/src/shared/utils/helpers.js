@@ -2,8 +2,13 @@
  * Format price with currency symbol
  */
 export const formatPrice = (price, currency = "₹") => {
-  const numPrice = price ?? 0;
-  return `${currency}${numPrice.toLocaleString("en-IN")}`;
+  const numPrice = Number(price) || 0;
+  // Whole rupees stay as-is (₹1,850); amounts with paise always show two decimals (₹266.50).
+  const hasPaise = Math.round(numPrice * 100) % 100 !== 0;
+  return `${currency}${numPrice.toLocaleString("en-IN", {
+    minimumFractionDigits: hasPaise ? 2 : 0,
+    maximumFractionDigits: 2,
+  })}`;
 };
 
 /**
@@ -100,5 +105,16 @@ export const getPlaceholderImage = (
  */
 export const getCategoryFallbackImage = (name = "Category") => {
   const cleanName = String(name || "Category").trim();
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=7C3AED&color=fff&size=128&bold=true`;
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=156B3B&color=F4DA95&size=128&bold=true`;
+};
+
+/**
+ * Visibility classes for a 6-item product row in a grid with 2 / 3 / 4 / 5 columns
+ * (base / md / lg / xl), so every breakpoint shows only complete rows:
+ * 6 items on phones and tablets, 4 on laptops, 5 on desktops.
+ */
+export const productGridItemClass = (index) => {
+  if (index === 4) return "lg:hidden xl:block";
+  if (index === 5) return "lg:hidden";
+  return "";
 };

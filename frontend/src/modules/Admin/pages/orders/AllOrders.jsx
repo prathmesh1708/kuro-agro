@@ -678,8 +678,8 @@ const AllOrders = () => {
       title: "Processed",
       value: orderStats.processed,
       icon: FiPackage,
-      bgColor: "bg-gradient-to-br from-indigo-500 to-purple-600",
-      cardBg: "bg-gradient-to-br from-indigo-50 to-purple-50",
+      bgColor: "bg-gradient-to-br from-indigo-500 to-primary-600",
+      cardBg: "bg-gradient-to-br from-indigo-50 to-primary-50",
     },
     {
       title: "Shipped",

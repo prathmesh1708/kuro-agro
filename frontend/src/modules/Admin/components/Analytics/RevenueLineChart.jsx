@@ -53,7 +53,7 @@ const RevenueLineChart = ({ data, period = 'month' }) => {
           <p className="text-xs sm:text-sm text-gray-500 mt-1">Track your revenue over time</p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"></div>
+          <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-primary-500"></div>
           <span className="text-xs text-gray-600">Revenue</span>
         </div>
       </div>

@@ -30,10 +30,10 @@ const More = () => {
       path: '/admin/brands', 
       label: 'Brands', 
       icon: FiTag, 
-      gradient: 'from-purple-500 via-purple-600 to-purple-700',
-      lightGradient: 'from-purple-50 via-purple-100/80 to-purple-50',
-      shadowColor: 'shadow-purple-500/20',
-      hoverShadow: 'hover:shadow-purple-500/30',
+      gradient: 'from-primary-500 via-primary-600 to-primary-700',
+      lightGradient: 'from-primary-50 via-primary-100/80 to-primary-50',
+      shadowColor: 'shadow-primary-500/20',
+      hoverShadow: 'hover:shadow-primary-500/30',
       description: 'Manage brands'
     },
     { 

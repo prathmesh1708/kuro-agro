@@ -110,7 +110,7 @@ const OrderTrends = () => {
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm text-gray-600">Peak Orders</p>
-            <FiTrendingUp className="text-purple-600" />
+            <FiTrendingUp className="text-primary-600" />
           </div>
           <p className="text-2xl font-bold text-gray-800">{maxOrders}</p>
         </div>

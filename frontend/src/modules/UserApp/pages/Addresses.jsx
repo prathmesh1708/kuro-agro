@@ -81,7 +81,7 @@ const MobileAddresses = () => {
         <MobileLayout showBottomNav={true} showCartBar={true}>
           <div className="w-full pb-24">
             {/* Header */}
-            <div className="px-4 py-4 bg-[#E8E2FF] border-b border-purple-100 sticky top-1 z-30">
+            <div className="px-4 py-4 bg-primary-50 border-b border-primary-100 sticky top-1 z-30">
               <div className="flex items-center gap-3 mb-3">
                 <button
                   onClick={() => navigate(-1)}

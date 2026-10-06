@@ -392,7 +392,7 @@ const MobileSearch = () => {
       <MobileLayout showBottomNav={true} showCartBar={true}>
         <div className="w-full pb-24 lg:pb-12 max-w-7xl mx-auto min-h-screen bg-gray-50">
           {/* Search Header */}
-          <div className="px-4 py-4 bg-[#E8E2FF] border-b border-purple-100 sticky top-1 z-30">
+          <div className="px-4 py-4 bg-primary-50 border-b border-primary-100 sticky top-1 z-30">
             <form onSubmit={handleSearch} className="mb-3 lg:hidden">
               <div className="relative">
                 <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl z-10" />
@@ -768,17 +768,17 @@ const MobileSearch = () => {
           {/* Products List & Matching Stores */}
           <div className="px-4 py-4 lg:p-6">
             {matchingSearchStores.length > 0 && (
-              <div className="mb-6 bg-purple-50/70 p-4 rounded-2xl border border-purple-100 shadow-xs">
+              <div className="mb-6 bg-primary-50/70 p-4 rounded-2xl border border-primary-100 shadow-xs">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <FiShoppingBag className="text-purple-600 text-lg" />
+                    <FiShoppingBag className="text-primary-600 text-lg" />
                     <h3 className="font-bold text-gray-800 text-sm">
                       Matching Stores ({matchingSearchStores.length})
                     </h3>
                   </div>
                   <Link
                     to="/stores"
-                    className="text-xs font-semibold text-purple-600 hover:text-purple-700"
+                    className="text-xs font-semibold text-primary-600 hover:text-primary-700"
                   >
                     View All Stores
                   </Link>
@@ -789,9 +789,9 @@ const MobileSearch = () => {
                       key={vendor.id || vendor._id}
                       whileTap={{ scale: 0.97 }}
                       onClick={() => navigate(`/seller/${vendor.id || vendor._id}`)}
-                      className="bg-white p-3 rounded-xl border border-purple-100 shadow-sm hover:shadow flex items-center gap-3 cursor-pointer min-w-[210px]"
+                      className="bg-white p-3 rounded-xl border border-primary-100 shadow-sm hover:shadow flex items-center gap-3 cursor-pointer min-w-[210px]"
                     >
-                      <div className="w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm overflow-hidden shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-primary-600 text-white flex items-center justify-center font-bold text-sm overflow-hidden shrink-0">
                         {vendor.storeLogo ? (
                           <img
                             src={vendor.storeLogo}
@@ -810,7 +810,7 @@ const MobileSearch = () => {
                           {vendor.totalProducts || vendor.productCount || 0} Products
                         </p>
                       </div>
-                      <span className="text-[10px] text-purple-600 font-semibold bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+                      <span className="text-[10px] text-primary-600 font-semibold bg-primary-50 px-2 py-0.5 rounded-full border border-primary-200">
                         Visit
                       </span>
                     </motion.div>

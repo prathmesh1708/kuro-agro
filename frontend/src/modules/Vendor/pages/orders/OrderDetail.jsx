@@ -320,15 +320,15 @@ const VendorOrderDetail = () => {
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Shiprocket Delivery Integration Card */}
-                    <div className="bg-gradient-to-r from-purple-900 to-indigo-900 text-white rounded-xl shadow-md p-5 border border-purple-800">
-                        <div className="flex items-center justify-between border-b border-purple-700 pb-3 mb-4">
+                    <div className="bg-gradient-to-r from-primary-900 to-indigo-900 text-white rounded-xl shadow-md p-5 border border-primary-800">
+                        <div className="flex items-center justify-between border-b border-primary-700 pb-3 mb-4">
                             <div className="flex items-center gap-3">
                                 <div className="p-2.5 bg-white/10 rounded-lg backdrop-blur-sm">
-                                    <FiTruck className="text-xl text-purple-200" />
+                                    <FiTruck className="text-xl text-primary-200" />
                                 </div>
                                 <div>
                                     <h2 className="font-bold text-lg leading-tight">Shiprocket Logistics</h2>
-                                    <p className="text-xs text-purple-200">Fulfill national shipments directly from your warehouse</p>
+                                    <p className="text-xs text-primary-200">Fulfill national shipments directly from your warehouse</p>
                                 </div>
                             </div>
                             {isShipmentActive ? (
@@ -351,19 +351,19 @@ const VendorOrderDetail = () => {
                             <div className="space-y-4">
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white/10 p-3.5 rounded-lg backdrop-blur-sm text-sm">
                                     <div>
-                                        <p className="text-xs text-purple-200">Courier Partner</p>
+                                        <p className="text-xs text-primary-200">Courier Partner</p>
                                         <p className="font-semibold text-white truncate">{courierName}</p>
                                     </div>
                                     <div>
-                                        <p className="text-xs text-purple-200">AWB Number</p>
+                                        <p className="text-xs text-primary-200">AWB Number</p>
                                         <p className="font-mono font-semibold text-white truncate">{activeAwb}</p>
                                     </div>
                                     <div>
-                                        <p className="text-xs text-purple-200">Pickup Status</p>
+                                        <p className="text-xs text-primary-200">Pickup Status</p>
                                         <p className="font-semibold text-emerald-300">{shipment?.pickupStatus || 'SCHEDULED'}</p>
                                     </div>
                                     <div>
-                                        <p className="text-xs text-purple-200">Status</p>
+                                        <p className="text-xs text-primary-200">Status</p>
                                         <p className="font-semibold text-indigo-200">{shipment?.status?.toUpperCase() || 'CREATED'}</p>
                                     </div>
                                 </div>
@@ -371,7 +371,7 @@ const VendorOrderDetail = () => {
                                 <div className="flex flex-wrap items-center gap-2 pt-1">
                                     <button
                                         onClick={handleViewTracking}
-                                        className="px-3.5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm"
+                                        className="px-3.5 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm"
                                     >
                                         <FiRefreshCw /> Track Live
                                     </button>
@@ -436,9 +436,9 @@ const VendorOrderDetail = () => {
                             </div>
                         ) : (
                             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                                <div className="text-sm text-purple-100 space-y-1">
+                                <div className="text-sm text-primary-100 space-y-1">
                                     <p className="font-semibold text-white">Generate courier shipment with automatic courier assignment & AWB generation.</p>
-                                    <p className="text-xs text-purple-200">
+                                    <p className="text-xs text-primary-200">
                                         Pickup Location: <span className="font-medium text-white">{pickupLocation?.name || 'Seller Primary Warehouse'}</span>
                                     </p>
                                 </div>
@@ -579,21 +579,21 @@ const VendorOrderDetail = () => {
                             exit={{ scale: 0.95, opacity: 0 }}
                             className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden border border-gray-100"
                         >
-                            <div className="p-5 bg-gradient-to-r from-purple-900 to-indigo-900 text-white flex justify-between items-center">
+                            <div className="p-5 bg-gradient-to-r from-primary-900 to-indigo-900 text-white flex justify-between items-center">
                                 <div className="flex items-center gap-2">
-                                    <FiTruck className="text-xl text-purple-300" />
+                                    <FiTruck className="text-xl text-primary-300" />
                                     <h3 className="font-bold text-lg">Generate Shiprocket Shipment</h3>
                                 </div>
                                 <button
                                     onClick={() => setShowShipmentModal(false)}
-                                    className="p-1 hover:bg-white/20 rounded-full transition-colors text-purple-200"
+                                    className="p-1 hover:bg-white/20 rounded-full transition-colors text-primary-200"
                                 >
                                     <FiXCircle className="text-lg" />
                                 </button>
                             </div>
 
                             <div className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-                                <div className="p-3 bg-purple-50 rounded-lg border border-purple-100 text-xs text-purple-800 space-y-1">
+                                <div className="p-3 bg-primary-50 rounded-lg border border-primary-100 text-xs text-primary-800 space-y-1">
                                     <p className="font-semibold">Registered Pickup Warehouse:</p>
                                     <p className="text-gray-700">{pickupLocation?.name || 'Primary Warehouse'} — {pickupLocation?.city || 'Default Location'} ({pickupLocation?.zipCode || 'Pincode'})</p>
                                 </div>
@@ -611,7 +611,7 @@ const VendorOrderDetail = () => {
                                             min="0.1"
                                             value={packageForm.weight}
                                             onChange={(e) => setPackageForm((p) => ({ ...p, weight: Number(e.target.value) }))}
-                                            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                                            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none"
                                         />
                                     </div>
                                     <div>
@@ -622,7 +622,7 @@ const VendorOrderDetail = () => {
                                             min="1"
                                             value={packageForm.length}
                                             onChange={(e) => setPackageForm((p) => ({ ...p, length: Number(e.target.value) }))}
-                                            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                                            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none"
                                         />
                                     </div>
                                     <div>
@@ -633,7 +633,7 @@ const VendorOrderDetail = () => {
                                             min="1"
                                             value={packageForm.breadth}
                                             onChange={(e) => setPackageForm((p) => ({ ...p, breadth: Number(e.target.value) }))}
-                                            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                                            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none"
                                         />
                                     </div>
                                     <div>
@@ -644,7 +644,7 @@ const VendorOrderDetail = () => {
                                             min="1"
                                             value={packageForm.height}
                                             onChange={(e) => setPackageForm((p) => ({ ...p, height: Number(e.target.value) }))}
-                                            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                                            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500 outline-none"
                                         />
                                     </div>
                                 </div>
@@ -660,7 +660,7 @@ const VendorOrderDetail = () => {
                                 <button
                                     onClick={handleGenerateShipment}
                                     disabled={isCreatingShipment}
-                                    className="px-5 py-2 text-sm font-semibold text-white bg-purple-700 hover:bg-purple-800 rounded-lg shadow transition-colors flex items-center gap-2 disabled:opacity-60"
+                                    className="px-5 py-2 text-sm font-semibold text-white bg-primary-700 hover:bg-primary-800 rounded-lg shadow transition-colors flex items-center gap-2 disabled:opacity-60"
                                 >
                                     {isCreatingShipment ? 'Generating Shipment...' : 'Confirm & Create Shipment'}
                                 </button>
@@ -682,7 +682,7 @@ const VendorOrderDetail = () => {
                         >
                             <div className="p-4 bg-gray-900 text-white flex justify-between items-center">
                                 <h3 className="font-bold text-base flex items-center gap-2">
-                                    <FiTruck className="text-purple-400" /> Live Tracking Info
+                                    <FiTruck className="text-primary-400" /> Live Tracking Info
                                 </h3>
                                 <button
                                     onClick={() => setShowTrackingModal(false)}
@@ -696,10 +696,10 @@ const VendorOrderDetail = () => {
                                 {loadingTracking ? (
                                     <p className="text-center py-6 text-sm text-gray-500">Fetching live updates from courier...</p>
                                 ) : trackingData?.events?.length > 0 ? (
-                                    <div className="space-y-4 border-l-2 border-purple-200 ml-3 pl-4">
+                                    <div className="space-y-4 border-l-2 border-primary-200 ml-3 pl-4">
                                         {trackingData.events.map((event, idx) => (
                                             <div key={idx} className="relative">
-                                                <div className="absolute -left-[23px] top-1 w-3.5 h-3.5 rounded-full bg-purple-600 border-2 border-white" />
+                                                <div className="absolute -left-[23px] top-1 w-3.5 h-3.5 rounded-full bg-primary-600 border-2 border-white" />
                                                 <p className="text-sm font-semibold text-gray-800">{event.status}</p>
                                                 {event.location && <p className="text-xs text-gray-500">{event.location}</p>}
                                                 <p className="text-[11px] text-gray-400">{new Date(event.timestamp).toLocaleString()}</p>

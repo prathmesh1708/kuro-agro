@@ -527,7 +527,7 @@ const AdminOrderDetail = () => {
               </div>
               {order.status === 'shipped' && (
                 <div className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mt-1.5 flex-shrink-0" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary-500 mt-1.5 flex-shrink-0" />
                   <div>
                     <p className="font-semibold text-gray-800">Shipped (Shiprocket)</p>
                     {order.shipmentCreatedAt && <p className="text-gray-500">{formatDateTime(order.shipmentCreatedAt)}</p>}

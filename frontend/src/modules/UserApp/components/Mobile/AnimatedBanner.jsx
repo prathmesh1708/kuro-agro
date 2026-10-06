@@ -1,53 +1,15 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { matchPath, useNavigate } from "react-router-dom";
-import { FiArrowRight, FiZap, FiTag } from "react-icons/fi";
+import { FiArrowRight, FiTag } from "react-icons/fi";
 
 // Hero images for the parallax effect
-import sneakersImg from "../../../../../data/products/sneakers.png";
-import watchImg from "../../../../../data/products/stylish watch.png";
-import sunglassImg from "../../../../../data/products/sunglass.png";
 
-const defaultBanners = [
-  {
-    id: 1,
-    title: "Flash Sale",
-    subtitle: "Limited Time Offer",
-    discount: "Up to 50% OFF",
-    description: "Shop now before it ends!",
-    gradient: "from-red-500 via-pink-500 to-orange-500",
-    link: "/flash-sale",
-    icon: FiZap,
-    heroImage: sneakersImg,
-  },
-  {
-    id: 2,
-    title: "Daily Deals",
-    subtitle: "New Deals Every Day",
-    discount: "Save 30%",
-    description: "Check out today's best deals",
-    gradient: "from-blue-500 via-purple-500 to-indigo-500",
-    link: "/daily-deals",
-    icon: FiTag,
-    heroImage: sunglassImg,
-  },
-  {
-    id: 3,
-    title: "Special Offers",
-    subtitle: "Exclusive Discounts",
-    discount: "Up to 40% OFF",
-    description: "Don't miss out!",
-    gradient: "from-green-500 via-teal-500 to-cyan-500",
-    link: "/offers",
-    icon: FiTag,
-    heroImage: watchImg,
-  },
-];
-
+// Brand gradients (green and gold) for promotional banners configured in Admin > Banners.
 const gradientPalette = [
-  "from-red-500 via-pink-500 to-orange-500",
-  "from-blue-500 via-purple-500 to-indigo-500",
-  "from-green-500 via-teal-500 to-cyan-500",
+  "from-primary-700 via-primary-600 to-gold-500",
+  "from-gold-600 via-gold-500 to-primary-600",
+  "from-primary-900 via-primary-700 to-primary-500",
 ];
 
 const KNOWN_USER_ROUTE_PATTERNS = [
@@ -108,9 +70,9 @@ const AnimatedBanner = ({ banners = null }) => {
             banner.gradient || gradientPalette[index % gradientPalette.length],
           link: resolveBannerLink(banner),
           icon: banner.icon || FiTag,
-          heroImage: banner.image || banner.heroImage || watchImg,
+          heroImage: banner.image || banner.heroImage || "",
         }))
-      : defaultBanners;
+      : [];
 
   const handleBannerClick = (target) => {
     const normalizedTarget = String(target || "").trim();
@@ -125,15 +87,18 @@ const AnimatedBanner = ({ banners = null }) => {
   };
 
   useEffect(() => {
+    if (resolvedBanners.length < 2) return undefined;
     const interval = setInterval(() => {
       setCurrentBanner((prev) => (prev + 1) % resolvedBanners.length);
     }, 4000);
     return () => clearInterval(interval);
   }, [resolvedBanners.length]);
 
+  if (resolvedBanners.length === 0) return null;
+
   return (
     <div className="px-4 py-3">
-      <div className="relative w-full h-32 rounded-2xl overflow-hidden shadow-xl">
+      <div className="relative w-full h-32 rounded-2xl overflow-hidden shadow-xl bg-gradient-to-br from-primary-800 to-primary-600">
         <AnimatePresence mode="wait">
           {resolvedBanners.map((banner, index) => {
             if (index !== currentBanner) return null;
@@ -150,23 +115,9 @@ const AnimatedBanner = ({ banners = null }) => {
                   ease: [0.25, 0.1, 0.25, 1],
                 }}
                 style={{ willChange: "transform, opacity" }}
-                className={`absolute inset-0 bg-gradient-to-br ${banner.gradient} p-3 relative`}>
+                className={`absolute inset-0 bg-gradient-to-br ${banner.gradient} p-3`}>
                 {/* 3D Depth Parallax Background */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-                  {/* Layer 1: Background (Blurred Product) */}
-                  <motion.div
-                    initial={{ opacity: 0, scale: 1.5, rotate: -5, x: 50 }}
-                    animate={{ opacity: 0.2, scale: 1.8, rotate: 0, x: 0 }}
-                    transition={{ duration: 10, repeat: Infinity, repeatType: "reverse" }}
-                    className="absolute right-[-10%] top-[-10%] w-[120%] h-[120%]"
-                  >
-                    <img
-                      src={banner.heroImage}
-                      className="w-full h-full object-contain blur-2xl opacity-40 brightness-150"
-                      alt=""
-                    />
-                  </motion.div>
-
                   {/* Layer 2: Midground (Bokeh Particles) */}
                   {[...Array(6)].map((_, i) => (
                     <motion.div
@@ -194,34 +145,24 @@ const AnimatedBanner = ({ banners = null }) => {
                     />
                   ))}
 
-                  {/* Layer 3: Foreground (Sharp Hero Product) */}
-                  <div className={`absolute right-[5%] top-1/2 -translate-y-1/2 w-32 h-32 flex items-center justify-center ${banner.id === 2 ? 'pb-6' : ''}`}>
-                    <motion.div
-                      initial={{ opacity: 0, x: 100, scale: 0.5, rotate: 10 }}
-                      animate={{ opacity: 1, x: 0, scale: 1.1, rotate: 0 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 80,
-                        damping: 12,
-                        delay: 0.2
-                      }}
-                    >
+                  {/* Foreground: product photo */}
+                  {banner.heroImage && (
+                    <div className="absolute right-3 md:right-[5%] top-1/2 -translate-y-1/2">
                       <motion.img
                         src={banner.heroImage}
-                        alt="Hero Product"
-                        className="w-full h-full object-contain drop-shadow-[0_20px_30px_rgba(0,0,0,0.5)]"
-                        animate={{
-                          y: [0, -5, 0],
-                          rotate: [0, 2, -2, 0]
-                        }}
+                        alt=""
+                        className="w-24 h-24 md:w-28 md:h-28 rounded-2xl object-cover ring-2 ring-gold-300 shadow-xl"
+                        initial={{ opacity: 0, x: 60, scale: 0.8 }}
+                        animate={{ opacity: 1, x: 0, scale: 1, y: [0, -4, 0] }}
                         transition={{
-                          duration: 4,
-                          repeat: Infinity,
-                          ease: "easeInOut"
+                          opacity: { duration: 0.4, delay: 0.2 },
+                          x: { type: "spring", stiffness: 80, damping: 12, delay: 0.2 },
+                          scale: { type: "spring", stiffness: 80, damping: 12, delay: 0.2 },
+                          y: { duration: 4, repeat: Infinity, ease: "easeInOut" },
                         }}
                       />
-                    </motion.div>
-                  </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Content */}
@@ -229,7 +170,7 @@ const AnimatedBanner = ({ banners = null }) => {
                   type="button"
                   onClick={() => handleBannerClick(banner.link)}
                   disabled={!banner.link}
-                  className="relative z-10 h-full flex pt-2 justify-between group">
+                  className="relative z-10 h-full w-full flex pt-2 pr-28 md:pr-40 justify-between text-left group">
                   <div className="flex-1">
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}

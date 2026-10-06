@@ -489,8 +489,8 @@ const CustomerDetailPage = () => {
                   </div>
                   <p className="text-2xl font-bold text-gray-800">{formatPrice(totalSpent)}</p>
                 </div>
-                <div className="bg-purple-50 rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-purple-600 mb-2">
+                <div className="bg-primary-50 rounded-lg p-4">
+                  <div className="flex items-center gap-2 text-primary-600 mb-2">
                     <FiCreditCard />
                     <span className="text-sm font-semibold">Transactions</span>
                   </div>

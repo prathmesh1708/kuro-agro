@@ -3,7 +3,6 @@ import { FiSave, FiToggleLeft, FiToggleRight, FiHome, FiStar } from 'react-icons
 import { motion } from 'framer-motion';
 import { useSettingsStore } from '../../../../shared/store/settingsStore';
 import AnimatedSelect from '../../components/AnimatedSelect';
-import toast from 'react-hot-toast';
 
 const ContentFeaturesSettings = () => {
   const { settings, updateSettings, initialize } = useSettingsStore();
@@ -84,7 +83,6 @@ const ContentFeaturesSettings = () => {
     updateSettings('features', featuresData);
     updateSettings('homepage', homepageData);
     updateSettings('reviews', reviewsData);
-    toast.success('Settings saved successfully');
   };
 
   const sections = [

@@ -40,7 +40,7 @@ const VendorNotificationWindow = ({ isOpen, onClose, position = "right" }) => {
     const colors = {
       order: "bg-blue-100 text-blue-600",
       payment: "bg-emerald-100 text-emerald-600",
-      promotion: "bg-purple-100 text-purple-600",
+      promotion: "bg-primary-100 text-primary-600",
       system: "bg-gray-100 text-gray-600",
     };
     return colors[type] || colors.system;

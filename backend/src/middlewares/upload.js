@@ -1,6 +1,7 @@
 import multer from 'multer';
 import ApiError from '../utils/ApiError.js';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -12,13 +13,19 @@ const ALLOWED_DOCUMENT_MIME_TYPES = [
     'image/webp',
     'image/gif',
 ];
+const ALLOWED_VIDEO_MIME_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_VIDEO_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const MAX_DOCUMENT_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const TMP_UPLOAD_DIR = path.resolve(__dirname, '../../uploads/tmp');
-const DELIVERY_DOCS_DIR = path.resolve(__dirname, '../../uploads/delivery-docs');
+// Serverless platforms (Vercel) only allow writes under the OS temp dir
+const UPLOADS_ROOT = process.env.VERCEL
+    ? path.join(os.tmpdir(), 'uploads')
+    : path.resolve(__dirname, '../../uploads');
+const TMP_UPLOAD_DIR = path.join(UPLOADS_ROOT, 'tmp');
+const DELIVERY_DOCS_DIR = path.join(UPLOADS_ROOT, 'delivery-docs');
 fs.mkdirSync(TMP_UPLOAD_DIR, { recursive: true });
 fs.mkdirSync(DELIVERY_DOCS_DIR, { recursive: true });
 
@@ -63,6 +70,20 @@ const fileFilter = (req, file, cb) => {
 // Single image upload
 export const uploadSingle = (fieldName) =>
     multer({ storage: imageDiskStorage, fileFilter, limits: { fileSize: MAX_FILE_SIZE } }).single(fieldName);
+
+// Single video upload (stored on Cloudinary as resource_type 'video')
+export const uploadVideoSingle = (fieldName) =>
+    multer({
+        storage: imageDiskStorage,
+        fileFilter: (req, file, cb) => {
+            if (ALLOWED_VIDEO_MIME_TYPES.includes(file.mimetype)) {
+                cb(null, true);
+            } else {
+                cb(new ApiError(400, 'Invalid file type. Only MP4, WEBM and MOV videos are allowed.'), false);
+            }
+        },
+        limits: { fileSize: MAX_VIDEO_FILE_SIZE },
+    }).single(fieldName);
 
 // Multiple images upload (max 5)
 export const uploadMultiple = (fieldName, maxCount = 5) =>

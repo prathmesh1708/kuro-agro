@@ -164,7 +164,7 @@ const InventoryReport = () => {
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm text-gray-600">Inventory Value</p>
-            <FiTrendingDown className="text-purple-600" />
+            <FiTrendingDown className="text-primary-600" />
           </div>
           <p className="text-2xl font-bold text-gray-800">{formatPrice(stats.totalValue || 0)}</p>
         </div>

@@ -1,11 +1,12 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import toast from "react-hot-toast";
-import logoImage from "../../../data/logos/ChatGPT Image Dec 2, 2025, 03_01_19 PM.png";
+import api from "../utils/api";
+import logoImage from "../../assets/kuro-agro-logo.png";
 
 const defaultSettings = {
   general: {
-    storeName: "Appzeto E-commerce",
+    storeName: "KuroAgro",
     storeLogo: logoImage,
     favicon: logoImage,
     contactEmail: "contact@example.com",
@@ -21,7 +22,7 @@ const defaultSettings = {
       twitter: "",
       linkedin: "",
     },
-    accentColor: "#FFE11B",
+    accentColor: "#C9922A",
     storeDescription: "",
   },
   payment: {
@@ -120,7 +121,7 @@ const defaultSettings = {
     smtpUser: "",
     smtpPassword: "",
     fromEmail: "noreply@example.com",
-    fromName: "Appzeto Store",
+    fromName: "KuroAgro",
   },
   notifications: {
     email: {
@@ -155,17 +156,24 @@ export const useSettingsStore = create(
       settings: defaultSettings,
       isLoading: false,
 
-      // Initialize settings
-      initialize: () => {
-        const savedSettings = localStorage.getItem("admin-settings");
-        if (savedSettings) {
-          set({ settings: JSON.parse(savedSettings) });
-        } else {
-          set({ settings: defaultSettings });
-          localStorage.setItem(
-            "admin-settings",
-            JSON.stringify(defaultSettings)
-          );
+      // Load settings from the server. Admin pages get every section; the storefront gets
+      // only the public sections (no payment keys or SMTP passwords).
+      initialize: async () => {
+        set({ isLoading: true });
+        try {
+          const isAdminArea =
+            typeof window !== "undefined" &&
+            window.location.pathname.startsWith("/admin");
+          const response = await api.get(isAdminArea ? "/admin/settings" : "/settings");
+          const serverSettings = response?.data || {};
+          const merged = { ...defaultSettings };
+          for (const [section, value] of Object.entries(serverSettings)) {
+            merged[section] = { ...(defaultSettings[section] || {}), ...value };
+          }
+          set({ settings: merged, isLoading: false });
+        } catch {
+          // Keep the cached settings if the server is unreachable.
+          set({ isLoading: false });
         }
       },
 
@@ -178,30 +186,30 @@ export const useSettingsStore = create(
         return get().settings;
       },
 
-      // Update settings
+      // Update one settings section and save it to the server.
       updateSettings: (category, settingsData) => {
-        set({ isLoading: true });
-        try {
-          const currentSettings = get().settings;
-          const updatedSettings = {
-            ...currentSettings,
-            [category]: {
-              ...currentSettings[category],
-              ...settingsData,
-            },
-          };
-          set({ settings: updatedSettings, isLoading: false });
-          localStorage.setItem(
-            "admin-settings",
-            JSON.stringify(updatedSettings)
-          );
-          toast.success("Settings updated successfully");
-          return updatedSettings;
-        } catch (error) {
-          set({ isLoading: false });
-          toast.error("Failed to update settings");
-          throw error;
-        }
+        const previousSettings = get().settings;
+        const updatedSettings = {
+          ...previousSettings,
+          [category]: {
+            ...previousSettings[category],
+            ...settingsData,
+          },
+        };
+        set({ settings: updatedSettings, isLoading: true });
+
+        api
+          .put("/admin/settings", { [category]: updatedSettings[category] })
+          .then(() => {
+            set({ isLoading: false });
+            toast.success("Settings saved", { id: "settings-saved" });
+          })
+          .catch(() => {
+            // Roll back so the screen matches what is saved; the api interceptor shows the error.
+            set({ settings: previousSettings, isLoading: false });
+          });
+
+        return updatedSettings;
       },
     }),
     {

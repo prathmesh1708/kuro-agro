@@ -9,7 +9,7 @@
  *   const { subject, html, text } = getOrderStatusEmailContent(order, newStatus);
  */
 
-const appName = () => process.env.FROM_NAME || 'Rathi';
+const appName = () => process.env.FROM_NAME || 'KuroAgro';
 const clientUrl = () => (process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/+$/, '');
 
 // ─── Status display configuration ────────────────────────────────────────────

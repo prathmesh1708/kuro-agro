@@ -173,7 +173,7 @@ const MobileOrderDetail = () => {
       <MobileLayout showBottomNav={false} showCartBar={true}>
           <div className="w-full pb-24">
             {/* Header */}
-            <div className="px-4 py-4 bg-[#E8E2FF] border-b border-purple-100 sticky top-1 z-30">
+            <div className="px-4 py-4 bg-primary-50 border-b border-primary-100 sticky top-1 z-30">
               <div className="flex items-center gap-3 mb-3">
                 <button
                   onClick={() => navigate(-1)}
@@ -319,7 +319,7 @@ const MobileOrderDetail = () => {
                   {(order.courierName || order.shipment?.courierName) && (
                     <div className="flex justify-between">
                       <span>Courier Partner:</span>
-                      <span className="font-semibold text-purple-700">{order.courierName || order.shipment?.courierName}</span>
+                      <span className="font-semibold text-primary-700">{order.courierName || order.shipment?.courierName}</span>
                     </div>
                   )}
                   {(order.awbCode || order.externalShipmentId || order.trackingNumber) && (

@@ -15,7 +15,7 @@ const BrandLogosScroll = ({ brands = null }) => {
             {/* Desktop Layout - White card container */}
             <div className="hidden md:block bg-white rounded-lg mb-4 p-4">
                 <div className="w-full overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
-                    <div className="flex gap-4 min-w-max pb-2">
+                    <div className="flex gap-4 lg:gap-6 min-w-max pb-2">
                         {displayBrands.map((brand, index) => (
                             <motion.div
                                 key={brand.id}
@@ -23,12 +23,11 @@ const BrandLogosScroll = ({ brands = null }) => {
                                 whileInView={{ opacity: 1, x: 0 }}
                                 viewport={{ once: true, margin: "-50px" }}
                                 transition={{ delay: index * 0.05, duration: 0.3 }}
-                                className="flex-shrink-0 flex flex-col items-center"
-                                style={{ width: '64px' }}
+                                className="flex-shrink-0 flex flex-col items-center w-16 lg:w-20"
                             >
                                 <div
                                     onClick={() => navigate(`/brand/${brand.id}`)}
-                                    className="bg-gray-50 rounded-lg p-2 shadow-sm transition-all duration-300 flex items-center justify-center w-16 h-16 group cursor-pointer border border-gray-100 mb-2 hover:shadow-md hover:border-gray-200">
+                                    className="bg-gray-50 rounded-lg p-2 shadow-sm transition-all duration-300 flex items-center justify-center w-16 h-16 lg:w-20 lg:h-20 group cursor-pointer border border-gray-100 mb-2 hover:shadow-md hover:border-gray-200">
                                     <img
                                         src={brand.logo || getPlaceholderImage(120, 80, brand.name || 'Brand')}
                                         alt={brand.name}
@@ -39,7 +38,7 @@ const BrandLogosScroll = ({ brands = null }) => {
                                         loading="lazy"
                                     />
                                 </div>
-                                <p className="text-xs font-medium text-gray-700 text-center truncate w-full">
+                                <p className="text-xs lg:text-sm font-medium text-gray-700 text-center truncate w-full">
                                     {brand.name}
                                 </p>
                             </motion.div>

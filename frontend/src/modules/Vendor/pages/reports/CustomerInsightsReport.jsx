@@ -150,7 +150,7 @@ const CustomerInsightsReport = () => {
         <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm text-gray-600">Average Order Value</p>
-            <FiDollarSign className="text-purple-600" />
+            <FiDollarSign className="text-primary-600" />
           </div>
           <p className="text-xl sm:text-2xl font-bold text-gray-800">{formatPrice(averageOrderValue)}</p>
         </div>

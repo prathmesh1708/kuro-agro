@@ -165,7 +165,9 @@ const ProductCard = ({ product, hideRating = false, isFlashSale = false }) => {
   };
 
   // Calculate sold percentage for flash sale (mock logic)
-  const soldPercentage = product.stockQuantity ? Math.min(95, Math.floor(100 - (product.stockQuantity / 2))) : 75;
+  // Real stock level for flash-sale cards (there is no units-sold data to show).
+  const stockLeft = Number(product.stockQuantity) || 0;
+  const isLowStock = stockLeft > 0 && stockLeft <= (Number(product.lowStockThreshold) || 10);
 
   return (
     <>
@@ -173,7 +175,7 @@ const ProductCard = ({ product, hideRating = false, isFlashSale = false }) => {
         whileTap={{ scale: 0.98 }}
         whileHover={{ y: -4 }}
         style={{ willChange: "transform", transform: "translateZ(0)" }}
-        className={`glass-card rounded-xl overflow-hidden group cursor-pointer h-full flex flex-col hover:shadow-lg transition-all duration-300 ${isFlashSale ? "border border-red-100 bg-red-50/10" : ""
+        className={`glass-card rounded-xl overflow-hidden group cursor-pointer h-full flex flex-col hover:shadow-lg transition-all duration-300 ${isFlashSale ? "border border-gold-200 bg-gold-50/30" : ""
           }`}
         {...longPressHandlers}>
         <div className="relative">
@@ -193,7 +195,7 @@ const ProductCard = ({ product, hideRating = false, isFlashSale = false }) => {
 
           {/* Product Image */}
           <Link to={productLink} className="block">
-            <div className="w-full h-28 md:h-40 lg:h-36 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center overflow-hidden relative group-hover:bg-gray-200/50 transition-colors">
+            <div className="w-full h-36 md:h-44 lg:h-40 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center overflow-hidden relative">
               {product.originalPrice && (
                 <div className={`absolute top-0 left-0 text-white text-[10px] md:text-xs font-bold px-2 py-1 rounded-br-lg z-10 shadow-sm ${isFlashSale ? "bg-gradient-to-r from-red-600 to-orange-500" : "bg-red-500"}`}>
                   {Math.round(
@@ -204,8 +206,8 @@ const ProductCard = ({ product, hideRating = false, isFlashSale = false }) => {
                 </div>
               )}
               {isFlashSale && (
-                <div className="absolute top-0 right-0 p-1">
-                  <div className="bg-yellow-400 text-gray-900 text-[8px] font-black px-1.5 py-0.5 rounded-full animate-pulse uppercase tracking-tighter">
+                <div className="absolute bottom-1 left-1 z-10">
+                  <div className="bg-gold-400 text-primary-900 text-[8px] md:text-[10px] font-black px-1.5 py-0.5 rounded-full shadow uppercase tracking-tighter">
                     Hot Deal
                   </div>
                 </div>
@@ -213,7 +215,7 @@ const ProductCard = ({ product, hideRating = false, isFlashSale = false }) => {
               <LazyImage
                 src={product.image || getPlaceholderImage(300, 300, product.name || "Product Image")}
                 alt={product.name}
-                className="w-full h-full object-contain p-2 md:p-4 group-hover:scale-110 transition-transform duration-500"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 style={{ willChange: "transform", transform: "translateZ(0)" }}
                 onError={(e) => {
                   e.target.src = getPlaceholderImage(300, 300, product.name || "Product Image");
@@ -240,9 +242,9 @@ const ProductCard = ({ product, hideRating = false, isFlashSale = false }) => {
           <div className="flex items-center justify-between mb-2">
             {product.rating > 0 && !hideRating && (
               <div className="flex items-center gap-1">
-                <div className="flex items-center bg-yellow-50 px-1.5 py-0.5 rounded-md border border-yellow-100">
-                  <span className="text-[9px] md:text-xs font-bold text-yellow-700 mr-0.5">{product.rating}</span>
-                  <FiStar className="text-[8px] md:text-[10px] text-yellow-500 fill-yellow-500" />
+                <div className="flex items-center bg-gold-50 px-1.5 py-0.5 rounded-md border border-gold-100">
+                  <span className="text-[9px] md:text-xs font-bold text-gold-700 mr-0.5">{product.rating}</span>
+                  <FiStar className="text-[8px] md:text-[10px] text-gold-500 fill-gold-500" />
                 </div>
                 <span className="text-[9px] md:text-xs text-gray-400 font-medium hidden md:inline">
                   ({product.reviewCount || 0})
@@ -256,27 +258,19 @@ const ProductCard = ({ product, hideRating = false, isFlashSale = false }) => {
             )}
           </div>
 
-          {/* Flash Sale Progress Bar */}
-          {isFlashSale && (
-            <div className="mb-3 space-y-1">
-              <div className="flex justify-between text-[8px] md:text-[10px] font-bold">
-                <span className="text-gray-500 uppercase">Available</span>
-                <span className="text-orange-600">{soldPercentage}% Sold</span>
-              </div>
-              <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${soldPercentage}%` }}
-                  transition={{ duration: 1, delay: 0.2 }}
-                  className="h-full bg-gradient-to-r from-red-500 to-orange-400"
-                />
-              </div>
+          {/* Flash Sale stock status */}
+          {isFlashSale && stockLeft > 0 && (
+            <div className="mb-3 flex justify-between text-[8px] md:text-[10px] font-bold">
+              <span className="text-gray-500 uppercase">Available</span>
+              <span className={isLowStock ? "text-red-600" : "text-primary-700"}>
+                {isLowStock ? `Only ${stockLeft} left` : "In stock"}
+              </span>
             </div>
           )}
 
           {/* Price */}
           <div className="flex flex-col items-start gap-0 md:flex-row md:items-end md:gap-2 lg:gap-1.5 mb-1.5 md:mb-3 lg:mb-2 mt-auto">
-            <span className={`text-xs md:text-xl font-black ${isFlashSale ? "text-red-600" : "text-gray-900"}`}>
+            <span className={`text-xs md:text-xl font-black ${isFlashSale ? "text-primary-700" : "text-gray-900"}`}>
               {formatPrice(product.price)}
             </span>
             {product.originalPrice && (
@@ -314,7 +308,7 @@ const ProductCard = ({ product, hideRating = false, isFlashSale = false }) => {
               className={`w-full py-1 md:py-2.5 lg:py-2 rounded-xl font-bold text-[10px] md:text-sm transition-all duration-300 flex items-center justify-center gap-1.5 ${product.stock === "out_of_stock"
                 ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
                 : isFlashSale
-                  ? "bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg hover:shadow-red-200 hover:-translate-y-0.5"
+                  ? "bg-gradient-to-r from-gold-500 to-gold-600 text-white shadow-lg hover:shadow-gold-200 hover:-translate-y-0.5"
                   : "gradient-green text-white shadow-md hover:shadow-lg hover:-translate-y-0.5"
                 }`}>
               <motion.div

@@ -171,18 +171,16 @@ export const getOffers = () =>
       Number(p.originalPrice) > Number(p.price || 0)
   );
 
+// Biggest discounts that are not already in the flash sale.
 export const getDailyDeals = () => {
-  const flashSaleProducts = getFlashSale();
-  const discountedProducts = getCatalogProducts().filter(
-    (p) =>
-      p.originalPrice !== undefined &&
-      Number(p.originalPrice) > Number(p.price || 0) &&
-      !p.flashSale
-  );
-  const allDeals = [...flashSaleProducts, ...discountedProducts.slice(0, 5)];
-  return allDeals.filter(
-    (p, idx, arr) => idx === arr.findIndex((x) => normalizeId(x.id) === normalizeId(p.id))
-  );
+  const ratio = (p) => {
+    const original = Number(p.originalPrice) || 0;
+    const price = Number(p.price) || 0;
+    return original > price ? (original - price) / original : 0;
+  };
+  return getCatalogProducts()
+    .filter((p) => !p.flashSale && ratio(p) > 0)
+    .sort((a, b) => ratio(b) - ratio(a));
 };
 
 export const getSimilarProducts = (currentProductId, limit = 6) => {

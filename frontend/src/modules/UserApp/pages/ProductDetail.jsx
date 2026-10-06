@@ -602,9 +602,13 @@ const MobileProductDetail = () => {
                 <div>
                   {product.flashSale && (
                     <div className="mb-4">
-                      <div className="w-full bg-gradient-to-r from-[#581c87] via-[#86198f] to-[#581c87] border-2 border-[#d946ef]/60 shadow-[0_0_15px_rgba(168,85,247,0.4)] rounded-full px-6 py-2.5 flex items-center justify-center gap-2 text-white font-extrabold text-xs tracking-wider uppercase">
-                        <span>Flash Sale - Extended for 24Hrs</span>
-                        <span className="text-sm">⏱️</span>
+                      <div className="w-full bg-gradient-to-r from-primary-800 via-primary-700 to-primary-800 border-2 border-gold-300 shadow-[0_0_15px_rgba(201,146,42,0.35)] rounded-full px-6 py-2.5 flex items-center justify-center gap-2 text-white font-extrabold text-xs tracking-wider uppercase">
+                        <span className="text-gold-300">⚡</span>
+                        <span>
+                          Flash Sale
+                          {Number(product.originalPrice) > Number(product.price) &&
+                            ` · ${Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% off`}
+                        </span>
                       </div>
                     </div>
                   )}
@@ -649,15 +653,21 @@ const MobileProductDetail = () => {
                       <Link
                         to={`/brand/${brand.id}`}
                         className="inline-flex items-center gap-3 px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-full transition-all duration-300 border border-gray-200 group">
-                        <div className="w-6 h-6 rounded-full overflow-hidden bg-white border border-gray-200 flex-shrink-0 flex items-center justify-center">
-                          <img
-                            src={brand.logo}
-                            alt={brand.name}
-                            className="w-full h-full object-contain p-0.5"
-                            onError={(e) => {
-                              e.currentTarget.style.display = "none";
-                            }}
-                          />
+                        <div className="w-6 h-6 rounded-full overflow-hidden bg-primary-50 border border-gray-200 flex-shrink-0 flex items-center justify-center">
+                          {brand.logo ? (
+                            <img
+                              src={brand.logo}
+                              alt={brand.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = "none";
+                              }}
+                            />
+                          ) : (
+                            <span className="text-[10px] font-bold text-primary-700">
+                              {String(brand.name || "?").charAt(0).toUpperCase()}
+                            </span>
+                          )}
                         </div>
                         <span className="font-medium text-sm group-hover:text-primary-600 transition-colors">
                           {brand.name}
@@ -671,23 +681,28 @@ const MobileProductDetail = () => {
                     {product.name}
                   </h1>
 
-                  {/* Rating & Reviews */}
+                  {/* Rating & Reviews (real values only) */}
                   <div className="flex items-center gap-1.5 mb-6">
-                    <div className="flex gap-0.5">
-                      {[1, 2, 3, 4, 5].map((star) => {
-                        const r = product.rating || 4.5;
-                        if (star <= Math.floor(r)) {
-                          return <FiStar key={star} className="text-yellow-500 fill-yellow-500 text-lg" />;
-                        } else if (star - 0.5 <= r) {
-                          return <FiStar key={star} className="text-yellow-500 fill-yellow-500 opacity-70 text-lg" />;
-                        } else {
-                          return <FiStar key={star} className="text-gray-300 text-lg" />;
-                        }
-                      })}
-                    </div>
-                    <span className="text-gray-500 text-sm font-bold ml-1">
-                      ({product.reviewCount || 234} Reviews)
-                    </span>
+                    {product.reviewCount > 0 ? (
+                      <>
+                        <div className="flex gap-0.5">
+                          {[1, 2, 3, 4, 5].map((star) => {
+                            const r = Number(product.rating) || 0;
+                            if (star <= Math.floor(r)) {
+                              return <FiStar key={star} className="text-gold-500 fill-gold-500 text-lg" />;
+                            } else if (star - 0.5 <= r) {
+                              return <FiStar key={star} className="text-gold-500 fill-gold-500 opacity-70 text-lg" />;
+                            }
+                            return <FiStar key={star} className="text-gray-300 text-lg" />;
+                          })}
+                        </div>
+                        <span className="text-gray-500 text-sm font-bold ml-1">
+                          ({product.reviewCount} {product.reviewCount === 1 ? "Review" : "Reviews"})
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-gray-500 text-sm font-medium">No reviews yet</span>
+                    )}
                   </div>
 
                   {/* Price Box */}
@@ -703,21 +718,23 @@ const MobileProductDetail = () => {
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-1.5 px-3 py-1 bg-gray-100/90 border border-gray-300 rounded-full text-xs font-bold text-gray-600 shadow-sm">
-                        <FiCheckCircle className="text-gray-500 text-sm" />
+                      <div className="flex items-center gap-1.5 px-3 py-1 bg-gold-50 border border-gold-200 rounded-full text-xs font-bold text-gold-800 shadow-sm">
+                        <FiCheckCircle className="text-gold-600 text-sm" />
                         <span>Verified Authentic</span>
                       </div>
                     </div>
-                    {product.originalPrice && (
+                    {Number(product.originalPrice) > Number(currentPrice) && (
                       <div className="flex items-center gap-3">
-                        <span className="text-white font-extrabold bg-[#10B981] px-4 py-1 rounded-full text-xs tracking-wide shadow-sm">
+                        <span className="text-white font-extrabold bg-primary-600 px-4 py-1 rounded-full text-xs tracking-wide shadow-sm">
                           {Math.round(
                             ((product.originalPrice - currentPrice) /
                               product.originalPrice) *
                             100
                           )}% OFF
                         </span>
-                        <span className="text-sm font-semibold text-gray-700">Best price guaranteed</span>
+                        <span className="text-sm font-semibold text-primary-700">
+                          You save {formatPrice(product.originalPrice - currentPrice)}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -832,6 +849,27 @@ const MobileProductDetail = () => {
                     )}
                   </div>
                 </div>
+
+                {/* Product Videos */}
+                {Array.isArray(product.videos) && product.videos.length > 0 && (
+                  <div className="pt-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">
+                      Product Videos
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {product.videos.map((url) => (
+                        <video
+                          key={url}
+                          src={url}
+                          controls
+                          playsInline
+                          preload="metadata"
+                          className="w-full aspect-video rounded-2xl bg-black border border-gray-100"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* FAQs */}
                 {productFaqs.length > 0 && (

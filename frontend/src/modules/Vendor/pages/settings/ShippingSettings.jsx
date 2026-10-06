@@ -112,7 +112,7 @@ const ShippingSettings = () => {
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
                   className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b-2 transition-colors whitespace-nowrap text-xs sm:text-sm ${activeSection === section.id
-                    ? 'border-purple-600 text-purple-600 font-semibold'
+                    ? 'border-primary-600 text-primary-600 font-semibold'
                     : 'border-transparent text-gray-600 hover:text-gray-800'
                     }`}
                 >
@@ -134,7 +134,7 @@ const ShippingSettings = () => {
                   name="shippingEnabled"
                   checked={formData.shippingEnabled}
                   onChange={handleChange}
-                  className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                  className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
                 />
                 <div>
                   <span className="text-sm font-semibold text-gray-700">Enable Shipping</span>
@@ -156,7 +156,7 @@ const ShippingSettings = () => {
                         onChange={handleChange}
                         min="0"
                         step="0.01"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                       <p className="text-xs text-gray-500 mt-1">Free shipping for orders above this amount</p>
                     </div>
@@ -172,7 +172,7 @@ const ShippingSettings = () => {
                         onChange={handleChange}
                         min="0"
                         step="0.01"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                       <p className="text-xs text-gray-500 mt-1">Default shipping cost per order</p>
                     </div>
@@ -188,7 +188,7 @@ const ShippingSettings = () => {
                         onChange={handleChange}
                         min="0"
                         step="1"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                       <p className="text-xs text-gray-500 mt-1">Time to process orders before shipping</p>
                     </div>
@@ -204,7 +204,7 @@ const ShippingSettings = () => {
                         onChange={handleChange}
                         min="0"
                         step="1"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                       <p className="text-xs text-gray-500 mt-1">Time to prepare items for shipping</p>
                     </div>
@@ -218,7 +218,7 @@ const ShippingSettings = () => {
                           type="checkbox"
                           checked={formData.shippingMethods?.includes('standard') || false}
                           onChange={() => handleShippingMethodToggle('standard')}
-                          className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                          className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
                         />
                         <div className="flex-1">
                           <span className="text-sm font-semibold text-gray-700">Standard Shipping</span>
@@ -230,7 +230,7 @@ const ShippingSettings = () => {
                           type="checkbox"
                           checked={formData.shippingMethods?.includes('express') || false}
                           onChange={() => handleShippingMethodToggle('express')}
-                          className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                          className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
                         />
                         <div className="flex-1">
                           <span className="text-sm font-semibold text-gray-700">Express Shipping</span>
@@ -242,7 +242,7 @@ const ShippingSettings = () => {
                           type="checkbox"
                           checked={formData.shippingMethods?.includes('overnight') || false}
                           onChange={() => handleShippingMethodToggle('overnight')}
-                          className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                          className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
                         />
                         <div className="flex-1">
                           <span className="text-sm font-semibold text-gray-700">Overnight Shipping</span>
@@ -277,7 +277,7 @@ const ShippingSettings = () => {
           <div className="flex justify-end pt-4 sm:pt-6 border-t border-gray-200 mt-4 sm:mt-6">
             <button
               type="submit"
-              className="flex items-center gap-2 px-4 sm:px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all font-semibold text-sm sm:text-base w-full sm:w-auto"
+              className="flex items-center gap-2 px-4 sm:px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all font-semibold text-sm sm:text-base w-full sm:w-auto"
             >
               <FiSave />
               Save Settings

@@ -118,7 +118,7 @@ const Earnings = () => {
             <button
               onClick={() => handleTabChange("overview")}
               className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors whitespace-nowrap text-sm ${activeTab === "overview"
-                ? "border-purple-600 text-purple-600 font-semibold"
+                ? "border-primary-600 text-primary-600 font-semibold"
                 : "border-transparent text-gray-600 hover:text-gray-800"
                 }`}>
               <FiDollarSign />
@@ -127,7 +127,7 @@ const Earnings = () => {
             <button
               onClick={() => handleTabChange("commission")}
               className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors whitespace-nowrap text-sm ${activeTab === "commission"
-                ? "border-purple-600 text-purple-600 font-semibold"
+                ? "border-primary-600 text-primary-600 font-semibold"
                 : "border-transparent text-gray-600 hover:text-gray-800"
                 }`}>
               <FiFileText />
@@ -136,7 +136,7 @@ const Earnings = () => {
             <button
               onClick={() => handleTabChange("settlement")}
               className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors whitespace-nowrap text-sm ${activeTab === "settlement"
-                ? "border-purple-600 text-purple-600 font-semibold"
+                ? "border-primary-600 text-primary-600 font-semibold"
                 : "border-transparent text-gray-600 hover:text-gray-800"
                 }`}>
               <FiCheckCircle />
@@ -195,17 +195,17 @@ const Earnings = () => {
                   <p className="text-xs text-blue-600 mt-1">Settled</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-6 shadow-sm border border-purple-200">
+                <div className="bg-gradient-to-br from-primary-50 to-indigo-50 rounded-xl p-6 shadow-sm border border-primary-200">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm text-purple-700 font-medium">
+                    <p className="text-sm text-primary-700 font-medium">
                       Total Orders
                     </p>
-                    <FiTrendingUp className="text-purple-600" />
+                    <FiTrendingUp className="text-primary-600" />
                   </div>
-                  <p className="text-2xl font-bold text-purple-800">
+                  <p className="text-2xl font-bold text-primary-800">
                     {earningsSummary ? earningsSummary.totalOrders : 0}
                   </p>
-                  <p className="text-xs text-purple-600 mt-1">With earnings</p>
+                  <p className="text-xs text-primary-600 mt-1">With earnings</p>
                 </div>
               </div>
             </div>

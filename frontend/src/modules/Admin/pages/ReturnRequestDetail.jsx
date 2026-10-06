@@ -198,7 +198,7 @@ const ReturnRequestDetail = () => {
                       handleStatusUpdate('completed', 'process-refund');
                     }
                   }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-semibold"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-semibold"
                 >
                   <FiRefreshCw className="text-sm" />
                   Process Refund

@@ -64,7 +64,7 @@ getTransporter();
 export const sendEmail = async ({ to, subject, html, text }) => {
     const senderEmail = process.env.SMTP_USER || process.env.FROM_EMAIL;
     const mailOptions = {
-        from: `"${process.env.FROM_NAME || 'Rathi'}" <${senderEmail}>`,
+        from: `"${process.env.FROM_NAME || 'KuroAgro'}" <${senderEmail}>`,
         replyTo: senderEmail,
         to,
         subject,
@@ -81,7 +81,7 @@ export const sendEmail = async ({ to, subject, html, text }) => {
  * Send branded HTML OTP email
  */
 export const sendOTPEmail = async ({ to, otp, title = 'Verification Code', userType = 'Account' }) => {
-    const appName = process.env.FROM_NAME || 'Rathi';
+    const appName = process.env.FROM_NAME || 'KuroAgro';
     const htmlContent = `
     <!DOCTYPE html>
     <html>

@@ -123,7 +123,7 @@ const StoreSettings = () => {
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
                   className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b-2 transition-colors whitespace-nowrap text-xs sm:text-sm ${activeSection === section.id
-                      ? "border-purple-600 text-purple-600 font-semibold"
+                      ? "border-primary-600 text-primary-600 font-semibold"
                       : "border-transparent text-gray-600 hover:text-gray-800"
                     }`}>
                   <Icon className="text-base sm:text-lg" />
@@ -149,7 +149,7 @@ const StoreSettings = () => {
                     value={formData.storeName || ""}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
 
@@ -162,7 +162,7 @@ const StoreSettings = () => {
                     name="storeLogo"
                     value={formData.storeLogo || ""}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     placeholder="data/logos/logo.png"
                   />
                 </div>
@@ -176,7 +176,7 @@ const StoreSettings = () => {
                     value={formData.storeDescription || ""}
                     onChange={handleChange}
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     placeholder="Brief description of your store"
                   />
                 </div>
@@ -234,7 +234,7 @@ const StoreSettings = () => {
                     value={formData.email || ""}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
 
@@ -248,7 +248,7 @@ const StoreSettings = () => {
                     value={formData.phone || ""}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
 
@@ -261,7 +261,7 @@ const StoreSettings = () => {
                     value={formData.address || ""}
                     onChange={handleChange}
                     rows={2}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     placeholder="Street, City, State ZIP"
                   />
                 </div>
@@ -276,7 +276,7 @@ const StoreSettings = () => {
                     value={formData.businessHours || ""}
                     onChange={handleChange}
                     placeholder="Mon-Fri 9AM-6PM"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
               </div>
@@ -298,7 +298,7 @@ const StoreSettings = () => {
                       handleSocialMediaChange("facebook", e.target.value)
                     }
                     placeholder="https://facebook.com/yourpage"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
                 <div>
@@ -312,7 +312,7 @@ const StoreSettings = () => {
                       handleSocialMediaChange("instagram", e.target.value)
                     }
                     placeholder="https://instagram.com/yourpage"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
                 <div>
@@ -326,7 +326,7 @@ const StoreSettings = () => {
                       handleSocialMediaChange("twitter", e.target.value)
                     }
                     placeholder="https://twitter.com/yourpage"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
                 <div>
@@ -340,7 +340,7 @@ const StoreSettings = () => {
                       handleSocialMediaChange("linkedin", e.target.value)
                     }
                     placeholder="https://linkedin.com/company/yourpage"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
               </div>
@@ -350,7 +350,7 @@ const StoreSettings = () => {
           <div className="flex justify-end pt-4 sm:pt-6 border-t border-gray-200 mt-4 sm:mt-6">
             <button
               type="submit"
-              className="flex items-center gap-2 px-4 sm:px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all font-semibold text-sm sm:text-base w-full sm:w-auto">
+              className="flex items-center gap-2 px-4 sm:px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all font-semibold text-sm sm:text-base w-full sm:w-auto">
               <FiSave />
               Save Settings
             </button>

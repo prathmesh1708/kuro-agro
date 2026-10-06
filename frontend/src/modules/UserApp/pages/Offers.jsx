@@ -234,11 +234,11 @@ const MobileOffers = () => {
     <PageTransition>
       <MobileLayout showBottomNav={true} showCartBar={true}>
         <div className="w-full pb-24">
-          <div className="mx-2 mt-2 px-4 py-6 bg-gradient-to-r from-red-50 to-orange-50 border border-gray-100 rounded-2xl sticky top-2 z-30 shadow-md">
+          <div className="mx-2 mt-2 px-4 py-6 bg-gradient-to-r from-gold-50 to-primary-50 border border-gold-200 rounded-2xl sticky top-2 z-30 shadow-md">
             <div className="flex items-center gap-3 mb-3">
               <button
                 onClick={() => navigate(-1)}
-                className="p-2 hover:bg-red-100/50 rounded-full transition-colors">
+                className="p-2 hover:bg-gold-100/60 rounded-full transition-colors">
                 <FiArrowLeft className="text-xl text-gray-700" />
               </button>
               <div className="flex-1">

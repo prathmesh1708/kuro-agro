@@ -36,10 +36,10 @@ const MobileCategoryGrid = () => {
 
   return (
     <div className="px-4 py-4">
-      <h2 className="text-xl font-bold text-gray-800 mb-4">
+      <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">
         Browse Categories
       </h2>
-      <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
+      <div className="flex gap-3 md:gap-6 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
         {displayCategories.map((category, index) => (
           <motion.div
             key={category.id}
@@ -49,8 +49,8 @@ const MobileCategoryGrid = () => {
             className="flex-shrink-0">
             <Link
               to={`/category/${category.id}`}
-              className="flex flex-col items-center gap-2 w-20">
-              <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 ring-2 ring-gray-200">
+              className="flex flex-col items-center gap-2 w-20 md:w-28 lg:w-32">
+              <div className="w-16 h-16 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-xl md:rounded-2xl overflow-hidden bg-gray-100 ring-2 ring-gray-200 transition-transform md:hover:scale-105">
                 <LazyImage
                   src={category.image || getCategoryFallbackImage(category.name)}
                   alt={category.name}
@@ -60,7 +60,7 @@ const MobileCategoryGrid = () => {
                   }}
                 />
               </div>
-              <span className="text-xs font-semibold text-gray-700 text-center line-clamp-2">
+              <span className="text-xs md:text-sm font-semibold text-gray-700 text-center line-clamp-2">
                 {category.name}
               </span>
             </Link>

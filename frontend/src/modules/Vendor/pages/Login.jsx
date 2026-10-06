@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { FiPhone, FiLock, FiEye, FiEyeOff, FiArrowRight, FiShield, FiMail } from 'react-icons/fi';
+import { FiPhone, FiLock, FiEye, FiEyeOff, FiArrowRight, FiMail } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { useVendorAuthStore } from "../store/vendorAuthStore";
 import toast from 'react-hot-toast';
+import brandLogo from '../../../assets/kuro-agro-logo.png';
 
 const VendorLogin = () => {
   const navigate = useNavigate();
@@ -60,9 +61,7 @@ const VendorLogin = () => {
       >
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 gradient-green rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-glow-green">
-            <FiShield className="text-white text-2xl" />
-          </div>
+          <img src={brandLogo} alt="KuroAgro" className="h-20 w-auto object-contain mx-auto mb-4" />
           <h1 className="text-3xl font-extrabold text-gray-800 mb-1">Seller Portal</h1>
           <p className="text-gray-600 text-sm">
             Sign in with your mobile number / email and password

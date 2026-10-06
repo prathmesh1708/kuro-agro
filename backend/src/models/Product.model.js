@@ -10,6 +10,7 @@ const productSchema = new mongoose.Schema(
         unit: { type: String, default: 'Piece' },
         images: [{ type: String }],
         image: { type: String }, // primary image
+        videos: [{ type: String }], // Cloudinary video URLs
         categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true, index: true },
         brandId: { type: mongoose.Schema.Types.ObjectId, ref: 'Brand', index: true },
         vendorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Vendor', required: true, index: true },

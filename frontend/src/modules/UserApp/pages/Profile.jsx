@@ -134,21 +134,21 @@ const MobileProfile = () => {
   };
 
   const menuOptions = [
-    { id: 'personal', label: 'Personal Information', icon: FiUser, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { id: 'orders', label: 'My Orders', icon: FiPackage, color: 'text-orange-600', bg: 'bg-orange-50', link: '/orders' },
-    { id: 'addresses', label: 'My Addresses', icon: FiMapPin, color: 'text-green-600', bg: 'bg-green-50', link: '/addresses' },
+    { id: 'personal', label: 'Personal Information', icon: FiUser, color: 'text-primary-600', bg: 'bg-primary-50' },
+    { id: 'orders', label: 'My Orders', icon: FiPackage, color: 'text-gold-600', bg: 'bg-gold-50', link: '/orders' },
+    { id: 'addresses', label: 'My Addresses', icon: FiMapPin, color: 'text-primary-600', bg: 'bg-primary-50', link: '/addresses' },
     {
       id: 'notifications',
       label: 'Notifications',
       icon: FiBell,
-      color: 'text-indigo-600',
-      bg: 'bg-indigo-50',
+      color: 'text-gold-600',
+      bg: 'bg-gold-50',
       link: '/notifications',
       badge: unreadNotificationCount > 0 ? unreadNotificationCount : null,
     },
-    { id: 'codStats', label: 'COD Account Standing', icon: FiShield, color: 'text-red-600', bg: 'bg-red-50' },
-    { id: 'password', label: 'Change Password', icon: FiLock, color: 'text-purple-600', bg: 'bg-purple-50' },
-    { id: 'sell', label: 'Sell on Rathi', icon: FiShoppingBag, color: 'text-amber-600', bg: 'bg-amber-50', link: '/vendor/login' },
+    { id: 'codStats', label: 'COD Account Standing', icon: FiShield, color: 'text-primary-600', bg: 'bg-primary-50' },
+    { id: 'password', label: 'Change Password', icon: FiLock, color: 'text-gold-600', bg: 'bg-gold-50' },
+    { id: 'sell', label: 'Sell on KuroAgro', icon: FiShoppingBag, color: 'text-primary-600', bg: 'bg-primary-50', link: '/vendor/login' },
   ];
 
   return (
@@ -171,7 +171,7 @@ const MobileProfile = () => {
               </div>
             </div>
 
-            <div className="lg:hidden px-4 py-4 bg-[#E8E2FF] border-b border-purple-100 sticky top-0 z-30">
+            <div className="lg:hidden px-4 py-4 bg-primary-50 border-b border-primary-100 sticky top-0 z-30">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => activeTab === 'menu' ? navigate(-1) : setActiveTab('menu')}
@@ -641,9 +641,9 @@ const MobileProfile = () => {
                         <p className="text-xs font-semibold text-red-700 uppercase">Cancelled COD</p>
                         <p className="text-2xl font-bold text-red-800 mt-1">{user?.codStats?.cancelledCodOrders || 0}</p>
                       </div>
-                      <div className="bg-purple-50 p-4 rounded-xl border border-purple-100 text-center">
-                        <p className="text-xs font-semibold text-purple-700 uppercase">Cancellation Rate</p>
-                        <p className="text-2xl font-bold text-purple-800 mt-1">
+                      <div className="bg-primary-50 p-4 rounded-xl border border-primary-100 text-center">
+                        <p className="text-xs font-semibold text-primary-700 uppercase">Cancellation Rate</p>
+                        <p className="text-2xl font-bold text-primary-800 mt-1">
                           {user?.codStats?.cancellationRate || 0}%
                         </p>
                       </div>

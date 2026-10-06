@@ -12,14 +12,12 @@ import FeaturedVendorsSection from "../components/Mobile/FeaturedVendorsSection"
 import BrandLogosScroll from "../components/Mobile/BrandLogosScroll";
 import MobileCategoryGrid from "../components/Mobile/MobileCategoryGrid";
 import LazyImage from "../../../shared/components/LazyImage";
-import { getPlaceholderImage } from "../../../shared/utils/helpers";
+import { getPlaceholderImage, productGridItemClass } from "../../../shared/utils/helpers";
 import {
-  getMostPopular,
-  getTrending,
   getFlashSale,
   getDailyDeals,
   getAllNewArrivals,
-  getRecommendedProducts,
+  getCatalogProducts,
   getApprovedVendors,
   getCatalogBrands,
 } from "../data/catalogData";
@@ -27,11 +25,6 @@ import PageTransition from "../../../shared/components/PageTransition";
 import usePullToRefresh from "../hooks/usePullToRefresh";
 import toast from "react-hot-toast";
 import api from "../../../shared/utils/api";
-import heroSlide1 from "../../../../data/hero/slide1.png";
-import heroSlide2 from "../../../../data/hero/slide2.png";
-import heroSlide3 from "../../../../data/hero/slide3.png";
-import heroSlide4 from "../../../../data/hero/slide4.png";
-import stylishWatchImg from "../../../../data/products/stylish watch.png";
 
 const normalizeId = (value) => String(value ?? "").trim();
 const toNumber = (value, fallback = 0) => {
@@ -108,27 +101,47 @@ const normalizeBrand = (raw) => ({
   logo: raw?.logo || "",
 });
 
-const deriveDailyDeals = (products = []) => {
-  const flash = products.filter((p) => p.flashSale);
-  const discounted = products.filter(
-    (p) =>
-      p.originalPrice !== undefined &&
-      toNumber(p.originalPrice, 0) > toNumber(p.price, 0) &&
-      !p.flashSale
-  );
-  const merged = [...flash, ...discounted];
-  return merged.filter(
-    (p, index, arr) =>
-      index === arr.findIndex((x) => normalizeId(x.id) === normalizeId(p.id))
-  );
+const discountRatio = (p) => {
+  const original = toNumber(p.originalPrice, 0);
+  const price = toNumber(p.price, 0);
+  return original > price ? (original - price) / original : 0;
 };
 
+// Biggest discounts that are not already shown in the Flash Sale row.
+const deriveDailyDeals = (products = []) =>
+  products
+    .filter((p) => !p.flashSale && discountRatio(p) > 0)
+    .sort((a, b) => discountRatio(b) - discountRatio(a));
+
+// Shown until banners load from the API (or when none are configured in Admin > Banners).
+// Banner images live on Cloudinary, so the defaults are text on a brand gradient.
 const DEFAULT_HERO_SLIDES = [
-  { image: heroSlide1 },
-  { image: heroSlide2 },
-  { image: heroSlide3 },
-  { image: heroSlide4 },
+  {
+    image: "",
+    title: "Quality Seeds for Every Season",
+    subtitle: "Certified, high-germination seeds for rabi and kharif",
+    link: "/categories",
+  },
+  {
+    image: "",
+    title: "Khad at the Right Price",
+    subtitle: "Fertilizers, organic manure and crop care",
+    link: "/categories",
+  },
+  {
+    image: "",
+    title: "Tools Built for Indian Farms",
+    subtitle: "Sprayers, irrigation and hand tools",
+    link: "/categories",
+  },
 ];
+
+const DEFAULT_SIDE_BANNER = {
+  image: "",
+  title: "100% ORGANIC",
+  subtitle: "Vermicompost, neem cake and more",
+  link: "/categories",
+};
 
 const extractResponseData = (response) => {
   if (response && typeof response === "object") {
@@ -198,12 +211,9 @@ const MobileHome = () => {
   const [homeVendors, setHomeVendors] = useState([]);
   const [homeBrands, setHomeBrands] = useState([]);
 
-  const fallbackMostPopular = getMostPopular();
-  const fallbackTrending = getTrending();
   const fallbackFlashSale = getFlashSale();
   const fallbackNewArrivals = getAllNewArrivals().slice(0, 6);
-  const fallbackDailyDeals = getDailyDeals().slice(0, 5);
-  const fallbackRecommended = getRecommendedProducts(6);
+  const fallbackDailyDeals = getDailyDeals().slice(0, 6);
   const fallbackVendors = getApprovedVendors();
   const fallbackBrands = getCatalogBrands().slice(0, 10);
 
@@ -214,37 +224,45 @@ const MobileHome = () => {
 
   const computedDailyDeals = useMemo(() => {
     if (catalogProducts.length === 0) return fallbackDailyDeals;
-    return deriveDailyDeals(catalogProducts).slice(0, 5);
+    return deriveDailyDeals(catalogProducts).slice(0, 6);
   }, [catalogProducts, fallbackDailyDeals]);
 
-  const computedRecommended = useMemo(() => {
-    if (catalogProducts.length === 0) return fallbackRecommended;
-    return [...catalogProducts]
-      .sort((a, b) => toNumber(b.rating, 0) - toNumber(a.rating, 0))
-      .slice(0, 6);
-  }, [catalogProducts, fallbackRecommended]);
+  // Most Popular, Trending and Recommended never repeat a product. Ranking uses reviews and
+  // ratings; until those exist, featured and newer products break the ties.
+  const homeRows = useMemo(() => {
+    const source = catalogProducts.length > 0 ? catalogProducts : getCatalogProducts();
+    const createdAt = (p) => new Date(p.createdAt || 0).getTime() || 0;
+    const reviews = (a, b) => toNumber(b.reviewCount, 0) - toNumber(a.reviewCount, 0);
+    const rating = (a, b) => toNumber(b.rating, 0) - toNumber(a.rating, 0);
+    const featured = (a, b) => Number(!!b.isFeatured) - Number(!!a.isFeatured);
+    const newest = (a, b) => createdAt(b) - createdAt(a);
+    const by = (...comparators) => (a, b) => {
+      for (const compare of comparators) {
+        const diff = compare(a, b);
+        if (diff !== 0) return diff;
+      }
+      return 0;
+    };
 
-  const computedMostPopular = useMemo(() => {
-    if (catalogProducts.length === 0) return fallbackMostPopular.slice(0, 6);
-    return [...catalogProducts]
-      .sort((a, b) => {
-        const reviewsDiff = toNumber(b.reviewCount, 0) - toNumber(a.reviewCount, 0);
-        if (reviewsDiff !== 0) return reviewsDiff;
-        return toNumber(b.rating, 0) - toNumber(a.rating, 0);
-      })
-      .slice(0, 6);
-  }, [catalogProducts, fallbackMostPopular]);
+    const used = new Set();
+    const take = (compare) => {
+      const picked = source
+        .filter((p) => !used.has(normalizeId(p.id)))
+        .sort(compare)
+        .slice(0, 6);
+      picked.forEach((p) => used.add(normalizeId(p.id)));
+      return picked;
+    };
 
-  const computedTrending = useMemo(() => {
-    if (catalogProducts.length === 0) return fallbackTrending.slice(0, 6);
-    return [...catalogProducts]
-      .sort((a, b) => {
-        const ratingDiff = toNumber(b.rating, 0) - toNumber(a.rating, 0);
-        if (ratingDiff !== 0) return ratingDiff;
-        return toNumber(b.reviewCount, 0) - toNumber(a.reviewCount, 0);
-      })
-      .slice(0, 6);
-  }, [catalogProducts, fallbackTrending]);
+    const mostPopular = take(by(reviews, rating, featured, newest));
+    const trending = take(by(rating, reviews, newest));
+    const recommended = take(by(rating, featured, reviews));
+    return { mostPopular, trending, recommended };
+  }, [catalogProducts]);
+
+  const computedMostPopular = homeRows.mostPopular;
+  const computedTrending = homeRows.trending;
+  const computedRecommended = homeRows.recommended;
 
   const computedFlashSale = useMemo(() => {
     if (catalogProducts.length === 0) return fallbackFlashSale.slice(0, 6);
@@ -542,15 +560,40 @@ const MobileHome = () => {
                         height: "100%",
                         cursor: slide?.link ? "pointer" : "default",
                       }}>
-                      <LazyImage
-                        src={slide.image}
-                        alt={`Slide ${index + 1}`}
-                        className="w-full h-full object-cover pointer-events-none select-none"
-                        draggable={false}
-                        onError={(e) => {
-                          e.target.src = getPlaceholderImage(400, 200, `Banner ${index + 1}`);
-                        }}
-                      />
+                      <div className="relative w-full h-full">
+                        {slide.image ? (
+                          <LazyImage
+                            src={slide.image}
+                            alt={slide.title || `Slide ${index + 1}`}
+                            className="w-full h-full object-cover pointer-events-none select-none"
+                            draggable={false}
+                            onError={(e) => {
+                              e.target.src = getPlaceholderImage(400, 200, `Banner ${index + 1}`);
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900" />
+                        )}
+                        {slide.title && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-primary-900/85 via-primary-900/45 to-transparent flex items-center pointer-events-none">
+                            <div className="px-5 md:px-10 max-w-[75%] md:max-w-[60%]">
+                              <h2 className="text-white font-extrabold text-xl leading-tight md:text-4xl lg:text-5xl drop-shadow">
+                                {slide.title}
+                              </h2>
+                              {slide.subtitle && (
+                                <p className="mt-1.5 md:mt-3 text-gold-100 text-xs md:text-base lg:text-lg font-medium line-clamp-2">
+                                  {slide.subtitle}
+                                </p>
+                              )}
+                              {slide.link && (
+                                <span className="inline-block mt-3 md:mt-6 px-4 py-1.5 md:px-7 md:py-3 rounded-full bg-gold-400 text-primary-900 text-xs md:text-sm font-bold shadow-lg">
+                                  Shop Now
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </motion.div>
@@ -573,27 +616,31 @@ const MobileHome = () => {
               </div>
 
               {/* Side Banner for Large Screens */}
-              <div className="hidden lg:block lg:col-span-1 h-[400px] xl:h-[450px] rounded-2xl overflow-hidden relative bg-gray-900 group">
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 z-10" />
-                <LazyImage
-                  src={sideBanner?.image || stylishWatchImg}
-                  alt={sideBanner?.title || "Premium Watch"}
-                  className="w-full h-full object-contain p-8 group-hover:scale-110 transition-transform duration-700"
-                  onError={(e) => {
-                    e.target.src = getPlaceholderImage(400, 400, "Premium Watch");
-                  }}
-                />
+              <div className="hidden lg:block lg:col-span-1 h-[400px] xl:h-[450px] rounded-2xl overflow-hidden relative bg-primary-900 group ring-2 ring-gold-300/60">
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary-900/30 to-primary-900/95 z-10" />
+                {(sideBanner || DEFAULT_SIDE_BANNER).image ? (
+                  <LazyImage
+                    src={(sideBanner || DEFAULT_SIDE_BANNER).image}
+                    alt={(sideBanner || DEFAULT_SIDE_BANNER).title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    onError={(e) => {
+                      e.target.src = getPlaceholderImage(400, 400, "KuroAgro");
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-gold-500 via-primary-700 to-primary-900" />
+                )}
                 <div className="absolute inset-x-0 bottom-0 p-8 z-20 flex flex-col items-center text-center">
-                  <span className="text-yellow-400 font-bold text-3xl mb-2 tracking-wider drop-shadow-lg">
-                    {sideBanner?.title || "PREMIUM"}
+                  <span className="text-gold-300 font-bold text-3xl mb-2 tracking-wider drop-shadow-lg">
+                    {(sideBanner || DEFAULT_SIDE_BANNER).title}
                   </span>
-                  <p className="text-gray-300 text-sm mb-6 font-medium">
-                    {sideBanner?.subtitle || "Exclusive Collection"}
+                  <p className="text-white/85 text-sm mb-6 font-medium">
+                    {(sideBanner || DEFAULT_SIDE_BANNER).subtitle}
                   </p>
                   <button
                     type="button"
-                    onClick={() => handleBannerNavigation(sideBanner?.link || "/offers")}
-                    className="bg-white text-gray-900 font-bold py-3.5 px-10 rounded-xl w-full hover:bg-gray-100 transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-xl uppercase tracking-widest text-sm"
+                    onClick={() => handleBannerNavigation((sideBanner || DEFAULT_SIDE_BANNER).link || "/offers")}
+                    className="bg-gold-400 text-primary-900 font-bold py-3.5 px-10 rounded-xl w-full hover:bg-gold-300 transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-xl uppercase tracking-widest text-sm"
                   >
                     Shop Now
                   </button>
@@ -633,7 +680,7 @@ const MobileHome = () => {
               {computedMostPopular.map((product, index) => (
                 <motion.div
                   key={product.id}
-                  className={index === 5 ? "xl:hidden" : ""}
+                  className={productGridItemClass(index)}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}>
@@ -650,7 +697,7 @@ const MobileHome = () => {
 
           {/* Flash Sale */}
           {computedFlashSale.length > 0 && (
-            <div className="px-4 py-4 bg-gradient-to-br from-red-50 to-orange-50">
+            <div className="px-4 py-4 bg-gradient-to-br from-gold-50 to-primary-50 rounded-2xl">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h2 className="text-xl font-bold text-gray-800">
@@ -668,7 +715,7 @@ const MobileHome = () => {
                 {computedFlashSale.map((product, index) => (
                   <motion.div
                     key={product.id}
-                    className={index === 5 ? "xl:hidden" : ""}
+                    className={productGridItemClass(index)}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}>
@@ -693,7 +740,7 @@ const MobileHome = () => {
               {computedTrending.map((product, index) => (
                 <motion.div
                   key={product.id}
-                  className={index === 5 ? "hidden xl:block 2xl:hidden" : ""}
+                  className={productGridItemClass(index)}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}>
@@ -714,12 +761,12 @@ const MobileHome = () => {
             transition={{ duration: 0.6 }}
             className="px-4 py-12 text-left">
             <motion.h2
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-gray-400 leading-tight flex items-center justify-start gap-3 flex-wrap"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-primary-900/15 leading-tight flex items-center justify-start gap-3 flex-wrap"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2 }}>
-              <span>Shop from 50+ Trusted Vendors</span>
+              <span>Grown with Care, Delivered to Your Farm</span>
               <motion.span
                 animate={{
                   scale: [1, 1.2, 1],
@@ -729,8 +776,8 @@ const MobileHome = () => {
                   repeat: Infinity,
                   repeatDelay: 2,
                 }}
-                className="text-primary-500 inline-block">
-                <FiHeart className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl fill-primary-500" />
+                className="text-gold-400 inline-block">
+                <FiHeart className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl fill-gold-400" />
               </motion.span>
             </motion.h2>
           </motion.div>

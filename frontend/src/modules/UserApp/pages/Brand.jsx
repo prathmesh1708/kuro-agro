@@ -282,7 +282,7 @@ const Brand = () => {
             <MobileLayout showBottomNav={true} showCartBar={true}>
                 <div className="w-full pb-24 lg:pb-12 max-w-7xl mx-auto min-h-screen bg-gray-50">
                     {/* Header */}
-                    <div className="bg-[#E8E2FF] border-b border-purple-100 sticky top-0 z-30">
+                    <div className="bg-primary-50 border-b border-primary-100 sticky top-0 z-30">
                         <div className="px-2 md:px-4 py-2 md:py-4">
                             <div className="flex items-center gap-2 md:gap-3 mb-4">
                                 <button

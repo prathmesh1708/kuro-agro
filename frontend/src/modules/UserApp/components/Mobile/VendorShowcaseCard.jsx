@@ -33,7 +33,7 @@ const VendorShowcaseCard = ({ vendor, index = 0 }) => {
               alt={displayName}
               className="w-full h-full object-cover"
               onError={(e) => {
-                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=7C3AED&color=fff&size=128`;
+                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=156B3B&color=F4DA95&size=128`;
               }}
             />
           ) : (

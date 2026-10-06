@@ -3,10 +3,10 @@ import { useCartStore, useUIStore } from "../../../../shared/store/useStore";
 import { useWishlistStore } from "../../../../shared/store/wishlistStore";
 import { useAuthStore } from "../../../../shared/store/authStore";
 import { useLocationStore } from "../../../../shared/store/locationStore";
-import raathiLogo from "../../../../assets/raathifinalogo.png";
+import brandLogo from "../../../../assets/kuro-agro-logo.png";
 const appLogo = {
-  src: raathiLogo,
-  alt: "Rathi"
+  src: brandLogo,
+  alt: "KuroAgro"
 };
 import SearchBar from "../../../../shared/components/SearchBar";
 import { FiHeart, FiShoppingBag, FiUser, FiLogOut, FiGrid, FiBell } from "react-icons/fi";
@@ -52,23 +52,23 @@ const DesktopHeader = () => {
 
     return (
         <header className="hidden md:block sticky top-0 z-[999] bg-white shadow-sm border-b border-gray-100">
-            <div className="container mx-auto px-4 md:px-12 lg:px-24 xl:px-40 h-20 flex items-center justify-between gap-8">
+            <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-10 h-20 flex items-center justify-between gap-3 lg:gap-6">
                 {/* Logo & Location */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 lg:gap-4 flex-shrink-0">
                     <Link to="/home" className="flex-shrink-0 flex items-center gap-2">
                         {appLogo.src ? (
                             <img
                                 src={appLogo.src}
                                 alt={appLogo.alt}
-                                className="h-14 w-auto object-contain"
+                                className="h-12 lg:h-14 w-auto object-contain"
                             />
                         ) : (
-                            <span className="text-2xl font-bold text-primary-600">Rathi</span>
+                            <span className="text-2xl font-bold text-primary-600">KuroAgro</span>
                         )}
                     </Link>
 
                     <div
-                        className="hidden lg:flex flex-col justify-center cursor-pointer select-none text-left border-l border-gray-200 pl-3 py-1"
+                        className="hidden xl:flex flex-col justify-center cursor-pointer select-none text-left border-l border-gray-200 pl-3 py-1"
                         onClick={() => {
                             if (isAuthenticated) {
                                 navigate("/addresses");
@@ -79,8 +79,8 @@ const DesktopHeader = () => {
                         title="Click to select or manage address"
                     >
                         <div className="flex items-center gap-1 leading-none">
-                            <span className="text-orange-500 font-bold text-xs">⚡</span>
-                            <span className="text-gray-900 font-black text-xs tracking-wider uppercase">10 MINS</span>
+                            <span className="text-gold-600 font-bold text-xs">📍</span>
+                            <span className="text-primary-800 font-black text-xs tracking-wider uppercase">Deliver to</span>
                         </div>
                         <div className="flex items-center gap-1 text-gray-500 text-xs font-semibold mt-1 max-w-[180px]">
                             <span className="truncate">
@@ -92,22 +92,22 @@ const DesktopHeader = () => {
                 </div>
 
                 {/* Navigation Links */}
-                <nav className="flex items-center gap-6">
+                <nav className="flex items-center gap-4 lg:gap-6 flex-shrink-0 whitespace-nowrap">
                     <Link to="/home" className="text-gray-600 hover:text-primary-600 font-medium text-sm lg:text-base">Home</Link>
                     <Link to="/categories" className="text-gray-600 hover:text-primary-600 font-medium text-sm lg:text-base flex items-center gap-1">
                         <FiGrid /> Categories
                     </Link>
                     <Link to="/offers" className="text-gray-600 hover:text-primary-600 font-medium text-sm lg:text-base">Offers</Link>
-                    <Link to="/vendor/login" className="text-gray-600 hover:text-primary-600 font-medium text-sm lg:text-base">Sell on Rathi</Link>
+                    <Link to="/vendor/login" className="hidden xl:inline text-gray-600 hover:text-primary-600 font-medium text-sm lg:text-base">Sell on KuroAgro</Link>
                 </nav>
 
                 {/* Search Bar */}
-                <div className="flex-1 max-w-xl">
+                <div className="flex-1 min-w-0 max-w-xl">
                     <SearchBar />
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-5">
+                <div className="flex items-center gap-1 lg:gap-3 flex-shrink-0">
                     {/* Wishlist */}
                     <Link to="/wishlist" className="relative p-2 text-gray-600 hover:text-primary-600 transition-colors">
                         <FiHeart className="text-2xl" />
@@ -207,7 +207,7 @@ const DesktopHeader = () => {
                             </AnimatePresence>
                         </div>
                     ) : (
-                        <Link to="/login" className="px-5 py-2.5 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors shadow-sm shadow-primary-200">
+                        <Link to="/login" className="px-4 lg:px-5 py-2.5 whitespace-nowrap bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors shadow-sm shadow-primary-200">
                             Login
                         </Link>
                     )}

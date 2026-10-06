@@ -4,6 +4,7 @@ import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { useAdminAuthStore } from '../store/adminStore';
 import toast from 'react-hot-toast';
+import brandLogo from '../../../assets/kuro-agro-logo.png';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -59,9 +60,7 @@ const AdminLogin = () => {
       >
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 gradient-green rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-glow-green">
-            <FiLock className="text-white text-2xl" />
-          </div>
+          <img src={brandLogo} alt="KuroAgro" className="h-20 w-auto object-contain mx-auto mb-4" />
           <h1 className="text-3xl font-extrabold text-gray-800 mb-2">Admin Login</h1>
           <p className="text-gray-600">Enter your credentials to access the admin panel</p>
         </div>

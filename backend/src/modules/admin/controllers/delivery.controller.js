@@ -6,6 +6,7 @@ import { asyncHandler } from '../../../utils/asyncHandler.js';
 import { sendEmail } from '../../../services/email.service.js';
 import { createNotification } from '../../../services/notification.service.js';
 import crypto from 'crypto';
+import { getPrivateDocumentUrl, isPrivateDocumentRef } from '../../../services/upload.service.js';
 
 const DOC_TOKEN_TTL_MS = 10 * 60 * 1000;
 const DOC_TOKEN_QUERY_KEY = 'docToken';
@@ -22,6 +23,7 @@ const buildDocToken = (relativePath) => {
 
 const buildDocUrl = (req, relativePath = '') => {
     if (!relativePath) return '';
+    if (isPrivateDocumentRef(relativePath)) return getPrivateDocumentUrl(relativePath);
     if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) return relativePath;
     const baseUrl = `${req.protocol}://${req.get('host')}${relativePath}`;
     if (relativePath.startsWith('/uploads/delivery-docs/')) {

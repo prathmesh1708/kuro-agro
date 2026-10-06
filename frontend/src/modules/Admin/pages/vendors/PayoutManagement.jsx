@@ -179,7 +179,7 @@ const PayoutManagement = () => {
           onClick={() => setActiveTab('sellers')}
           className={`flex items-center gap-2 px-6 py-3 border-b-2 font-semibold text-sm transition-colors ${
             activeTab === 'sellers'
-              ? 'border-purple-650 text-purple-600'
+              ? 'border-primary-650 text-primary-600'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -190,7 +190,7 @@ const PayoutManagement = () => {
           onClick={() => setActiveTab('settlements')}
           className={`flex items-center gap-2 px-6 py-3 border-b-2 font-semibold text-sm transition-colors ${
             activeTab === 'settlements'
-              ? 'border-purple-650 text-purple-600'
+              ? 'border-primary-650 text-primary-600'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -212,7 +212,7 @@ const PayoutManagement = () => {
                   placeholder="Search sellers..."
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
             </div>
@@ -260,7 +260,7 @@ const PayoutManagement = () => {
                               setVerifyRemarks(seller.bankDetails?.remarks || '');
                               setShowVerifyModal(true);
                             }}
-                            className="text-xs font-bold text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors"
+                            className="text-xs font-bold text-primary-600 hover:text-primary-700 bg-primary-50 hover:bg-primary-100 px-3 py-1.5 rounded-lg transition-colors"
                           >
                             Verify & Update
                           </button>
@@ -446,7 +446,7 @@ const PayoutManagement = () => {
                           href={selectedSeller.bankDetails.cancelledCheque} 
                           target="_blank" 
                           rel="noreferrer"
-                          className="text-xs font-bold text-purple-650 hover:underline"
+                          className="text-xs font-bold text-primary-650 hover:underline"
                         >
                           View Cheque
                         </a>
@@ -460,7 +460,7 @@ const PayoutManagement = () => {
                         onChange={e => setVerifyRemarks(e.target.value)}
                         placeholder="Add remarks or explanation here..."
                         rows="3"
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
                   </div>
@@ -483,7 +483,7 @@ const PayoutManagement = () => {
                   </button>
                   <button
                     onClick={() => handleUpdateBankStatus('approved')}
-                    className="px-4 py-2 text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+                    className="px-4 py-2 text-xs font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors"
                   >
                     Approve Details
                   </button>
@@ -519,14 +519,14 @@ const PayoutManagement = () => {
 
               <form onSubmit={handleReleaseSettlement}>
                 <div className="p-5 space-y-4">
-                  <div className="bg-purple-50 p-4 rounded-xl border border-purple-100 text-purple-900 text-sm">
+                  <div className="bg-primary-50 p-4 rounded-xl border border-primary-100 text-primary-900 text-sm">
                     <div className="flex justify-between">
                       <span>Shop Name:</span>
-                      <strong className="text-purple-950">{selectedSettlement.vendorId?.storeName || 'N/A'}</strong>
+                      <strong className="text-primary-950">{selectedSettlement.vendorId?.storeName || 'N/A'}</strong>
                     </div>
                     <div className="flex justify-between mt-1">
                       <span>Net Payable Amount:</span>
-                      <strong className="text-purple-950">{formatPrice(selectedSettlement.netPayable)}</strong>
+                      <strong className="text-primary-950">{formatPrice(selectedSettlement.netPayable)}</strong>
                     </div>
                   </div>
 
@@ -538,7 +538,7 @@ const PayoutManagement = () => {
                       value={transactionId}
                       onChange={e => setTransactionId(e.target.value)}
                       placeholder="e.g. TXN982348234"
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
 
@@ -549,7 +549,7 @@ const PayoutManagement = () => {
                       onChange={e => setReleaseNotes(e.target.value)}
                       placeholder="Add settlement transaction notes..."
                       rows="2"
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
                 </div>

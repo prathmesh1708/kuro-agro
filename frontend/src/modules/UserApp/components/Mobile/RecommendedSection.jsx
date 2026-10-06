@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { FiThumbsUp, FiArrowRight } from "react-icons/fi";
 import ProductCard from "../../../../shared/components/ProductCard";
+import { productGridItemClass } from "../../../../shared/utils/helpers";
 import { getRecommendedProducts } from "../../data/catalogData";
 
 const RecommendedSection = ({ products = null }) => {
@@ -18,10 +19,10 @@ const RecommendedSection = ({ products = null }) => {
   }
 
   return (
-    <div className="px-4 py-5 bg-gradient-to-br from-blue-50/50 via-white to-purple-50/40 rounded-2xl mx-2">
+    <div className="px-4 py-5 bg-gradient-to-br from-gold-50/70 via-white to-primary-50/50 rounded-2xl mx-2">
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl shadow-md">
+          <div className="p-2.5 bg-gradient-to-br from-gold-400 to-gold-600 rounded-xl shadow-md">
             <FiThumbsUp className="text-white text-lg" />
           </div>
           <div>
@@ -44,7 +45,7 @@ const RecommendedSection = ({ products = null }) => {
             key={product.id}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className={index === 5 ? "xl:hidden" : ""}
+            className={productGridItemClass(index)}
             transition={{ delay: index * 0.05 }}
           >
             <ProductCard product={product} />

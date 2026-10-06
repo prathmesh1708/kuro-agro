@@ -162,7 +162,7 @@ const Analytics = () => {
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm text-gray-600">Total Products</p>
-            <FiBarChart2 className="text-purple-600" />
+            <FiBarChart2 className="text-primary-600" />
           </div>
           <p className="text-2xl font-bold text-gray-800">{analyticsSummary.totalProducts}</p>
           <div className="flex items-center gap-1 mt-2">

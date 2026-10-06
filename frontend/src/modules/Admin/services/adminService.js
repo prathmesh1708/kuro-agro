@@ -353,6 +353,20 @@ export const uploadAdminImage = (file, folder = 'general', publicId) => {
     });
 };
 
+/**
+ * Upload a product video to Cloudinary (resource_type: video)
+ * @param {File} file
+ * @param {string} folder
+ */
+export const uploadAdminVideo = (file, folder = 'products/videos') => {
+    const formData = new FormData();
+    formData.append('video', file);
+    formData.append('folder', folder);
+    return api.post('/admin/uploads/video', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+};
+
 // ─── Notifications ────────────────────────────────────────────────────────────
 export const sendPushNotification = (data) =>
     api.post('/admin/notifications/push', data);

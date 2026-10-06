@@ -44,7 +44,7 @@ import {
     updateProductSchema,
     productIdParamSchema,
 } from '../validators/product.validator.js';
-import { uploadSingle, uploadMultiple, uploadDocumentSingle, uploadVendorRegistrationDocuments } from '../../../middlewares/upload.js';
+import { uploadSingle, uploadMultiple, uploadVideoSingle, uploadDocumentSingle, uploadVendorRegistrationDocuments } from '../../../middlewares/upload.js';
 
 const router = Router();
 const vendorAuth = [authenticate, authorize('vendor'), enforceAccountStatus];
@@ -193,6 +193,7 @@ router.patch('/pickup-locations/:id/default', ...vendorAuth, pickupLocationContr
 // Uploads (Cloudinary via temp local multer upload)
 router.post('/uploads/image', ...vendorAuth, uploadSingle('image'), uploadController.uploadImage);
 router.post('/uploads/images', ...vendorAuth, uploadMultiple('images', 8), uploadController.uploadImages);
+router.post('/uploads/video', ...vendorAuth, uploadVideoSingle('video'), uploadController.uploadVideo);
 
 // Test/Debug endpoint to simulate real-time incoming order popup
 router.post('/test-order-popup', ...vendorAuth, (req, res) => {
