@@ -22,6 +22,7 @@ const ManageProducts = () => {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedBrand, setSelectedBrand] = useState("all");
+  const [selectedSeller, setSelectedSeller] = useState("all");
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
     productId: null,
@@ -96,8 +97,26 @@ const ManageProducts = () => {
       );
     }
 
+    if (selectedSeller !== "all") {
+      filtered = filtered.filter(
+        (product) => String(product.vendorId?._id || product.vendorId) === String(selectedSeller)
+      );
+    }
+
     return filtered;
-  }, [products, searchQuery, selectedStatus, selectedCategory, selectedBrand]);
+  }, [products, searchQuery, selectedStatus, selectedCategory, selectedBrand, selectedSeller]);
+
+  // Distinct sellers derived from the loaded products
+  const sellerOptions = useMemo(() => {
+    const sellers = new Map();
+    products.forEach((p) => {
+      const id = String(p.vendorId?._id || p.vendorId || "");
+      if (id && !sellers.has(id)) sellers.set(id, p.vendorId?.storeName || "Unknown seller");
+    });
+    return [...sellers.entries()]
+      .map(([value, label]) => ({ value, label }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [products]);
 
   const columns = [
     {
@@ -122,6 +141,12 @@ const ManageProducts = () => {
           <span className="font-medium">{value}</span>
         </div>
       ),
+    },
+    {
+      key: "vendorId",
+      label: "Seller",
+      sortable: false,
+      render: (value) => value?.storeName || "—",
     },
     {
       key: "price",
@@ -304,6 +329,15 @@ const ManageProducts = () => {
                 ...brands
                   .filter((brand) => brand.isActive !== false)
                   .map((brand) => ({ value: String(brand.id), label: brand.name })),
+              ]}
+              className="w-full sm:w-auto min-w-[160px]"
+            />
+            <AnimatedSelect
+              value={selectedSeller}
+              onChange={(e) => setSelectedSeller(e.target.value)}
+              options={[
+                { value: "all", label: "All Sellers" },
+                ...sellerOptions,
               ]}
               className="w-full sm:w-auto min-w-[160px]"
             />
