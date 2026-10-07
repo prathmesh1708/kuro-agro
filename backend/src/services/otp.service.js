@@ -8,7 +8,7 @@ import { sendSMS } from './sms.service.js';
  * @param {Object} user - Mongoose user/vendor document
  * @param {string} type - Purpose label (for logging)
  */
-export const sendOTP = async (user, type = 'verification') => {
+export const sendOTPWithStatus = async (user, type = 'verification') => {
     const otp = crypto.randomInt(100000, 999999).toString();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
@@ -16,15 +16,23 @@ export const sendOTP = async (user, type = 'verification') => {
     user.otpExpiry = otpExpiry;
     await user.save({ validateBeforeSave: false });
 
+    let delivered = false;
+
     // 1. Send SMS OTP if user has phone number (via SMS India Hub)
     if (user.phone) {
         try {
-            await sendSMS({
+            const result = await sendSMS({
                 phone: user.phone,
                 otp,
-                email: user.email
+                email: user.email,
+                skipEmailFallback: true, // email is sent (and awaited) below
             });
-            console.log(`[OTP SMS Success] Verification SMS triggered for ${user.phone}`);
+            if (result?.smsSent) {
+                delivered = true;
+                console.log(`[OTP SMS Success] Verification SMS triggered for ${user.phone}`);
+            } else {
+                console.warn(`[OTP SMS] No SMS provider accepted the message for ${user.phone}`);
+            }
         } catch (err) {
             console.error(`[OTP SMS Error] Failed to send SMS to ${user.phone}:`, err.message);
         }
@@ -52,6 +60,7 @@ export const sendOTP = async (user, type = 'verification') => {
                 title,
                 userType,
             });
+            delivered = true;
             console.log(`[OTP Email Success] Verification email sent to ${user.email}`);
         } catch (err) {
             console.error(`[OTP Email Error] Failed to send email to ${user.email}:`, err.message);
@@ -62,6 +71,13 @@ export const sendOTP = async (user, type = 'verification') => {
         console.log(`[OTP] ${type} OTP generated for ${user.phone || user.email}: ${otp}`);
     }
 
-    return otp;
+    if (!delivered) {
+        console.error(`[OTP] ${type}: OTP could not be delivered by SMS or email. Check SMS_INDIA_HUB_* / SMTP_* settings.`);
+    }
+
+    return { otp, delivered };
 };
+
+/** Same as sendOTPWithStatus but resolves to just the OTP string. */
+export const sendOTP = async (user, type = 'verification') => (await sendOTPWithStatus(user, type)).otp;
 

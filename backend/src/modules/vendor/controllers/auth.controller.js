@@ -5,7 +5,7 @@ import Vendor from '../../../models/Vendor.model.js';
 import Admin from '../../../models/Admin.model.js';
 import Category from '../../../models/Category.model.js';
 import { generateTokens } from '../../../utils/generateToken.js';
-import { sendOTP } from '../../../services/otp.service.js';
+import { sendOTP, sendOTPWithStatus } from '../../../services/otp.service.js';
 import { createNotification } from '../../../services/notification.service.js';
 import { sendEmail } from '../../../services/email.service.js';
 import {
@@ -170,8 +170,8 @@ export const register = asyncHandler(async (req, res) => {
         }]
     });
 
-    // Send verification OTP via SMS (SMS India Hub)
-    await sendOTP(vendor, 'vendor_verification');
+    // Send verification OTP via SMS (SMS India Hub) with email backup
+    const { delivered: otpDelivered } = await sendOTPWithStatus(vendor, 'vendor_verification');
 
     // Notify all active admins asynchronously in the background.
     Admin.find({ isActive: true }).select('_id')
@@ -198,8 +198,10 @@ export const register = asyncHandler(async (req, res) => {
     res.status(201).json(
         new ApiResponse(
             201, 
-            { email: vendor.email, phone: vendor.phone }, 
-            'Registration submitted. Please verify the OTP sent to your phone number.'
+            { email: vendor.email, phone: vendor.phone, otpDelivered }, 
+            otpDelivered
+                ? 'Registration submitted. Please verify the OTP sent to your phone number.'
+                : 'Registration submitted, but we could not send the OTP. Please tap "Resend OTP" or contact support.'
         )
     );
 });
@@ -248,7 +250,10 @@ export const resendOTP = asyncHandler(async (req, res) => {
     if (!vendor) throw new ApiError(404, 'Vendor not found.');
     if (vendor.isVerified) throw new ApiError(400, 'Account is already verified.');
 
-    await sendOTP(vendor, 'vendor_verification');
+    const { delivered } = await sendOTPWithStatus(vendor, 'vendor_verification');
+    if (!delivered) {
+        throw new ApiError(502, 'Could not send the OTP right now. Please try again later or contact support.');
+    }
     res.status(200).json(new ApiResponse(200, null, 'OTP resent successfully to your phone number.'));
 });
 

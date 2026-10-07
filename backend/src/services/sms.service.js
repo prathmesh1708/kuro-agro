@@ -10,8 +10,9 @@ import { sendEmail, sendOTPEmail } from './email.service.js';
  * @param {string} options.phone - 10-digit recipient phone number
  * @param {string} options.otp - 6-digit OTP code
  * @param {string} [options.email] - Optional recipient email address for fallback delivery
+ * @param {boolean} [options.skipEmailFallback] - Skip the email fallback (caller sends the email itself)
  */
-export const sendSMS = async ({ phone, otp, email }) => {
+export const sendSMS = async ({ phone, otp, email, skipEmailFallback = false }) => {
     const normalizedPhone = String(phone || '').replace(/\D/g, '').slice(-10);
     const defaultMessage = `Your KuroAgro verification code is ${otp}. Valid for 10 minutes.`;
 
@@ -65,16 +66,19 @@ export const sendSMS = async ({ phone, otp, email }) => {
     // Always log OTP to server console
     console.log(`[PHONE OTP] OTP for +91${normalizedPhone} is: ${otp}`);
 
-    // 4. Dispatch Email OTP backup if user has a valid non-dummy email address
-    if (email && !email.endsWith('@raathi.com')) {
-        sendOTPEmail({
-            to: email,
-            otp,
-            title: 'Login OTP Verification',
-            userType: 'Customer',
-        }).catch((err) => {
+    // 4. Dispatch Email OTP backup if user has a valid non-dummy email address.
+    // Awaited: serverless platforms freeze the process once the response is sent.
+    if (!skipEmailFallback && email && !email.endsWith('@raathi.com')) {
+        try {
+            await sendOTPEmail({
+                to: email,
+                otp,
+                title: 'Login OTP Verification',
+                userType: 'Customer',
+            });
+        } catch (err) {
             console.warn(`[SMS Fallback Email] Failed to send email to ${email}: ${err.message}`);
-        });
+        }
     }
 
     return { success: true, smsSent };
