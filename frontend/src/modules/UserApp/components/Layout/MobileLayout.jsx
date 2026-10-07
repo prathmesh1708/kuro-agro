@@ -4,6 +4,7 @@ import MobileHeader from './MobileHeader';
 import DesktopHeader from './DesktopHeader';
 import MobileBottomNav from './MobileBottomNav';
 import MobileCartBar from './MobileCartBar';
+import Footer from './Footer';
 import CartDrawer from '../../../../shared/components/Cart/CartDrawer';
 import useMobileHeaderHeight from '../../hooks/useMobileHeaderHeight';
 
@@ -31,6 +32,8 @@ const MobileLayout = ({ children, showBottomNav = true, showCartBar = true, show
     !isCheckoutPage &&
     !isOrderConfirmationPage;
 
+  const shouldShowFooter = !isAuthPage && !isCheckoutPage && !isOrderConfirmationPage;
+
   const shouldShowDesktopHeader = showHeader && !isAuthPage && !isCheckoutPage && !isOrderConfirmationPage;
 
   // Ensure body scroll is restored when component mounts
@@ -46,11 +49,14 @@ const MobileLayout = ({ children, showBottomNav = true, showCartBar = true, show
       {shouldShowDesktopHeader && <DesktopHeader />}
       {shouldShowHeader && <MobileHeader />}
       <main
-        className={`min-h-screen w-full overflow-x-hidden md:max-w-7xl md:mx-auto md:px-4 lg:px-6 ${shouldShowBottomNav ? 'pb-24' : ''} ${showCartBar ? 'pb-24' : ''}`}
+        className={`min-h-screen w-full overflow-x-hidden md:max-w-7xl md:mx-auto md:px-4 lg:px-6 ${
+          shouldShowBottomNav || showCartBar ? 'pb-24 md:pb-4' : 'pb-4'
+        }`}
         style={{ paddingTop: shouldShowHeader ? `${headerHeight}px` : '0px' }}
       >
         {children}
       </main>
+      {shouldShowFooter && <Footer />}
       {showCartBar && <MobileCartBar />}
       {shouldShowBottomNav && <MobileBottomNav />}
       <CartDrawer />
