@@ -54,6 +54,22 @@ const AUTH_SCOPES = {
     loginPath: '/delivery/login',
     areaPrefix: '/delivery',
   },
+  sanchalak: {
+    prefix: '/sanchalak',
+    accessKey: 'sanchalak-token',
+    refreshKey: 'sanchalak-refresh-token',
+    persistKey: 'sanchalak-auth-storage',
+    loginPath: '/login?role=sanchalak',
+    areaPrefix: '/sanchalak',
+  },
+  surveyor: {
+    prefix: '/surveyor',
+    accessKey: 'surveyor-token',
+    refreshKey: 'surveyor-refresh-token',
+    persistKey: 'surveyor-auth-storage',
+    loginPath: '/login?role=surveyor',
+    areaPrefix: '/surveyor',
+  },
   user: {
     prefix: '/user',
     accessKey: 'token',
@@ -80,6 +96,8 @@ const refreshInFlight = {
   admin: null,
   vendor: null,
   delivery: null,
+  sanchalak: null,
+  surveyor: null,
   user: null,
 };
 
@@ -110,6 +128,8 @@ const getScopeFromUrl = (url = '') => {
   if (url.startsWith('/admin')) return 'admin';
   if (url.startsWith('/vendor')) return 'vendor';
   if (url.startsWith('/delivery')) return 'delivery';
+  if (url.startsWith('/sanchalak')) return 'sanchalak';
+  if (url.startsWith('/surveyor')) return 'surveyor';
   return 'user';
 };
 
@@ -117,6 +137,8 @@ const getScopeFromPath = (path = window.location.pathname) => {
   if (path.startsWith('/admin')) return 'admin';
   if (path.startsWith('/vendor')) return 'vendor';
   if (path.startsWith('/delivery')) return 'delivery';
+  if (path.startsWith('/sanchalak')) return 'sanchalak';
+  if (path.startsWith('/surveyor')) return 'surveyor';
   return 'user';
 };
 

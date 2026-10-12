@@ -3,6 +3,14 @@ import User from '../models/User.model.js';
 import Vendor from '../models/Vendor.model.js';
 import DeliveryBoy from '../models/DeliveryBoy.model.js';
 import Admin from '../models/Admin.model.js';
+import Sanchalak from '../models/Sanchalak.model.js';
+import Surveyor from '../models/Surveyor.model.js';
+import {
+    getFieldAccountBlockReason,
+    getSurveyorSanchalakBlockReason,
+} from '../services/fieldAccountAuth.service.js';
+
+const FIELD_ACCOUNT_FIELDS = 'status isActive isPhoneVerified rejectionReason';
 
 /**
  * Role-based authorization middleware
@@ -68,6 +76,22 @@ export const enforceAccountStatus = async (req, res, next) => {
             if (!deliveryBoy.isActive) {
                 return next(new ApiError(403, 'Account is deactivated. Contact admin.'));
             }
+            return next();
+        }
+
+        if (role === 'sanchalak') {
+            const sanchalak = await Sanchalak.findById(req.user.id).select(FIELD_ACCOUNT_FIELDS).lean();
+            const reason = getFieldAccountBlockReason(sanchalak, 'Sanchalak');
+            if (reason) return next(new ApiError(reason.status, reason.message));
+            return next();
+        }
+
+        if (role === 'surveyor') {
+            const surveyor = await Surveyor.findById(req.user.id).select(`${FIELD_ACCOUNT_FIELDS} sanchalak`).lean();
+            const reason =
+                getFieldAccountBlockReason(surveyor, 'Surveyor') ||
+                (await getSurveyorSanchalakBlockReason(surveyor.sanchalak));
+            if (reason) return next(new ApiError(reason.status, reason.message));
             return next();
         }
 

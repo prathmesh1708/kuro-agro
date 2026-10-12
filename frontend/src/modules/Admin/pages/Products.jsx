@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   FiPackage,
-  FiDollarSign,
   FiStar,
 } from "react-icons/fi";
 
@@ -19,16 +18,6 @@ const Products = () => {
       shadowColor: "shadow-blue-500/20",
       hoverShadow: "hover:shadow-blue-500/30",
       description: "View and manage all products",
-    },
-    {
-      path: "/admin/products/tax-pricing",
-      label: "Tax & Pricing",
-      icon: FiDollarSign,
-      gradient: "from-orange-500 via-orange-600 to-orange-700",
-      lightGradient: "from-orange-50 via-orange-100/80 to-orange-50",
-      shadowColor: "shadow-orange-500/20",
-      hoverShadow: "hover:shadow-orange-500/30",
-      description: "Manage tax and pricing rules",
     },
     {
       path: "/admin/products/product-ratings",

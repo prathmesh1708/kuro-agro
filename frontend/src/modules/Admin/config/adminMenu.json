@@ -22,7 +22,6 @@
     "route": "/admin/products",
     "children": [
       "Manage Products",
-      "Tax & Pricing",
       "Product Ratings"
     ]
   },
@@ -35,21 +34,12 @@
     ]
   },
   {
-    "title": "Brands",
-    "route": "/admin/brands",
-    "children": [
-      "Manage Brands",
-      "Brand Approvals"
-    ]
-  },
-  {
     "title": "Customers",
     "route": "/admin/customers",
     "children": [
       "View Customers",
       "Addresses",
-      "Transactions",
-      "COD Blacklist"
+      "Transactions"
     ]
   },
   {
@@ -65,6 +55,20 @@
       "Cash Collection",
       "Assign Delivery"
     ]
+  },
+  {
+    "title": "Field Network",
+    "route": "/admin/field-network",
+    "children": [
+      "Sanchalaks",
+      "Surveyors",
+      "Commission"
+    ]
+  },
+  {
+    "title": "Farmers (Kisan)",
+    "route": "/admin/farmers",
+    "children": []
   },
   {
     "title": "Vendors",
@@ -121,18 +125,6 @@
     ]
   },
   {
-    "title": "Analytics & Finance",
-    "route": "/admin/finance",
-    "children": [
-      "Revenue Overview",
-      "Profit & Loss",
-      "Order Trends",
-      "Payment Breakdown",
-      "Tax Reports",
-      "Refund Reports"
-    ]
-  },
-  {
     "title": "Settings",
     "route": "/admin/settings",
     "children": [
@@ -151,14 +143,6 @@
       "Privacy Policy",
       "Refund Policy",
       "Terms & Conditions"
-    ]
-  },
-  {
-    "title": "Firebase",
-    "route": "/admin/firebase",
-    "children": [
-      "Push Config",
-      "Authentication"
     ]
   }
 ]

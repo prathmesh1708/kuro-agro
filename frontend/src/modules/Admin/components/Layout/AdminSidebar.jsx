@@ -7,7 +7,6 @@ import {
   FiRotateCcw,
   FiPackage,
   FiGrid,
-  FiTag,
   FiUsers,
   FiTruck,
   FiImage,
@@ -15,15 +14,14 @@ import {
   FiBell,
   FiMessageCircle,
   FiFileText,
-  FiBarChart2,
   FiSettings,
   FiGlobe,
   FiShield,
-  FiDatabase,
   FiChevronDown,
   FiX,
   FiUser,
   FiStar,
+  FiMapPin,
 } from "react-icons/fi";
 import { useAdminAuthStore } from "../../store/adminStore";
 import adminMenu from "../../config/adminMenu.json";
@@ -35,20 +33,19 @@ const iconMap = {
   "Return Requests": FiRotateCcw,
   Products: FiPackage,
   Categories: FiGrid,
-  Brands: FiTag,
   Customers: FiUsers,
   Reviews: FiStar,
   "Delivery Management": FiTruck,
+  "Field Network": FiMapPin,
+  "Farmers (Kisan)": FiUsers,
   "Offers & Sliders": FiImage,
   Banners: FiImage,
   "Promo Codes": FiPercent,
   Notifications: FiBell,
   "Support Desk": FiMessageCircle,
   Reports: FiFileText,
-  "Analytics & Finance": FiBarChart2,
   Settings: FiSettings,
   Policies: FiShield,
-  Firebase: FiDatabase,
 };
 
 // Helper function to convert child name to route path
@@ -60,16 +57,11 @@ const getChildRoute = (parentRoute, childName) => {
     },
     "/admin/products": {
       "Manage Products": "/admin/products/manage-products",
-      "Tax & Pricing": "/admin/products/tax-pricing",
       "Product Ratings": "/admin/products/product-ratings",
     },
     "/admin/categories": {
       "Manage Categories": "/admin/categories/manage-categories",
       "Category Order": "/admin/categories/category-order",
-    },
-    "/admin/brands": {
-      "Manage Brands": "/admin/brands/manage-brands",
-      "Brand Approvals": "/admin/brands/approvals",
     },
     "/admin/vendors": {
       "Manage Vendors": "/admin/vendors/manage-vendors",
@@ -82,12 +74,16 @@ const getChildRoute = (parentRoute, childName) => {
       "View Customers": "/admin/customers/view-customers",
       Addresses: "/admin/customers/addresses",
       Transactions: "/admin/customers/transactions",
-      "COD Blacklist": "/admin/customers/cod-blacklist",
     },
     "/admin/delivery": {
       "Delivery Boys": "/admin/delivery/delivery-boys",
       "Cash Collection": "/admin/delivery/cash-collection",
       "Assign Delivery": "/admin/delivery/assign-delivery",
+    },
+    "/admin/field-network": {
+      Sanchalaks: "/admin/field-network/sanchalaks",
+      Surveyors: "/admin/field-network/surveyors",
+      Commission: "/admin/field-network/commission",
     },
     "/admin/offers": {
       "Home Sliders": "/admin/offers/home-sliders",
@@ -107,14 +103,6 @@ const getChildRoute = (parentRoute, childName) => {
       "Sales Report": "/admin/reports/sales-report",
       "Inventory Report": "/admin/reports/inventory-report",
     },
-    "/admin/finance": {
-      "Revenue Overview": "/admin/finance/revenue-overview",
-      "Profit & Loss": "/admin/finance/profit-loss",
-      "Order Trends": "/admin/finance/order-trends",
-      "Payment Breakdown": "/admin/finance/payment-breakdown",
-      "Tax Reports": "/admin/finance/tax-reports",
-      "Refund Reports": "/admin/finance/refund-reports",
-    },
     "/admin/settings": {
       General: "/admin/settings/general",
       "Payment & Shipping": "/admin/settings/payment-shipping",
@@ -127,10 +115,6 @@ const getChildRoute = (parentRoute, childName) => {
       "Privacy Policy": "/admin/policies/privacy-policy",
       "Refund Policy": "/admin/policies/refund-policy",
       "Terms & Conditions": "/admin/policies/terms-conditions",
-    },
-    "/admin/firebase": {
-      "Push Config": "/admin/firebase/push-config",
-      Authentication: "/admin/firebase/authentication",
     },
   };
 

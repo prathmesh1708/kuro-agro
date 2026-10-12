@@ -2,6 +2,8 @@ import User from '../models/User.model.js';
 import Vendor from '../models/Vendor.model.js';
 import DeliveryBoy from '../models/DeliveryBoy.model.js';
 import Admin from '../models/Admin.model.js';
+import Sanchalak from '../models/Sanchalak.model.js';
+import Surveyor from '../models/Surveyor.model.js';
 import { sendPushNotification } from '../services/firebaseAdmin.js';
 import ApiError from '../utils/ApiError.js';
 import asyncHandler from '../utils/asyncHandler.js';
@@ -19,6 +21,10 @@ const getModelByRole = (role) => {
         case 'admin':
         case 'superadmin':
             return Admin;
+        case 'sanchalak':
+            return Sanchalak;
+        case 'surveyor':
+            return Surveyor;
         default:
             return null;
     }

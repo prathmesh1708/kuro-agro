@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { FiPlus, FiSearch, FiEdit, FiTrash2, FiEye, FiEyeOff, FiArrowUp, FiArrowDown } from 'react-icons/fi';
+import { FiPlus, FiSearch, FiEdit, FiTrash2, FiEye, FiEyeOff, FiArrowUp, FiArrowDown, FiVideo } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { useBannerStore } from '../../../shared/store/bannerStore';
 import BannerForm from '../components/Banners/BannerForm';
@@ -225,8 +225,17 @@ const Banners = () => {
                     key={banner._id}
                     className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow"
                   >
-                    <div className="relative h-48 bg-gray-100">
-                      {banner.image && (
+                    <div className="relative h-48 bg-gray-900 overflow-hidden">
+                      {banner.mediaType === "video" || banner.video ? (
+                        <video
+                          src={banner.video || banner.image}
+                          className="w-full h-full object-cover"
+                          muted
+                          loop
+                          autoPlay
+                          playsInline
+                        />
+                      ) : banner.image ? (
                         <img
                           src={banner.image}
                           alt={banner.title}
@@ -235,8 +244,18 @@ const Banners = () => {
                             e.target.style.display = 'none';
                           }}
                         />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 text-xs">
+                          No Media
+                        </div>
                       )}
-                      <div className="absolute top-2 right-2">
+                      <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                        {(banner.mediaType === "video" || banner.video) && (
+                          <Badge variant="warning" className="flex items-center gap-1 bg-amber-500/90 text-white">
+                            <FiVideo className="text-xs" />
+                            Video
+                          </Badge>
+                        )}
                         <Badge variant={banner.isActive ? 'success' : 'error'}>
                           {banner.isActive ? 'Active' : 'Inactive'}
                         </Badge>

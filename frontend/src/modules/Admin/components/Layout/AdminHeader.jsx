@@ -50,6 +50,10 @@ const AdminHeader = ({ onMenuClick }) => {
       content: 'Content',
       settings: 'Settings',
       more: 'More',
+      sanchalaks: 'Sanchalaks',
+      surveyors: 'Surveyors',
+      farmers: 'Farmers (Kisan)',
+      commission: 'Field Commission',
     };
     return pageNames[path] || path.charAt(0).toUpperCase() + path.slice(1);
   };

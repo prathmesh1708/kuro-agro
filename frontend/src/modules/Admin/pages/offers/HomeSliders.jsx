@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { FiPlus, FiEdit, FiTrash2, FiUpload } from "react-icons/fi";
+import { FiPlus, FiEdit, FiTrash2, FiUpload, FiVideo } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import DataTable from "../../components/DataTable";
 import ConfirmModal from "../../components/ConfirmModal";
 import AnimatedSelect from "../../components/AnimatedSelect";
 import { useBannerStore } from "../../../../shared/store/bannerStore";
 import toast from "react-hot-toast";
-import { uploadAdminImage } from "../../services/adminService";
+import { uploadAdminImage, uploadAdminVideo } from "../../services/adminService";
 
 const HomeSliders = () => {
   const location = useLocation();
@@ -32,6 +32,7 @@ const HomeSliders = () => {
   const [editingSlider, setEditingSlider] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null });
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
 
   useEffect(() => {
     initialize();
@@ -41,6 +42,8 @@ const HomeSliders = () => {
     const payload = {
       title: sliderData.title,
       image: sliderData.image,
+      video: sliderData.video,
+      mediaType: sliderData.mediaType || (sliderData.video ? "video" : "image"),
       link: sliderData.link,
       order: sliderData.order,
       isActive: sliderData.status === "active",
@@ -89,7 +92,7 @@ const HomeSliders = () => {
         return;
       }
       setEditingSlider((prev) => ({ ...prev, image: imageUrl }));
-      toast.success("Image uploaded");
+      toast.success("Image uploaded successfully");
     } catch (error) {
       // Error toast handled by api interceptor
     } finally {
@@ -98,21 +101,60 @@ const HomeSliders = () => {
     }
   };
 
+  const handleSliderVideoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingSlider) return;
+
+    if (!file.type?.startsWith("video/")) {
+      toast.error("Please select a valid video file (MP4, WebM, MOV)");
+      return;
+    }
+
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error("Video size cannot exceed 50MB");
+      return;
+    }
+
+    setIsUploadingVideo(true);
+    try {
+      const response = await uploadAdminVideo(file, "banners/videos");
+      const videoUrl = response?.data?.url;
+      if (!videoUrl) {
+        toast.error("Video upload failed");
+        return;
+      }
+      setEditingSlider((prev) => ({ ...prev, video: videoUrl, mediaType: "video" }));
+      toast.success("Video uploaded successfully");
+    } catch (error) {
+      // Error toast handled by api interceptor
+    } finally {
+      setIsUploadingVideo(false);
+      e.target.value = "";
+    }
+  };
+
   const columns = [
     {
       key: "image",
-      label: "Image",
+      label: "Media",
       sortable: false,
       render: (value, row) => (
         <div className="flex items-center gap-3">
-          <img
-            src={value}
-            alt={row.title}
-            className="w-16 h-16 object-cover rounded-lg"
-            onError={(e) => {
-              e.target.src = "https://via.placeholder.com/64x64?text=Image";
-            }}
-          />
+          {row.mediaType === "video" || row.video ? (
+            <div className="w-16 h-16 rounded-lg overflow-hidden bg-black flex items-center justify-center relative">
+              <video src={row.video || value} className="w-full h-full object-cover" muted playsInline />
+              <FiVideo className="absolute text-white text-xs bg-black/60 p-0.5 rounded bottom-1 right-1" />
+            </div>
+          ) : (
+            <img
+              src={value}
+              alt={row.title}
+              className="w-16 h-16 object-cover rounded-lg"
+              onError={(e) => {
+                e.target.src = "https://via.placeholder.com/64x64?text=Image";
+              }}
+            />
+          )}
           <span className="font-medium text-gray-800">{row.title}</span>
         </div>
       ),
@@ -297,8 +339,10 @@ const HomeSliders = () => {
                       type: formData.get("type"),
                       title: formData.get("title"),
                       image: formData.get("image"),
+                      video: formData.get("video"),
+                      mediaType: formData.get("video") ? "video" : "image",
                       link: formData.get("link"),
-                      order: parseInt(formData.get("order"), 10),
+                      order: parseInt(formData.get("order"), 10) || 1,
                       status: formData.get("status"),
                     });
                   }}
@@ -326,31 +370,62 @@ const HomeSliders = () => {
                     required
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
-                  <input
-                    type="text"
-                    name="image"
-                    value={editingSlider.image || ""}
-                    onChange={(e) =>
-                      setEditingSlider({
-                        ...editingSlider,
-                        image: e.target.value,
-                      })
-                    }
-                    placeholder="Image URL"
-                    required
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  />
-                  <label className={`inline-flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg transition-colors text-sm font-semibold ${isUploadingImage ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:bg-gray-200"}`}>
-                    <FiUpload />
-                    {isUploadingImage ? "Uploading..." : "Upload to Cloudinary"}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Image URL</label>
                     <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleSliderImageUpload}
-                      className="hidden"
-                      disabled={isUploadingImage}
+                      type="text"
+                      name="image"
+                      value={editingSlider.image || ""}
+                      onChange={(e) =>
+                        setEditingSlider({
+                          ...editingSlider,
+                          image: e.target.value,
+                        })
+                      }
+                      placeholder="Image URL"
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
                     />
-                  </label>
+                    <label className={`mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg transition-colors text-xs font-semibold ${isUploadingImage ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:bg-gray-200"}`}>
+                      <FiUpload />
+                      {isUploadingImage ? "Uploading Image..." : "Upload Image to Cloudinary"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleSliderImageUpload}
+                        className="hidden"
+                        disabled={isUploadingImage}
+                      />
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Video URL (Optional)</label>
+                    <input
+                      type="text"
+                      name="video"
+                      value={editingSlider.video || ""}
+                      onChange={(e) =>
+                        setEditingSlider({
+                          ...editingSlider,
+                          video: e.target.value,
+                          mediaType: e.target.value ? "video" : "image",
+                        })
+                      }
+                      placeholder="Video URL (e.g. Cloudinary mp4 URL)"
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                    />
+                    <label className={`mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg transition-colors text-xs font-semibold ${isUploadingVideo ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:bg-blue-100"}`}>
+                      <FiVideo />
+                      {isUploadingVideo ? "Uploading Video..." : "Upload Video to Cloudinary"}
+                      <input
+                        type="file"
+                        accept="video/mp4,video/webm,video/quicktime"
+                        onChange={handleSliderVideoUpload}
+                        className="hidden"
+                        disabled={isUploadingVideo}
+                      />
+                    </label>
+                  </div>
                   <input
                     type="text"
                     name="link"

@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { FiX, FiSave, FiUpload } from "react-icons/fi";
+import { FiX, FiSave, FiUpload, FiVideo, FiImage, FiTrash2 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useBannerStore } from "../../../../shared/store/bannerStore";
 import AnimatedSelect from "../AnimatedSelect";
 import toast from "react-hot-toast";
 import Button from "../Button";
-import { uploadAdminImage } from "../../services/adminService";
+import { uploadAdminImage, uploadAdminVideo } from "../../services/adminService";
 
 const BannerForm = ({ banner, onClose, onSave }) => {
   const location = useLocation();
@@ -14,13 +14,16 @@ const BannerForm = ({ banner, onClose, onSave }) => {
   const { createBanner, updateBanner } = useBannerStore();
   const isEdit = !!banner;
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
 
   const [formData, setFormData] = useState({
     type: "hero",
+    mediaType: "image",
     title: "",
     subtitle: "",
     description: "",
     image: "",
+    video: "",
     link: "",
     order: 1,
     isActive: true,
@@ -30,12 +33,15 @@ const BannerForm = ({ banner, onClose, onSave }) => {
 
   useEffect(() => {
     if (banner) {
+      const initialMediaType = banner.mediaType || (banner.video ? "video" : "image");
       setFormData({
         type: banner.type || "hero",
+        mediaType: initialMediaType,
         title: banner.title || "",
         subtitle: banner.subtitle || "",
         description: banner.description || "",
         image: banner.image || "",
+        video: banner.video || "",
         link: banner.link || "",
         order: banner.order || 1,
         isActive: banner.isActive !== undefined ? banner.isActive : true,
@@ -71,7 +77,7 @@ const BannerForm = ({ banner, onClose, onSave }) => {
         return;
       }
       setFormData((prev) => ({ ...prev, image: url }));
-      toast.success("Image uploaded");
+      toast.success("Image uploaded successfully");
     } catch (error) {
       // Error toast handled by api interceptor
     } finally {
@@ -80,12 +86,57 @@ const BannerForm = ({ banner, onClose, onSave }) => {
     }
   };
 
+  const handleVideoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validVideoTypes = ["video/mp4", "video/webm", "video/quicktime"];
+    if (!validVideoTypes.includes(file.type) && !file.type?.startsWith("video/")) {
+      toast.error("Please select a valid video file (MP4, WebM, MOV)");
+      return;
+    }
+
+    // 50MB max file size check
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error("Video file size cannot exceed 50MB");
+      return;
+    }
+
+    setIsUploadingVideo(true);
+    try {
+      const response = await uploadAdminVideo(file, "banners/videos");
+      const url = response?.data?.url;
+      if (!url) {
+        toast.error("Video upload failed");
+        return;
+      }
+      setFormData((prev) => ({
+        ...prev,
+        video: url,
+        mediaType: "video",
+      }));
+      toast.success("Video uploaded successfully");
+    } catch (error) {
+      // Error toast handled by api interceptor
+    } finally {
+      setIsUploadingVideo(false);
+      e.target.value = "";
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.image.trim()) {
-      toast.error("Banner image is required");
-      return;
+    if (formData.mediaType === "video") {
+      if (!formData.video?.trim() && !formData.image?.trim()) {
+        toast.error("Please upload or provide a video URL");
+        return;
+      }
+    } else {
+      if (!formData.image?.trim() && !formData.video?.trim()) {
+        toast.error("Banner image is required");
+        return;
+      }
     }
 
     if (formData.startDate && formData.endDate) {
@@ -104,7 +155,7 @@ const BannerForm = ({ banner, onClose, onSave }) => {
         endDate: formData.endDate
           ? new Date(formData.endDate).toISOString()
           : null,
-        order: parseInt(formData.order),
+        order: parseInt(formData.order) || 1,
       };
 
       if (isEdit) {
@@ -258,50 +309,175 @@ const BannerForm = ({ banner, onClose, onSave }) => {
                 </div>
               </div>
 
-              {/* Image */}
+              {/* Media Settings (Image or Video) */}
               <div>
-                <h3 className="text-lg font-bold text-gray-800 mb-4">
-                  Banner Image
-                </h3>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Image URL <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="image"
-                    value={formData.image}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="data/banners/banner.png"
-                  />
-                  <div className="mt-3">
-                    <label className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer text-sm font-semibold">
-                      <FiUpload />
-                      {isUploadingImage ? "Uploading..." : "Upload to Cloudinary"}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                        disabled={isUploadingImage}
-                      />
-                    </label>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-gray-800">
+                    Banner Media
+                  </h3>
+                  {/* Media Type Segmented Control */}
+                  <div className="flex items-center bg-gray-100 p-1 rounded-lg border border-gray-200">
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, mediaType: "image" }))}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                        formData.mediaType === "image"
+                          ? "bg-white text-primary-700 shadow-sm"
+                          : "text-gray-600 hover:text-gray-900"
+                      }`}
+                    >
+                      <FiImage />
+                      Image
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, mediaType: "video" }))}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                        formData.mediaType === "video"
+                          ? "bg-white text-primary-700 shadow-sm"
+                          : "text-gray-600 hover:text-gray-900"
+                      }`}
+                    >
+                      <FiVideo />
+                      Video
+                    </button>
                   </div>
-                  {formData.image && (
-                    <div className="mt-4">
-                      <img
-                        src={formData.image}
-                        alt="Preview"
-                        className="w-full h-48 object-cover rounded-lg border border-gray-200"
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                        }}
-                      />
-                    </div>
-                  )}
                 </div>
+
+                {formData.mediaType === "video" ? (
+                  <div className="space-y-4">
+                    {/* Video Upload & URL */}
+                    <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Banner Video <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="video"
+                        value={formData.video}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                        placeholder="https://res.cloudinary.com/.../banner.mp4 or data/banners/video.mp4"
+                      />
+                      <div className="mt-3 flex items-center gap-3 flex-wrap">
+                        <label className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors cursor-pointer text-sm font-semibold shadow-sm">
+                          <FiUpload />
+                          {isUploadingVideo ? "Uploading Video..." : "Upload Video to Cloudinary"}
+                          <input
+                            type="file"
+                            accept="video/mp4,video/webm,video/quicktime"
+                            onChange={handleVideoUpload}
+                            className="hidden"
+                            disabled={isUploadingVideo}
+                          />
+                        </label>
+                        <span className="text-xs text-gray-500">
+                          Supports MP4, WebM, MOV (Max 50MB)
+                        </span>
+                      </div>
+
+                      {/* Video Preview */}
+                      {formData.video && (
+                        <div className="mt-4 relative rounded-lg overflow-hidden border border-gray-200 bg-black/5">
+                          <video
+                            src={formData.video}
+                            controls
+                            muted
+                            playsInline
+                            className="w-full max-h-56 object-contain rounded-lg"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setFormData((prev) => ({ ...prev, video: "" }))}
+                            className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full hover:bg-red-600 transition-colors text-xs"
+                            title="Remove Video"
+                          >
+                            <FiTrash2 />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Optional Poster / Thumbnail Image */}
+                    <div className="pt-2">
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">
+                        Video Poster / Thumbnail <span className="text-xs font-normal text-gray-500">(Optional fallback image)</span>
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          name="image"
+                          value={formData.image}
+                          onChange={handleChange}
+                          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                          placeholder="Image thumbnail URL (optional)"
+                        />
+                        <label className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer text-xs font-semibold whitespace-nowrap">
+                          <FiUpload />
+                          {isUploadingImage ? "..." : "Upload Image"}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                            disabled={isUploadingImage}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Image URL <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="image"
+                      value={formData.image}
+                      onChange={handleChange}
+                      required={formData.mediaType === "image"}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                      placeholder="data/banners/banner.png or https://..."
+                    />
+                    <div className="mt-3 flex items-center gap-3 flex-wrap">
+                      <label className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer text-sm font-semibold">
+                        <FiUpload />
+                        {isUploadingImage ? "Uploading..." : "Upload to Cloudinary"}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                          disabled={isUploadingImage}
+                        />
+                      </label>
+                      <span className="text-xs text-gray-500">
+                        Supports JPEG, PNG, WebP, GIF (Max 5MB)
+                      </span>
+                    </div>
+                    {formData.image && (
+                      <div className="mt-4 relative">
+                        <img
+                          src={formData.image}
+                          alt="Preview"
+                          className="w-full h-48 object-cover rounded-lg border border-gray-200"
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setFormData((prev) => ({ ...prev, image: "" }))}
+                          className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full hover:bg-red-600 transition-colors text-xs"
+                          title="Remove Image"
+                        >
+                          <FiTrash2 />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Link */}

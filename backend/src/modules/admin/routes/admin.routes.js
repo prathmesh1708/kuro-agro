@@ -17,6 +17,8 @@ import * as settingsController from '../controllers/settings.controller.js';
 import * as payoutController from '../controllers/payout.controller.js';
 import * as gstController from '../controllers/gst.controller.js';
 import * as shipmentController from '../controllers/shipment.controller.js';
+import * as fieldNetworkController from '../controllers/fieldNetwork.controller.js';
+import * as farmerController from '../controllers/farmer.controller.js';
 import codRoutes from './cod.routes.js';
 import { authenticate } from '../../../middlewares/authenticate.js';
 import { authorize, enforceAccountStatus } from '../../../middlewares/authorize.js';
@@ -69,6 +71,18 @@ import {
     vendorCommissionUpdateSchema,
     vendorCommissionsQuerySchema,
 } from '../validators/vendor.validator.js';
+import {
+    fieldAccountIdParamSchema,
+    sanchalakListQuerySchema,
+    surveyorListQuerySchema,
+    fieldAccountStatusSchema,
+    commissionRatesSchema,
+} from '../validators/fieldNetwork.validator.js';
+import {
+    registrationIdParamSchema,
+    adminRegistrationListQuerySchema,
+    registrationReviewSchema,
+} from '../../../validators/farmerRegistration.validator.js';
 import {
     marketingIdParamSchema,
     campaignListQuerySchema,
@@ -180,6 +194,20 @@ router.delete('/delivery-boys/:id', ...adminAuth, validate(deliveryBoyIdParamSch
 router.patch('/delivery-boys/:id/status', ...adminAuth, validate(deliveryBoyIdParamSchema, 'params'), validate(updateDeliveryStatusSchema), deliveryController.updateDeliveryBoyStatus);
 router.patch('/delivery-boys/:id/application-status', ...adminAuth, validate(deliveryBoyIdParamSchema, 'params'), validate(updateDeliveryApplicationStatusSchema), deliveryController.updateDeliveryBoyApplicationStatus);
 router.post('/delivery-boys/:id/settle-cash', ...adminAuth, validate(deliveryBoyIdParamSchema, 'params'), validate(settleCashSchema), deliveryController.settleCash);
+
+// ─── Field Network (Sanchalaks & Surveyors) ───────────────────────────────────
+router.get('/sanchalaks', ...adminAuth, validate(sanchalakListQuerySchema, 'query'), fieldNetworkController.getAllSanchalaks);
+router.get('/sanchalaks/:id', ...adminAuth, validate(fieldAccountIdParamSchema, 'params'), fieldNetworkController.getSanchalakById);
+router.patch('/sanchalaks/:id/status', ...adminAuth, validate(fieldAccountIdParamSchema, 'params'), validate(fieldAccountStatusSchema), fieldNetworkController.updateSanchalakStatus);
+router.get('/surveyors', ...adminAuth, validate(surveyorListQuerySchema, 'query'), fieldNetworkController.getAllSurveyors);
+router.get('/field-commission', ...adminAuth, fieldNetworkController.getCommissionRates);
+router.put('/field-commission', ...adminAuth, validate(commissionRatesSchema), fieldNetworkController.updateCommissionRates);
+router.patch('/surveyors/:id/status', ...adminAuth, validate(fieldAccountIdParamSchema, 'params'), validate(fieldAccountStatusSchema), fieldNetworkController.updateSurveyorStatus);
+
+// ─── Farmers (Kisan registrations by surveyors) ───────────────────────────────
+router.get('/farmers', ...adminAuth, validate(adminRegistrationListQuerySchema, 'query'), farmerController.getAllFarmers);
+router.get('/farmers/:id', ...adminAuth, validate(registrationIdParamSchema, 'params'), farmerController.getFarmerById);
+router.patch('/farmers/:id/review', ...adminAuth, validate(registrationIdParamSchema, 'params'), validate(registrationReviewSchema), farmerController.reviewFarmer);
 
 // ─── Return Requests ──────────────────────────────────────────────────────────
 router.get('/return-requests', ...adminAuth, returnController.getAllReturnRequests);

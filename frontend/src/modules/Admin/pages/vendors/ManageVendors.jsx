@@ -100,11 +100,7 @@ const ManageVendors = () => {
       );
     }
 
-    if (activeTab === "gst") {
-      filtered = filtered.filter((vendor) => vendor.businessType === "gst");
-    } else if (activeTab === "non-gst") {
-      filtered = filtered.filter((vendor) => vendor.businessType === "non-gst");
-    } else if (activeTab === "pending") {
+    if (activeTab === "pending") {
       filtered = filtered.filter((vendor) => vendor.status === "pending");
     } else if (activeTab === "approved") {
       filtered = filtered.filter((vendor) => vendor.status === "approved");
@@ -117,8 +113,6 @@ const ManageVendors = () => {
 
   const tabs = [
     { id: "all", label: "All Sellers" },
-    { id: "gst", label: "GST Sellers" },
-    { id: "non-gst", label: "Non-GST Sellers" },
     { id: "pending", label: "Pending Verification" },
     { id: "approved", label: "Verified Sellers" },
     { id: "rejected", label: "Rejected Sellers" }
@@ -429,8 +423,6 @@ const ManageVendors = () => {
               {tabs.map((tab) => {
                 const count = vendors.filter((v) => {
                   if (tab.id === "all") return true;
-                  if (tab.id === "gst") return v.businessType === "gst";
-                  if (tab.id === "non-gst") return v.businessType === "non-gst";
                   if (tab.id === "pending") return v.status === "pending";
                   if (tab.id === "approved") return v.status === "approved";
                   if (tab.id === "rejected") return v.status === "rejected" || v.status === "action_required";
@@ -483,7 +475,6 @@ const ManageVendors = () => {
                       accessor: (row) => row.storeName || row.name,
                     },
                     { label: "Email", accessor: (row) => row.email },
-                    { label: "Business Type", accessor: (row) => row.businessType || "non-gst" },
                     { label: "Status", accessor: (row) => row.status },
                     {
                       label: "Commission Rate",

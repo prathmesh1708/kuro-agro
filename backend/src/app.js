@@ -12,6 +12,8 @@ import userRoutes from './modules/user/routes/user.routes.js';
 import adminRoutes from './modules/admin/routes/admin.routes.js';
 import vendorRoutes from './modules/vendor/routes/vendor.routes.js';
 import deliveryRoutes from './modules/delivery/routes/delivery.routes.js';
+import sanchalakRoutes from './modules/sanchalak/routes/sanchalak.routes.js';
+import surveyorRoutes from './modules/surveyor/routes/surveyor.routes.js';
 import fcmTokenRoutes from './routes/fcmToken.routes.js';
 import deliveryWebhookRoutes from './routes/deliveryWebhookRoutes.js';
 import { initializeFirebase } from './services/firebaseAdmin.js';
@@ -100,6 +102,8 @@ app.use('/api/user', userRoutes);         // Customer: auth, addresses, wishlist
 app.use('/api/admin', adminRoutes);       // Admin: auth, vendors, orders, catalog, analytics
 app.use('/api/vendor', vendorRoutes);     // Vendor: auth, products, orders, earnings
 app.use('/api/delivery', deliveryRoutes); // Delivery: auth, orders
+app.use('/api/sanchalak', sanchalakRoutes); // Sanchalak (Kisan Vyapar Kendra): auth
+app.use('/api/surveyor', surveyorRoutes);   // Surveyor: auth
 app.use('/api/fcm-tokens', fcmTokenRoutes); // Push Notifications token management
 
 // ─── Error Handling ──────────────────────────────────────────────────────────

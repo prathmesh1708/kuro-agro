@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { FiPhone, FiLock, FiEye, FiEyeOff, FiArrowRight, FiShield, FiArrowLeft } from 'react-icons/fi';
+import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
+import { FiPhone, FiLock, FiEye, FiEyeOff, FiArrowLeft, FiUser } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../../../shared/store/authStore';
 import { useCartStore } from '../../../shared/store/useStore';
@@ -14,15 +14,34 @@ import toast from 'react-hot-toast';
 import MobileLayout from '../components/Layout/MobileLayout';
 import PageTransition from '../../../shared/components/PageTransition';
 import brandLogo from '../../../assets/kuro-agro-logo.png';
+import RoleSelect from '../../../shared/components/FieldAuth/RoleSelect';
+import { ROLE_CONFIG, resolveRole, roleSearch } from '../../../shared/components/FieldAuth/roleConfig';
+import { useSanchalakAuthStore } from '../../Sanchalak/store/sanchalakStore';
+import { useSurveyorAuthStore } from '../../Surveyor/store/surveyorStore';
 
 const MobileLogin = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isLoading } = useAuthStore();
-  
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { login, isLoading: isKisanLoading } = useAuthStore();
+  const sanchalakStore = useSanchalakAuthStore();
+  const surveyorStore = useSurveyorAuthStore();
+
+  const role = resolveRole(searchParams.get('role'));
+  const roleConfig = ROLE_CONFIG[role];
+  const fieldStore = role === 'sanchalak' ? sanchalakStore : role === 'surveyor' ? surveyorStore : null;
+  const isLoading = fieldStore ? fieldStore.isLoading : isKisanLoading;
+
   const [phone, setPhone] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleRoleChange = (nextRole) => {
+    setSearchParams(nextRole === 'kisan' ? {} : { role: nextRole }, { replace: true });
+    setPassword('');
+    setShowPassword(false);
+  };
 
   const storedFrom = getPostLoginRedirect();
   const from = location.state?.from?.pathname || storedFrom || '/home';
@@ -71,6 +90,26 @@ const MobileLogin = () => {
     }
   };
 
+  // Surveyor / Sanchalak: login ID (SAN-/SUR- code), email or phone + password
+  const handleFieldLogin = async (e) => {
+    e.preventDefault();
+    if (!identifier.trim() || !password) {
+      toast.error('Please enter your login ID and password.');
+      return;
+    }
+
+    try {
+      await fieldStore.login(identifier.trim(), password);
+      toast.success('Login successful!');
+      navigate(roleConfig.home, { replace: true });
+    } catch (error) {
+      const unverified = error?.response?.data?.errors?.find((item) => item.code === 'PHONE_NOT_VERIFIED');
+      if (unverified) {
+        navigate(`/register${roleSearch(role)}`, { state: { verifyPhone: unverified.phone } });
+      }
+    }
+  };
+
   return (
     <PageTransition>
       <MobileLayout showBottomNav={false} showCartBar={false}>
@@ -95,11 +134,69 @@ const MobileLogin = () => {
               {/* Header */}
               <div className="text-center mb-8">
                 <img src={brandLogo} alt="KuroAgro" className="h-20 w-auto object-contain mx-auto mb-4" />
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-                <p className="text-sm text-gray-600">Log in with your phone number and password</p>
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">{roleConfig.loginTitle}</h1>
+                <p className="text-sm text-gray-600">{roleConfig.loginSubtitle}</p>
               </div>
 
-              {/* Form: Phone + Password */}
+              <RoleSelect value={role} onChange={handleRoleChange} />
+
+              {fieldStore ? (
+                <form onSubmit={handleFieldLogin} className="space-y-5">
+                  <div>
+                    <label htmlFor="field-identifier" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Login ID, Email or Phone
+                    </label>
+                    <div className="relative">
+                      <FiUser className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <input
+                        id="field-identifier"
+                        type="text"
+                        autoComplete="username"
+                        value={identifier}
+                        onChange={(e) => setIdentifier(e.target.value)}
+                        required
+                        className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 ${roleConfig.theme.focus} focus:outline-none transition-colors text-base font-medium`}
+                        placeholder={`${roleConfig.codeExample}, email or phone`}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="field-password" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Password
+                    </label>
+                    <div className="relative">
+                      <FiLock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <input
+                        id="field-password"
+                        type={showPassword ? 'text' : 'password'}
+                        autoComplete="current-password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className={`w-full pl-12 pr-12 py-3 rounded-xl border-2 border-gray-200 ${roleConfig.theme.focus} focus:outline-none transition-colors text-base font-medium`}
+                        placeholder="Enter your password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isLoading || !identifier.trim() || !password}
+                    className={`w-full text-white py-3.5 rounded-xl font-semibold text-base transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${roleConfig.theme.button}`}
+                  >
+                    {isLoading ? 'Logging In...' : `Log In as ${roleConfig.label}`}
+                  </button>
+                </form>
+              ) : (
               <form onSubmit={handlePasswordLogin} className="space-y-5">
                 {/* Mobile Number */}
                 <div>
@@ -166,16 +263,17 @@ const MobileLogin = () => {
                   {isLoading ? 'Logging In...' : 'Log In'}
                 </button>
               </form>
+              )}
 
               {/* Sign Up Link */}
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-600">
                   Don't have an account?{' '}
                   <Link
-                    to="/register"
-                    className="text-primary-600 hover:text-primary-700 font-semibold"
+                    to={`/register${roleSearch(role)}`}
+                    className={`${roleConfig.theme.link} font-semibold`}
                   >
-                    Sign Up
+                    {role === 'kisan' ? 'Sign Up' : `Register as ${roleConfig.label}`}
                   </Link>
                 </p>
               </div>

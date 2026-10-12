@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { FiMail, FiLock, FiEye, FiEyeOff, FiUser, FiPhone } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../../../shared/store/authStore';
@@ -9,9 +9,17 @@ import toast from 'react-hot-toast';
 import MobileLayout from "../components/Layout/MobileLayout";
 import PageTransition from '../../../shared/components/PageTransition';
 import brandLogo from '../../../assets/kuro-agro-logo.png';
+import RoleSelect from '../../../shared/components/FieldAuth/RoleSelect';
+import FieldRegisterForm from '../../../shared/components/FieldAuth/FieldRegisterForm';
+import { ROLE_CONFIG, resolveRole } from '../../../shared/components/FieldAuth/roleConfig';
 
 const MobileRegister = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const role = resolveRole(searchParams.get('role'));
+  const roleConfig = ROLE_CONFIG[role];
+  const verifyPhone = location.state?.verifyPhone || '';
   const { register: registerUser, isLoading } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
 
@@ -56,10 +64,22 @@ const MobileRegister = () => {
               {/* Header */}
               <div className="text-center mb-8">
                 <img src={brandLogo} alt="KuroAgro" className="h-20 w-auto object-contain mx-auto mb-4" />
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">Create Account</h1>
-                <p className="text-sm text-gray-600">Sign up to get started with KuroAgro</p>
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">{roleConfig.registerTitle}</h1>
+                <p className="text-sm text-gray-600">{roleConfig.registerSubtitle}</p>
               </div>
 
+              {!verifyPhone && (
+                <RoleSelect
+                  label="Register as"
+                  value={role}
+                  onChange={(nextRole) => setSearchParams(nextRole === 'kisan' ? {} : { role: nextRole }, { replace: true })}
+                />
+              )}
+
+              {role !== 'kisan' ? (
+                <FieldRegisterForm key={role} role={role} initialPhone={verifyPhone} />
+              ) : (
+              <>
               {/* Register Form */}
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 {/* First Name */}
@@ -239,6 +259,8 @@ const MobileRegister = () => {
                   </Link>
                 </p>
               </div>
+              </>
+              )}
             </div>
           </motion.div>
         </div>

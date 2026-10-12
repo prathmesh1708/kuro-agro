@@ -71,6 +71,7 @@ const AnimatedBanner = ({ banners = null }) => {
           link: resolveBannerLink(banner),
           icon: banner.icon || FiTag,
           heroImage: banner.image || banner.heroImage || "",
+          video: banner.video || "",
         }))
       : [];
 
@@ -145,22 +146,41 @@ const AnimatedBanner = ({ banners = null }) => {
                     />
                   ))}
 
-                  {/* Foreground: product photo */}
-                  {banner.heroImage && (
+                  {/* Foreground: product photo or video */}
+                  {(banner.video || banner.heroImage) && (
                     <div className="absolute right-3 md:right-[5%] top-1/2 -translate-y-1/2">
-                      <motion.img
-                        src={banner.heroImage}
-                        alt=""
-                        className="w-24 h-24 md:w-28 md:h-28 rounded-2xl object-cover ring-2 ring-gold-300 shadow-xl"
-                        initial={{ opacity: 0, x: 60, scale: 0.8 }}
-                        animate={{ opacity: 1, x: 0, scale: 1, y: [0, -4, 0] }}
-                        transition={{
-                          opacity: { duration: 0.4, delay: 0.2 },
-                          x: { type: "spring", stiffness: 80, damping: 12, delay: 0.2 },
-                          scale: { type: "spring", stiffness: 80, damping: 12, delay: 0.2 },
-                          y: { duration: 4, repeat: Infinity, ease: "easeInOut" },
-                        }}
-                      />
+                      {banner.video || banner.heroImage?.match?.(/\.(mp4|webm|mov)$/i) ? (
+                        <motion.video
+                          src={banner.video || banner.heroImage}
+                          autoPlay
+                          muted
+                          loop
+                          playsInline
+                          className="w-24 h-24 md:w-28 md:h-28 rounded-2xl object-cover ring-2 ring-gold-300 shadow-xl"
+                          initial={{ opacity: 0, x: 60, scale: 0.8 }}
+                          animate={{ opacity: 1, x: 0, scale: 1, y: [0, -4, 0] }}
+                          transition={{
+                            opacity: { duration: 0.4, delay: 0.2 },
+                            x: { type: "spring", stiffness: 80, damping: 12, delay: 0.2 },
+                            scale: { type: "spring", stiffness: 80, damping: 12, delay: 0.2 },
+                            y: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+                          }}
+                        />
+                      ) : (
+                        <motion.img
+                          src={banner.heroImage}
+                          alt=""
+                          className="w-24 h-24 md:w-28 md:h-28 rounded-2xl object-cover ring-2 ring-gold-300 shadow-xl"
+                          initial={{ opacity: 0, x: 60, scale: 0.8 }}
+                          animate={{ opacity: 1, x: 0, scale: 1, y: [0, -4, 0] }}
+                          transition={{
+                            opacity: { duration: 0.4, delay: 0.2 },
+                            x: { type: "spring", stiffness: 80, damping: 12, delay: 0.2 },
+                            scale: { type: "spring", stiffness: 80, damping: 12, delay: 0.2 },
+                            y: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+                          }}
+                        />
+                      )}
                     </div>
                   )}
                 </div>

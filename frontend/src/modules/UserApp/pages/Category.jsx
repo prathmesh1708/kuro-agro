@@ -260,14 +260,15 @@ const MobileCategory = () => {
       <MobileLayout showBottomNav={true} showCartBar={true}>
         <div className="w-full pb-24">
           {/* Header */}
-          <div className="px-4 py-4 bg-primary-50 border-b border-primary-100">
-            <div className="flex items-center gap-3 mb-4">
+          <div className="px-3 sm:px-4 py-3 bg-primary-50 border-b border-primary-100 sticky top-0 z-30">
+            <div className="flex items-center gap-2.5 sm:gap-3">
               <button
                 onClick={() => navigate(-1)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
+                aria-label="Go Back">
                 <FiArrowLeft className="text-xl text-gray-700" />
               </button>
-              <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-200/60 shadow-sm">
                 <LazyImage
                   src={category.image}
                   alt={category.name}
@@ -277,34 +278,16 @@ const MobileCategory = () => {
                   }}
                 />
               </div>
-              <div className="flex-1">
-                <h1 className="text-xl font-bold text-gray-800">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-base sm:text-lg font-bold text-gray-900 truncate">
                   {category.name}
                 </h1>
-                <div className="relative mt-1">
-                  <FiSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs" />
-                  <input
-                    type="text"
-                    placeholder="Search in category..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-8 pr-10 py-1.5 bg-gray-100 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-primary-500"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery("")}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 p-1 hover:bg-gray-200 rounded-full transition-colors"
-                    >
-                      <FiX className="text-xs" />
-                    </button>
-                  )}
-                </div>
-                <p className="text-[10px] text-gray-500 mt-1">
+                <p className="text-[11px] sm:text-xs text-gray-500 font-medium">
                   {categoryProducts.length} product
                   {categoryProducts.length !== 1 ? "s" : ""} available
                 </p>
               </div>
-              <div className="flex flex-col items-end gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                 {/* View Toggle Buttons */}
                 <div className="flex items-center bg-gray-100 rounded-lg p-1">
                   <button
@@ -312,25 +295,28 @@ const MobileCategory = () => {
                     className={`p-1.5 rounded transition-colors ${viewMode === "list"
                       ? "bg-white text-primary-600 shadow-sm"
                       : "text-gray-600"
-                      }`}>
-                    <FiList className="text-lg" />
+                      }`}
+                    title="List View">
+                    <FiList className="text-base sm:text-lg" />
                   </button>
                   <button
                     onClick={() => setViewMode("grid")}
                     className={`p-1.5 rounded transition-colors ${viewMode === "grid"
                       ? "bg-white text-primary-600 shadow-sm"
                       : "text-gray-600"
-                      }`}>
-                    <FiGrid className="text-lg" />
+                      }`}
+                    title="Grid View">
+                    <FiGrid className="text-base sm:text-lg" />
                   </button>
                 </div>
                 <div ref={filterButtonRef} className="relative">
                   <button
                     onClick={() => setShowFilters(!showFilters)}
-                    className={`p-2.5 glass-card rounded-xl hover:bg-white/80 transition-colors ${showFilters ? "bg-white/80" : ""
-                      }`}>
+                    className={`p-2 sm:p-2.5 glass-card rounded-xl hover:bg-white/80 transition-colors ${showFilters ? "bg-white/80" : ""
+                      }`}
+                    title="Filter">
                     <FiFilter
-                      className={`text-lg transition-colors ${hasActiveFilters ? "text-blue-600" : "text-gray-600"
+                      className={`text-base sm:text-lg transition-colors ${hasActiveFilters ? "text-blue-600" : "text-gray-600"
                         }`}
                     />
                   </button>
@@ -356,8 +342,7 @@ const MobileCategory = () => {
                             stiffness: 300,
                             damping: 30,
                           }}
-                          className="filter-dropdown absolute right-0 top-full w-56 bg-white rounded-xl shadow-2xl border border-gray-200 z-[10001] overflow-hidden"
-                          style={{ marginTop: "-50px" }}>
+                          className="filter-dropdown absolute right-0 top-full w-56 bg-white rounded-xl shadow-2xl border border-gray-200 z-[10001] overflow-hidden mt-2">
                           {/* Header */}
                           <div className="flex items-center justify-between px-2 py-1.5 border-b border-gray-200 bg-gray-50">
                             <div className="flex items-center gap-1.5">

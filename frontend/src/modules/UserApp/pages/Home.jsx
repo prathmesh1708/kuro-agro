@@ -326,7 +326,7 @@ const MobileHome = () => {
       if (bannersRes.status === "fulfilled") {
         const payload = extractResponseData(bannersRes.value);
         const allBanners = asList(payload).filter(
-          (banner) => banner?.image && banner?.isActive !== false
+          (banner) => (banner?.image || banner?.video) && banner?.isActive !== false
         );
 
         const bannerSlides = allBanners
@@ -337,8 +337,11 @@ const MobileHome = () => {
           .map((banner, index) => ({
             id: normalizeId(banner._id || banner.id || `home-slide-${index}`),
             image: banner.image,
+            video: banner.video,
+            mediaType: banner.mediaType || (banner.video ? "video" : "image"),
             link: resolveBannerLink(banner),
             title: banner.title || "",
+            subtitle: banner.subtitle || "",
           }));
         setSlides(bannerSlides.length > 0 ? bannerSlides : DEFAULT_HERO_SLIDES);
 
@@ -356,6 +359,8 @@ const MobileHome = () => {
             discount: banner.discount || banner.description || "Shop Now",
             link: resolveBannerLink(banner),
             image: banner.image,
+            video: banner.video,
+            mediaType: banner.mediaType || (banner.video ? "video" : "image"),
             type: banner.type || "promotional",
           }));
         setPromoBanners(banners);
@@ -366,6 +371,8 @@ const MobileHome = () => {
           .map((banner, index) => ({
             id: normalizeId(banner._id || banner.id || `side-banner-${index}`),
             image: banner.image,
+            video: banner.video,
+            mediaType: banner.mediaType || (banner.video ? "video" : "image"),
             title: banner.title || "PREMIUM",
             subtitle: banner.subtitle || "Exclusive Collection",
             link: resolveBannerLink(banner),
@@ -561,7 +568,16 @@ const MobileHome = () => {
                         cursor: slide?.link ? "pointer" : "default",
                       }}>
                       <div className="relative w-full h-full">
-                        {slide.image ? (
+                        {slide.mediaType === "video" || slide.video ? (
+                          <video
+                            src={slide.video || slide.image}
+                            autoPlay
+                            muted
+                            loop
+                            playsInline
+                            className="w-full h-full object-cover pointer-events-none select-none"
+                          />
+                        ) : slide.image ? (
                           <LazyImage
                             src={slide.image}
                             alt={slide.title || `Slide ${index + 1}`}
@@ -618,7 +634,16 @@ const MobileHome = () => {
               {/* Side Banner for Large Screens */}
               <div className="hidden lg:block lg:col-span-1 h-[400px] xl:h-[450px] rounded-2xl overflow-hidden relative bg-primary-900 group ring-2 ring-gold-300/60">
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary-900/30 to-primary-900/95 z-10" />
-                {(sideBanner || DEFAULT_SIDE_BANNER).image ? (
+                {(sideBanner || DEFAULT_SIDE_BANNER).mediaType === "video" || (sideBanner || DEFAULT_SIDE_BANNER).video ? (
+                  <video
+                    src={(sideBanner || DEFAULT_SIDE_BANNER).video || (sideBanner || DEFAULT_SIDE_BANNER).image}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                ) : (sideBanner || DEFAULT_SIDE_BANNER).image ? (
                   <LazyImage
                     src={(sideBanner || DEFAULT_SIDE_BANNER).image}
                     alt={(sideBanner || DEFAULT_SIDE_BANNER).title}
@@ -759,7 +784,7 @@ const MobileHome = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="px-4 py-12 text-left">
+            className="px-4 pt-6 pb-2 text-left">
             <motion.h2
               className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-primary-900/15 leading-tight flex items-center justify-start gap-3 flex-wrap"
               initial={{ opacity: 0 }}
@@ -781,9 +806,6 @@ const MobileHome = () => {
               </motion.span>
             </motion.h2>
           </motion.div>
-
-          {/* Bottom Spacing */}
-          <div className="h-4" />
         </div>
       </MobileLayout>
     </PageTransition>

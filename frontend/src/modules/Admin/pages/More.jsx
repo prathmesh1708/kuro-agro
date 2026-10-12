@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   FiGrid,
-  FiTag,
   FiUsers,
   FiPackage,
   FiTrendingUp,
@@ -25,16 +24,6 @@ const More = () => {
       shadowColor: 'shadow-blue-500/20',
       hoverShadow: 'hover:shadow-blue-500/30',
       description: 'Manage categories'
-    },
-    { 
-      path: '/admin/brands', 
-      label: 'Brands', 
-      icon: FiTag, 
-      gradient: 'from-primary-500 via-primary-600 to-primary-700',
-      lightGradient: 'from-primary-50 via-primary-100/80 to-primary-50',
-      shadowColor: 'shadow-primary-500/20',
-      hoverShadow: 'hover:shadow-primary-500/30',
-      description: 'Manage brands'
     },
     { 
       path: '/admin/customers', 

@@ -12,8 +12,8 @@ const BrandLogosScroll = ({ brands = null }) => {
 
     return (
         <section className="bg-transparent w-full overflow-hidden">
-            {/* Desktop Layout - White card container */}
-            <div className="hidden md:block bg-white rounded-lg mb-4 p-4">
+            {/* Desktop Layout */}
+            <div className="hidden md:block mb-4 px-4">
                 <div className="w-full overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
                     <div className="flex gap-4 lg:gap-6 min-w-max pb-2">
                         {displayBrands.map((brand, index) => (
@@ -27,13 +27,14 @@ const BrandLogosScroll = ({ brands = null }) => {
                             >
                                 <div
                                     onClick={() => navigate(`/brand/${brand.id}`)}
-                                    className="bg-gray-50 rounded-lg p-2 shadow-sm transition-all duration-300 flex items-center justify-center w-16 h-16 lg:w-20 lg:h-20 group cursor-pointer border border-gray-100 mb-2 hover:shadow-md hover:border-gray-200">
+                                    className="rounded-xl lg:rounded-2xl overflow-hidden shadow-sm transition-all duration-300 flex items-center justify-center w-16 h-16 lg:w-20 lg:h-20 group cursor-pointer border border-gray-100/80 mb-2 hover:shadow-md hover:scale-105"
+                                >
                                     <img
-                                        src={brand.logo || getPlaceholderImage(120, 80, brand.name || 'Brand')}
+                                        src={brand.logo || getPlaceholderImage(120, 120, brand.name || 'Brand')}
                                         alt={brand.name}
-                                        className="w-full h-full object-contain"
+                                        className="w-full h-full object-cover"
                                         onError={(e) => {
-                                            e.target.src = getPlaceholderImage(120, 80, brand.name || 'Brand');
+                                            e.target.src = getPlaceholderImage(120, 120, brand.name || 'Brand');
                                         }}
                                         loading="lazy"
                                     />
@@ -47,7 +48,7 @@ const BrandLogosScroll = ({ brands = null }) => {
                 </div>
             </div>
 
-            {/* Mobile Layout - Unchanged */}
+            {/* Mobile Layout */}
             <div className="md:hidden w-full">
                 <style>{`
           @media (min-width: 1024px) {
@@ -83,18 +84,19 @@ const BrandLogosScroll = ({ brands = null }) => {
                             >
                                 <div
                                     onClick={() => navigate(`/brand/${brand.id}`)}
-                                    className="bg-white rounded-lg sm:rounded-xl lg:rounded-lg p-1.5 sm:p-2 md:p-2 lg:p-1.5 xl:p-2 shadow-md transition-all duration-300 flex items-center justify-center w-full aspect-square group cursor-pointer border border-gray-100 mb-1.5 lg:mb-1 hover:shadow-lg">
+                                    className="rounded-xl sm:rounded-2xl overflow-hidden shadow-sm transition-all duration-300 flex items-center justify-center w-full aspect-square group cursor-pointer border border-gray-100/80 mb-1.5 lg:mb-1 hover:shadow-md hover:scale-105"
+                                >
                                     <img
-                                        src={brand.logo || getPlaceholderImage(120, 80, brand.name || 'Brand')}
+                                        src={brand.logo || getPlaceholderImage(120, 120, brand.name || 'Brand')}
                                         alt={brand.name}
-                                        className="w-[85%] h-[85%] lg:w-[80%] lg:h-[80%] object-contain"
+                                        className="w-full h-full object-cover"
                                         onError={(e) => {
-                                            e.target.src = getPlaceholderImage(120, 80, brand.name || 'Brand');
+                                            e.target.src = getPlaceholderImage(120, 120, brand.name || 'Brand');
                                         }}
                                         loading="lazy"
                                     />
                                 </div>
-                                <p className="text-xs sm:text-sm lg:text-xs font-semibold text-black text-center transition-colors truncate w-full px-1">
+                                <p className="text-xs sm:text-sm lg:text-xs font-semibold text-gray-800 text-center transition-colors truncate w-full px-1">
                                     {brand.name}
                                 </p>
                             </motion.div>

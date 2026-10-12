@@ -22,9 +22,7 @@ import OrderDetail from "./modules/Admin/pages/OrderDetail";
 import ReturnRequests from "./modules/Admin/pages/ReturnRequests";
 import ReturnRequestDetail from "./modules/Admin/pages/ReturnRequestDetail";
 import Categories from "./modules/Admin/pages/Categories";
-import Brands from "./modules/Admin/pages/Brands";
 import Customers from "./modules/Admin/pages/Customers";
-import CodManagement from "./modules/Admin/pages/customers/CodManagement";
 
 import Campaigns from "./modules/Admin/pages/Campaigns";
 import Banners from "./modules/Admin/pages/Banners";
@@ -41,15 +39,11 @@ import OrderTracking from "./modules/Admin/pages/orders/OrderTracking";
 import Invoice from "./modules/Admin/pages/orders/Invoice";
 // Products child pages
 import ManageProducts from "./modules/Admin/pages/products/ManageProducts";
-import TaxPricing from "./modules/Admin/pages/products/TaxPricing";
 import ProductRatings from "./modules/Admin/pages/products/ProductRatings";
 
 // Categories child pages
 import ManageCategories from "./modules/Admin/pages/categories/ManageCategories";
 import CategoryOrder from "./modules/Admin/pages/categories/CategoryOrder";
-// Brands child pages
-import ManageBrands from "./modules/Admin/pages/brands/ManageBrands";
-import BrandApprovals from "./modules/Admin/pages/brands/BrandApprovals";
 // Customers child pages
 import ViewCustomers from "./modules/Admin/pages/customers/ViewCustomers";
 import CustomerAddresses from "./modules/Admin/pages/customers/Addresses";
@@ -82,13 +76,6 @@ import Tickets from "./modules/Admin/pages/support/Tickets";
 // Reports child pages
 import SalesReport from "./modules/Admin/pages/reports/SalesReport";
 import InventoryReport from "./modules/Admin/pages/reports/InventoryReport";
-// Analytics & Finance child pages
-import RevenueOverview from "./modules/Admin/pages/finance/RevenueOverview";
-import ProfitLoss from "./modules/Admin/pages/finance/ProfitLoss";
-import OrderTrends from "./modules/Admin/pages/finance/OrderTrends";
-import PaymentBreakdown from "./modules/Admin/pages/finance/PaymentBreakdown";
-import TaxReports from "./modules/Admin/pages/finance/TaxReports";
-import RefundReports from "./modules/Admin/pages/finance/RefundReports";
 // Consolidated Settings pages
 import GeneralSettings from "./modules/Admin/pages/settings/GeneralSettings";
 import PaymentShippingSettings from "./modules/Admin/pages/settings/PaymentShippingSettings";
@@ -100,9 +87,6 @@ import NotificationsSEOSettings from "./modules/Admin/pages/settings/Notificatio
 import PrivacyPolicy from "./modules/Admin/pages/policies/PrivacyPolicy";
 import RefundPolicy from "./modules/Admin/pages/policies/RefundPolicy";
 import TermsConditions from "./modules/Admin/pages/policies/TermsConditions";
-// Firebase child pages
-import PushConfig from "./modules/Admin/pages/firebase/PushConfig";
-import Authentication from "./modules/Admin/pages/firebase/Authentication";
 import RouteWrapper from "./shared/components/RouteWrapper";
 import ScrollToTop from "./shared/components/ScrollToTop";
 import AppBootstrap from "./shared/components/AppBootstrap";
@@ -136,6 +120,23 @@ import MobileCampaignSale from "./modules/UserApp/pages/CampaignSale";
 import MobileTrackOrder from "./modules/UserApp/pages/TrackOrder";
 import MobileOrderConfirmation from "./modules/UserApp/pages/OrderConfirmation";
 import ComingSoon from "./modules/UserApp/pages/ComingSoon";
+// Field Network Routes (Sanchalak / Surveyor)
+import FieldAccounts from "./modules/Admin/pages/fieldNetwork/FieldAccounts";
+import FieldCommissionRates from "./modules/Admin/pages/fieldNetwork/CommissionRates";
+import AdminFarmers from "./modules/Admin/pages/fieldNetwork/Farmers";
+import SanchalakProtectedRoute from "./modules/Sanchalak/components/SanchalakProtectedRoute";
+import SanchalakDashboard from "./modules/Sanchalak/pages/Dashboard";
+import SanchalakFarmers from "./modules/Sanchalak/pages/Farmers";
+import SanchalakFarmerDetail from "./modules/Sanchalak/pages/FarmerDetail";
+import SanchalakProfile from "./modules/Sanchalak/pages/Profile";
+import SanchalakSurveyorDetail from "./modules/Sanchalak/pages/SurveyorDetail";
+import SanchalakSurveyors from "./modules/Sanchalak/pages/Surveyors";
+import SurveyorProtectedRoute from "./modules/Surveyor/components/SurveyorProtectedRoute";
+import SurveyorDashboard from "./modules/Surveyor/pages/Dashboard";
+import SurveyorFarmers from "./modules/Surveyor/pages/Farmers";
+import SurveyorFarmerForm from "./modules/Surveyor/pages/FarmerForm";
+import SurveyorProfile from "./modules/Surveyor/pages/Profile";
+import SurveyorFarmerDetail from "./modules/Surveyor/pages/FarmerDetail";
 // Delivery Routes
 import DeliveryLogin from "./modules/Delivery/pages/Login";
 import DeliveryRegister from "./modules/Delivery/pages/Register";
@@ -461,7 +462,6 @@ const AppRoutes = () => {
         <Route path="products" element={<Products />} />
         <Route path="products/:id" element={<ProductForm />} />
         <Route path="products/manage-products" element={<ManageProducts />} />
-        <Route path="products/tax-pricing" element={<TaxPricing />} />
         <Route path="products/product-ratings" element={<ProductRatings />} />
         <Route path="more" element={<More />} />
         <Route path="categories" element={<Categories />} />
@@ -470,9 +470,6 @@ const AppRoutes = () => {
           element={<ManageCategories />}
         />
         <Route path="categories/category-order" element={<CategoryOrder />} />
-        <Route path="brands" element={<Brands />} />
-        <Route path="brands/manage-brands" element={<ManageBrands />} />
-        <Route path="brands/approvals" element={<BrandApprovals />} />
         <Route path="orders" element={<AdminOrders />} />
         <Route path="orders/:id" element={<OrderDetail />} />
         <Route path="orders/:id/invoice" element={<Invoice />} />
@@ -484,13 +481,17 @@ const AppRoutes = () => {
         <Route path="customers/view-customers" element={<ViewCustomers />} />
         <Route path="customers/addresses" element={<CustomerAddresses />} />
         <Route path="customers/transactions" element={<Transactions />} />
-        <Route path="customers/cod-blacklist" element={<CodManagement />} />
         <Route path="customers/:id" element={<CustomerDetailPage />} />
 
         <Route path="delivery" element={<DeliveryBoys />} />
         <Route path="delivery/delivery-boys" element={<DeliveryBoys />} />
         <Route path="delivery/cash-collection" element={<CashCollection />} />
         <Route path="delivery/assign-delivery" element={<AssignDelivery />} />
+        <Route path="field-network" element={<Navigate to="/admin/field-network/sanchalaks" replace />} />
+        <Route path="field-network/sanchalaks" element={<FieldAccounts key="sanchalak" kind="sanchalak" />} />
+        <Route path="field-network/surveyors" element={<FieldAccounts key="surveyor" kind="surveyor" />} />
+        <Route path="field-network/commission" element={<FieldCommissionRates />} />
+        <Route path="farmers" element={<AdminFarmers />} />
         <Route path="vendors" element={<Vendors />} />
         <Route path="vendors/manage-vendors" element={<ManageVendors />} />
         <Route
@@ -528,16 +529,6 @@ const AppRoutes = () => {
         <Route path="reports" element={<SalesReport />} />
         <Route path="reports/sales-report" element={<SalesReport />} />
         <Route path="reports/inventory-report" element={<InventoryReport />} />
-        <Route path="finance" element={<RevenueOverview />} />
-        <Route path="finance/revenue-overview" element={<RevenueOverview />} />
-        <Route path="finance/profit-loss" element={<ProfitLoss />} />
-        <Route path="finance/order-trends" element={<OrderTrends />} />
-        <Route
-          path="finance/payment-breakdown"
-          element={<PaymentBreakdown />}
-        />
-        <Route path="finance/tax-reports" element={<TaxReports />} />
-        <Route path="finance/refund-reports" element={<RefundReports />} />
         <Route path="analytics" element={<Analytics />} />
         <Route
           path="settings"
@@ -553,14 +544,110 @@ const AppRoutes = () => {
         <Route path="policies/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="policies/refund-policy" element={<RefundPolicy />} />
         <Route path="policies/terms-conditions" element={<TermsConditions />} />
-        <Route path="firebase" element={<PushConfig />} />
-        <Route path="firebase/push-config" element={<PushConfig />} />
-        <Route path="firebase/authentication" element={<Authentication />} />
         <Route path="campaigns" element={<Campaigns />} />
         <Route path="banners" element={<Banners />} />
         <Route path="reviews" element={<Reviews />} />
         <Route path="content" element={<Content />} />
       </Route>
+      {/* Field Network Routes — login and registration live on the shared /login and /register pages */}
+      <Route path="/sanchalak" element={<Navigate to="/sanchalak/dashboard" replace />} />
+      <Route
+        path="/sanchalak/dashboard"
+        element={
+          <SanchalakProtectedRoute>
+            <SanchalakDashboard />
+          </SanchalakProtectedRoute>
+        }
+      />
+      <Route
+        path="/sanchalak/farmers"
+        element={
+          <SanchalakProtectedRoute>
+            <SanchalakFarmers />
+          </SanchalakProtectedRoute>
+        }
+      />
+      <Route
+        path="/sanchalak/farmers/:id"
+        element={
+          <SanchalakProtectedRoute>
+            <SanchalakFarmerDetail />
+          </SanchalakProtectedRoute>
+        }
+      />
+      <Route
+        path="/sanchalak/surveyors"
+        element={
+          <SanchalakProtectedRoute>
+            <SanchalakSurveyors />
+          </SanchalakProtectedRoute>
+        }
+      />
+      <Route
+        path="/sanchalak/surveyors/:id"
+        element={
+          <SanchalakProtectedRoute>
+            <SanchalakSurveyorDetail />
+          </SanchalakProtectedRoute>
+        }
+      />
+      <Route
+        path="/sanchalak/profile"
+        element={
+          <SanchalakProtectedRoute>
+            <SanchalakProfile />
+          </SanchalakProtectedRoute>
+        }
+      />
+      <Route path="/surveyor" element={<Navigate to="/surveyor/dashboard" replace />} />
+      <Route
+        path="/surveyor/dashboard"
+        element={
+          <SurveyorProtectedRoute>
+            <SurveyorDashboard />
+          </SurveyorProtectedRoute>
+        }
+      />
+      <Route
+        path="/surveyor/farmers"
+        element={
+          <SurveyorProtectedRoute>
+            <SurveyorFarmers />
+          </SurveyorProtectedRoute>
+        }
+      />
+      <Route
+        path="/surveyor/farmers/new"
+        element={
+          <SurveyorProtectedRoute>
+            <SurveyorFarmerForm key="new" />
+          </SurveyorProtectedRoute>
+        }
+      />
+      <Route
+        path="/surveyor/farmers/:id"
+        element={
+          <SurveyorProtectedRoute>
+            <SurveyorFarmerDetail />
+          </SurveyorProtectedRoute>
+        }
+      />
+      <Route
+        path="/surveyor/farmers/:id/edit"
+        element={
+          <SurveyorProtectedRoute>
+            <SurveyorFarmerForm key="edit" />
+          </SurveyorProtectedRoute>
+        }
+      />
+      <Route
+        path="/surveyor/profile"
+        element={
+          <SurveyorProtectedRoute>
+            <SurveyorProfile />
+          </SurveyorProtectedRoute>
+        }
+      />
       {/* Delivery Routes */}
       <Route path="/delivery/login" element={<DeliveryLogin />} />
       <Route path="/delivery/register" element={<DeliveryRegister />} />
