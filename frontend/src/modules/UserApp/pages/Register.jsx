@@ -67,11 +67,21 @@ const MobileRegister = () => {
                 <RoleSelect
                   label="Register as"
                   value={role}
-                  onChange={(nextRole) => setSearchParams(nextRole === 'kisan' ? {} : { role: nextRole }, { replace: true })}
+                  onChange={(nextRole) => setSearchParams(nextRole === 'customer' ? {} : { role: nextRole }, { replace: true })}
                 />
               )}
 
-              {role !== 'kisan' ? (
+              {role === 'kisan' ? (
+                <div className="rounded-2xl bg-green-50 border border-green-200 p-5 text-sm text-green-900 space-y-3">
+                  <p>
+                    Farmers are registered by a surveyor of your Kisan Vyapar Kendra, who fills in your details and land
+                    information. Once admin approves the registration, log in with the same mobile number and an OTP.
+                  </p>
+                  <Link to="/login?role=kisan" className="inline-block font-semibold text-green-700 underline">
+                    Go to Kisan login
+                  </Link>
+                </div>
+              ) : role !== 'customer' ? (
                 <FieldRegisterForm key={role} role={role} initialPhone={verifyPhone} />
               ) : (
               <>

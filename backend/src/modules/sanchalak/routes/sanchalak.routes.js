@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as authController from '../controllers/auth.controller.js';
 import * as farmerController from '../controllers/farmer.controller.js';
+import * as tradeController from '../controllers/trade.controller.js';
 import { authenticate } from '../../../middlewares/authenticate.js';
 import { authorize, enforceAccountStatus } from '../../../middlewares/authorize.js';
 import { authLimiter, otpLimiter } from '../../../middlewares/rateLimiter.js';
@@ -20,6 +21,15 @@ import {
     registrationIdParamSchema,
     sanchalakRegistrationListQuerySchema,
 } from '../../../validators/farmerRegistration.validator.js';
+import {
+    idParamSchema,
+    produceSaleSchema,
+    kisanSaleListQuerySchema,
+    sanchalakSaleListQuerySchema,
+    kisanSaleDecisionSchema,
+    paymentUpdateSchema,
+    cancelRequestSchema,
+} from '../../../validators/produceTrade.validator.js';
 
 const router = Router();
 const sanchalakAuth = [authenticate, authorize('sanchalak'), enforceAccountStatus];
@@ -45,5 +55,22 @@ router.get('/surveyors', ...sanchalakAuth, farmerController.getSurveyors);
 router.get('/surveyors/:id', ...sanchalakAuth, validate(registrationIdParamSchema, 'params'), farmerController.getSurveyorById);
 router.get('/farmers', ...sanchalakAuth, validate(sanchalakRegistrationListQuerySchema, 'query'), farmerController.getFarmers);
 router.get('/farmers/:id', ...sanchalakAuth, validate(registrationIdParamSchema, 'params'), farmerController.getFarmerById);
+
+// Produce bought from Kisans
+router.get('/purchase-requests', ...sanchalakAuth, validate(kisanSaleListQuerySchema, 'query'), tradeController.getPurchaseRequests);
+router.get('/purchase-requests/:id', ...sanchalakAuth, validate(idParamSchema, 'params'), tradeController.getPurchaseRequestById);
+router.patch('/purchase-requests/:id/decision', ...sanchalakAuth, validate(idParamSchema, 'params'), validate(kisanSaleDecisionSchema), tradeController.decidePurchaseRequest);
+router.patch('/purchase-requests/:id/payment', ...sanchalakAuth, validate(idParamSchema, 'params'), validate(paymentUpdateSchema), tradeController.updatePurchasePayment);
+
+// Kendra warehouse
+router.get('/stock', ...sanchalakAuth, tradeController.getStock);
+router.get('/stock/by-kisan', ...sanchalakAuth, tradeController.getStockByKisan);
+
+// Produce sold on to admin
+router.get('/produce', ...sanchalakAuth, tradeController.getProduceList);
+router.post('/sale-requests', ...sanchalakAuth, validate(produceSaleSchema), tradeController.createSaleRequest);
+router.get('/sale-requests', ...sanchalakAuth, validate(sanchalakSaleListQuerySchema, 'query'), tradeController.getSaleRequests);
+router.get('/sale-requests/:id', ...sanchalakAuth, validate(idParamSchema, 'params'), tradeController.getSaleRequestById);
+router.patch('/sale-requests/:id/cancel', ...sanchalakAuth, validate(idParamSchema, 'params'), validate(cancelRequestSchema), tradeController.cancelSaleRequest);
 
 export default router;

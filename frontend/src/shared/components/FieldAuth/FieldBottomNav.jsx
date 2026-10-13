@@ -1,7 +1,7 @@
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Users, UserPlus, UserCheck, User } from 'lucide-react';
+import { Home, Users, UserPlus, User, ShoppingBasket, Warehouse, Truck, Wheat, ClipboardList } from 'lucide-react';
 
 // Same floating "LumaBar" pill as the customer app, with items per role.
 const NAV_ITEMS = {
@@ -11,11 +11,19 @@ const NAV_ITEMS = {
     { path: '/surveyor/farmers/new', icon: UserPlus, label: 'Add Farmer' },
     { path: '/surveyor/profile', icon: User, label: 'Profile' },
   ],
+  // Farmers and Surveyors are reached from the Home tiles.
   sanchalak: [
     { path: '/sanchalak/dashboard', icon: Home, label: 'Home' },
-    { path: '/sanchalak/farmers', icon: Users, label: 'Farmers' },
-    { path: '/sanchalak/surveyors', icon: UserCheck, label: 'Surveyors' },
+    { path: '/sanchalak/purchases', icon: ShoppingBasket, label: 'Purchases' },
+    { path: '/sanchalak/warehouse', icon: Warehouse, label: 'Warehouse' },
+    { path: '/sanchalak/sales', icon: Truck, label: 'To Admin' },
     { path: '/sanchalak/profile', icon: User, label: 'Profile' },
+  ],
+  kisan: [
+    { path: '/kisan/dashboard', icon: Home, label: 'Home' },
+    { path: '/kisan/sell', icon: Wheat, label: 'Sell' },
+    { path: '/kisan/requests', icon: ClipboardList, label: 'My Offers' },
+    { path: '/kisan/profile', icon: User, label: 'Profile' },
   ],
 };
 

@@ -7,6 +7,7 @@ import DataTable from '../../components/DataTable';
 import Pagination from '../../components/Pagination';
 import FarmerDetailCard from '../../../../shared/components/Farmer/FarmerDetailCard';
 import FarmerStatusBadge from '../../../../shared/components/Farmer/FarmerStatusBadge';
+import KisanSalesSection from './KisanSalesSection';
 import { getAllFarmers, getFarmerById, reviewFarmer } from '../../services/adminService';
 
 const STATUS_TABS = [
@@ -279,7 +280,10 @@ const Farmers = ({ surveyorId, embedded = false, onReviewed }) => {
                 {isLoadingDetail ? (
                   <p className="text-center text-gray-500 py-8">Loading…</p>
                 ) : (
-                  <FarmerDetailCard farmer={selected} />
+                  <>
+                    <FarmerDetailCard farmer={selected} />
+                    {selected.status === 'approved' && <KisanSalesSection key={selected.id} registrationId={selected.id} />}
+                  </>
                 )}
               </div>
 

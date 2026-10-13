@@ -9,6 +9,7 @@ import { sendEmail } from '../../../services/email.service.js';
 import { createNotification } from '../../../services/notification.service.js';
 import { getCommissionSummary, getFieldCommissionRates, saveFieldCommissionRates } from '../../../services/fieldCommission.service.js';
 import { countByStatus } from '../../../services/farmerRegistration.service.js';
+import { getSanchalakStockSummary } from '../../../services/produceTrade.service.js';
 
 const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -124,7 +125,7 @@ export const getAllSanchalaks = asyncHandler(async (req, res) => {
 });
 
 /**
- * @desc    Sanchalak profile with surveyor, farmer and commission stats
+ * @desc    Sanchalak profile with surveyor, farmer, commission and warehouse stats
  * @route   GET /api/admin/sanchalaks/:id
  * @access  Private (Admin)
  */
@@ -132,14 +133,15 @@ export const getSanchalakById = asyncHandler(async (req, res) => {
     const sanchalak = await Sanchalak.findById(req.params.id).lean();
     if (!sanchalak) throw new ApiError(404, 'Sanchalak not found');
 
-    const [surveyorRows, stats] = await Promise.all([
+    const [surveyorRows, stats, stock] = await Promise.all([
         Surveyor.aggregate([{ $match: { sanchalak: sanchalak._id } }, { $group: { _id: '$status', count: { $sum: 1 } } }]),
         profileStats('sanchalak', sanchalak._id),
+        getSanchalakStockSummary(sanchalak._id),
     ]);
     const surveyors = Object.fromEntries(surveyorRows.map((row) => [row._id, row.count]));
     surveyors.total = surveyorRows.reduce((sum, row) => sum + row.count, 0);
 
-    res.status(200).json(new ApiResponse(200, { ...sanchalak, id: sanchalak._id, surveyors, ...stats }, 'Sanchalak fetched successfully'));
+    res.status(200).json(new ApiResponse(200, { ...sanchalak, id: sanchalak._id, surveyors, ...stats, stock }, 'Sanchalak fetched successfully'));
 });
 
 /**

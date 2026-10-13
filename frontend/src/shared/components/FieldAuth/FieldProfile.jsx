@@ -20,8 +20,9 @@ const InfoRow = ({ icon: Icon, children }) => (
 /**
  * Profile for Surveyor / Sanchalak: identity, login ID, commission earned, and logout.
  * @param {Function} fetchCommission  () => api promise resolving to { data: { ratePerFarmer, earned, pending, history } }
+ * @param {ReactNode} children        extra sections shown after the identity card (e.g. warehouse summary)
  */
-const FieldProfile = ({ role, account, fetchProfile, fetchCommission, logout }) => {
+const FieldProfile = ({ role, account, fetchProfile, fetchCommission, logout, children }) => {
   const navigate = useNavigate();
   const { codeField, theme, label } = ROLE_CONFIG[role];
   const [commission, setCommission] = useState(null);
@@ -89,6 +90,8 @@ const FieldProfile = ({ role, account, fetchProfile, fetchCommission, logout }) 
           {kendra && <InfoRow icon={FiTrendingUp}>{kendra.kendraName} · Sanchalak {kendra.name}</InfoRow>}
         </div>
       </section>
+
+      {children}
 
       <section className="mt-5">
         <h2 className="text-base font-bold text-gray-900 mb-3">My Commission / मेरा कमीशन</h2>

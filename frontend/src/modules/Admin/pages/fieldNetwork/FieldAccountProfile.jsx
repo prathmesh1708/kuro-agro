@@ -4,6 +4,7 @@ import { FiArrowLeft, FiMail, FiPhone, FiMapPin, FiCalendar, FiHome, FiUser } fr
 import { motion } from 'framer-motion';
 import Badge from '../../../../shared/components/Badge';
 import { formatPrice } from '../../../../shared/utils/helpers';
+import { formatInr, formatQty } from '../../../../shared/components/Produce/produceFormat';
 import { getSanchalakById, getSurveyorById } from '../../services/adminService';
 import FieldAccounts from './FieldAccounts';
 import Farmers from './Farmers';
@@ -183,6 +184,55 @@ const FieldAccountProfile = ({ kind }) => {
           />
         )}
       </div>
+
+      {kind === 'sanchalak' && account.stock && (
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+          <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+            <div>
+              <h2 className="text-xl font-bold text-gray-800">Kendra Warehouse</h2>
+              <p className="text-sm text-gray-600">
+                Bought from farmers {formatInr(account.stock.totals.purchasedValue)} · Sold to admin {formatInr(account.stock.totals.soldValue)}
+              </p>
+            </div>
+            <Link
+              to={`/admin/field-network/procurement-requests?sanchalak=${account.id}`}
+              className="text-sm font-semibold text-primary-600 hover:underline"
+            >
+              Procurement requests →
+            </Link>
+          </div>
+          {account.stock.items.length === 0 ? (
+            <p className="text-sm text-gray-500">No stock yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs uppercase tracking-wide text-gray-500 border-b border-gray-200">
+                    <th className="py-2 pr-4">Produce</th>
+                    <th className="py-2 pr-4">In Stock</th>
+                    <th className="py-2 pr-4">Sent, awaiting admin</th>
+                    <th className="py-2 pr-4">Bought</th>
+                    <th className="py-2 pr-4">Sold to admin</th>
+                    <th className="py-2">Last bought</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {account.stock.items.map((item) => (
+                    <tr key={item.id}>
+                      <td className="py-2 pr-4 font-semibold text-gray-800">{item.produceName}</td>
+                      <td className="py-2 pr-4 font-bold text-gray-900">{formatQty(item.quantityKg, item.unit)}</td>
+                      <td className="py-2 pr-4">{formatQty(item.reservedKg, item.unit)}</td>
+                      <td className="py-2 pr-4">{formatQty(item.purchasedKg, item.unit)} <span className="text-xs text-gray-500">{formatInr(item.purchasedValue)}</span></td>
+                      <td className="py-2 pr-4">{formatQty(item.soldKg, item.unit)} <span className="text-xs text-gray-500">{formatInr(item.soldValue)}</span></td>
+                      <td className="py-2">{formatDate(item.lastPurchasedAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       <div>
         <h2 className="text-xl font-bold text-gray-800">{config.childTitle}</h2>

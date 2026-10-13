@@ -1,6 +1,6 @@
-import crypto from 'crypto';
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import { applyUniqueCode } from './uniqueCode.js';
 
 export const FIELD_ACCOUNT_STATUSES = ['pending', 'approved', 'rejected', 'suspended'];
 
@@ -45,19 +45,7 @@ export const fieldAccountFields = () => ({
  * Adds the login code generator (e.g. SAN-482913), password hashing and comparePassword.
  */
 export const applyFieldAccountBehaviour = (schema, { codeField, codePrefix }) => {
-    schema.pre('validate', async function (next) {
-        if (this[codeField]) return next();
-        for (let attempt = 0; attempt < 10; attempt += 1) {
-            const candidate = `${codePrefix}-${crypto.randomInt(100000, 1000000)}`;
-            // eslint-disable-next-line no-await-in-loop
-            const taken = await this.constructor.exists({ [codeField]: candidate });
-            if (!taken) {
-                this[codeField] = candidate;
-                return next();
-            }
-        }
-        return next(new Error(`Could not generate a unique ${codeField}.`));
-    });
+    applyUniqueCode(schema, { codeField, codePrefix });
 
     schema.pre('save', async function (next) {
         if (!this.isModified('password')) return next();

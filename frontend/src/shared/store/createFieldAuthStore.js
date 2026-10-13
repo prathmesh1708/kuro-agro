@@ -3,7 +3,8 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import api from '../utils/api';
 
 /**
- * Auth store for field-network roles (Sanchalak, Surveyor).
+ * Auth store for field-network roles (Sanchalak, Surveyor, Kisan).
+ * Sanchalak and Surveyor log in with a password; Kisan logs in with a mobile OTP.
  * Keys must match the role's entry in AUTH_SCOPES (shared/utils/api.js),
  * which reads the tokens straight from localStorage.
  *
@@ -48,19 +49,30 @@ export const createFieldAuthStore = ({ prefix, accessKey, refreshKey, persistKey
           await api.post(`${prefix}/auth/resend-otp`, { phone });
         },
 
-        login: (identifier, password) =>
-          get().withLoading(async () => {
-            const response = await api.post(`${prefix}/auth/login`, { identifier, password });
-            const { accessToken, refreshToken, account } = response?.data || {};
-            if (!accessToken || !refreshToken || !account) {
-              throw new Error('Invalid login response from server.');
-            }
+        startSession: (response) => {
+          const { accessToken, refreshToken, account } = response?.data || {};
+          if (!accessToken || !refreshToken || !account) {
+            throw new Error('Invalid login response from server.');
+          }
 
-            localStorage.setItem(accessKey, accessToken);
-            localStorage.setItem(refreshKey, refreshToken);
-            set({ account, token: accessToken, refreshToken, isAuthenticated: true });
-            return account;
-          }),
+          localStorage.setItem(accessKey, accessToken);
+          localStorage.setItem(refreshKey, refreshToken);
+          set({ account, token: accessToken, refreshToken, isAuthenticated: true });
+          return account;
+        },
+
+        login: (identifier, password) =>
+          get().withLoading(async () =>
+            get().startSession(await api.post(`${prefix}/auth/login`, { identifier, password }))
+          ),
+
+        requestLoginOtp: (phone) =>
+          get().withLoading(() => api.post(`${prefix}/auth/login/send-otp`, { phone })),
+
+        loginWithOtp: (phone, otp) =>
+          get().withLoading(async () =>
+            get().startSession(await api.post(`${prefix}/auth/login/verify-otp`, { phone, otp }))
+          ),
 
         fetchProfile: async () => {
           const response = await api.get(`${prefix}/auth/profile`);

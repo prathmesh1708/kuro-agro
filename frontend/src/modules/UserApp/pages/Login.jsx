@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
-import { FiPhone, FiLock, FiEye, FiEyeOff, FiArrowLeft, FiUser } from 'react-icons/fi';
+import { FiPhone, FiLock, FiEye, FiEyeOff, FiArrowLeft, FiUser, FiKey } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../../../shared/store/authStore';
 import { useCartStore } from '../../../shared/store/useStore';
@@ -18,29 +18,36 @@ import RoleSelect from '../../../shared/components/FieldAuth/RoleSelect';
 import { ROLE_CONFIG, resolveRole, roleSearch } from '../../../shared/components/FieldAuth/roleConfig';
 import { useSanchalakAuthStore } from '../../Sanchalak/store/sanchalakStore';
 import { useSurveyorAuthStore } from '../../Surveyor/store/surveyorStore';
+import { useKisanAuthStore } from '../../Kisan/store/kisanStore';
 
 const MobileLogin = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { login, isLoading: isKisanLoading } = useAuthStore();
+  const { login, isLoading: isCustomerLoading } = useAuthStore();
   const sanchalakStore = useSanchalakAuthStore();
   const surveyorStore = useSurveyorAuthStore();
+  const kisanStore = useKisanAuthStore();
 
   const role = resolveRole(searchParams.get('role'));
   const roleConfig = ROLE_CONFIG[role];
-  const fieldStore = role === 'sanchalak' ? sanchalakStore : role === 'surveyor' ? surveyorStore : null;
-  const isLoading = fieldStore ? fieldStore.isLoading : isKisanLoading;
+  const fieldStore = { sanchalak: sanchalakStore, surveyor: surveyorStore, kisan: kisanStore }[role] || null;
+  const isLoading = fieldStore ? fieldStore.isLoading : isCustomerLoading;
 
   const [phone, setPhone] = useState('');
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [kisanPhone, setKisanPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const [otpSentTo, setOtpSentTo] = useState('');
 
   const handleRoleChange = (nextRole) => {
-    setSearchParams(nextRole === 'kisan' ? {} : { role: nextRole }, { replace: true });
+    setSearchParams(nextRole === 'customer' ? {} : { role: nextRole }, { replace: true });
     setPassword('');
     setShowPassword(false);
+    setOtp('');
+    setOtpSentTo('');
   };
 
   const storedFrom = getPostLoginRedirect();
@@ -109,6 +116,40 @@ const MobileLogin = () => {
     }
   };
 
+  // Kisan: registered mobile number → OTP → logged in
+  const cleanKisanPhone = kisanPhone.replace(/\D/g, '').slice(-10);
+
+  const handleSendOtp = async (e) => {
+    e.preventDefault();
+    if (cleanKisanPhone.length !== 10) {
+      toast.error('Please enter your 10-digit mobile number.');
+      return;
+    }
+    try {
+      await kisanStore.requestLoginOtp(cleanKisanPhone);
+      setOtpSentTo(cleanKisanPhone);
+      setOtp('');
+      toast.success('OTP sent to your mobile number.');
+    } catch {
+      // The API client already shows the error message.
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    if (!/^\d{6}$/.test(otp)) {
+      toast.error('Please enter the 6-digit OTP.');
+      return;
+    }
+    try {
+      await kisanStore.loginWithOtp(otpSentTo, otp);
+      toast.success('Login successful!');
+      navigate(roleConfig.home, { replace: true });
+    } catch {
+      // The API client already shows the error message.
+    }
+  };
+
   return (
     <PageTransition>
       <MobileLayout showBottomNav={false} showCartBar={false}>
@@ -139,7 +180,77 @@ const MobileLogin = () => {
 
               <RoleSelect value={role} onChange={handleRoleChange} />
 
-              {fieldStore ? (
+              {roleConfig.otpLogin ? (
+                otpSentTo ? (
+                  <form onSubmit={handleVerifyOtp} className="space-y-5">
+                    <div>
+                      <label htmlFor="kisan-otp" className="block text-sm font-semibold text-gray-700 mb-2">
+                        OTP sent to {otpSentTo}
+                      </label>
+                      <div className="relative">
+                        <FiKey className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                        <input
+                          id="kisan-otp"
+                          type="text"
+                          inputMode="numeric"
+                          autoComplete="one-time-code"
+                          maxLength={6}
+                          value={otp}
+                          onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          required
+                          autoFocus
+                          className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 ${roleConfig.theme.focus} focus:outline-none transition-colors text-base font-semibold tracking-[0.4em]`}
+                          placeholder="______"
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={isLoading || otp.length !== 6}
+                      className={`w-full text-white py-3.5 rounded-xl font-semibold text-base transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${roleConfig.theme.button}`}
+                    >
+                      {isLoading ? 'Verifying...' : 'Verify & Log In'}
+                    </button>
+                    <div className="flex items-center justify-between text-sm">
+                      <button type="button" onClick={() => setOtpSentTo('')} className="text-gray-600 font-semibold">
+                        Change number
+                      </button>
+                      <button type="button" onClick={handleSendOtp} disabled={isLoading} className={`${roleConfig.theme.link} font-semibold disabled:opacity-50`}>
+                        Resend OTP
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <form onSubmit={handleSendOtp} className="space-y-5">
+                    <div>
+                      <label htmlFor="kisan-phone" className="block text-sm font-semibold text-gray-700 mb-2">
+                        Registered Mobile Number
+                      </label>
+                      <div className="relative">
+                        <FiPhone className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                        <input
+                          id="kisan-phone"
+                          type="tel"
+                          inputMode="numeric"
+                          autoComplete="tel"
+                          value={kisanPhone}
+                          onChange={(e) => setKisanPhone(e.target.value)}
+                          required
+                          className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 ${roleConfig.theme.focus} focus:outline-none transition-colors text-base font-medium`}
+                          placeholder="10-digit mobile number"
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={isLoading || cleanKisanPhone.length !== 10}
+                      className={`w-full text-white py-3.5 rounded-xl font-semibold text-base transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${roleConfig.theme.button}`}
+                    >
+                      {isLoading ? 'Sending OTP...' : 'Send OTP'}
+                    </button>
+                  </form>
+                )
+              ) : fieldStore ? (
                 <form onSubmit={handleFieldLogin} className="space-y-5">
                   <div>
                     <label htmlFor="field-identifier" className="block text-sm font-semibold text-gray-700 mb-2">
@@ -251,7 +362,7 @@ const MobileLogin = () => {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={isLoading || cleanPhone.length !== 10 || !password}
+                  disabled={isLoading || !phone.trim() || !password}
                   className="w-full bg-primary-500 hover:bg-primary-600 text-white py-3.5 rounded-xl font-semibold text-base transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? 'Logging In...' : 'Log In'}
@@ -261,15 +372,21 @@ const MobileLogin = () => {
 
               {/* Sign Up Link */}
               <div className="mt-6 text-center">
-                <p className="text-sm text-gray-600">
-                  Don't have an account?{' '}
-                  <Link
-                    to={`/register${roleSearch(role)}`}
-                    className={`${roleConfig.theme.link} font-semibold`}
-                  >
-                    {role === 'kisan' ? 'Sign Up' : `Register as ${roleConfig.label}`}
-                  </Link>
-                </p>
+                {roleConfig.otpLogin ? (
+                  <p className="text-sm text-gray-600">
+                    Not registered yet? Ask the surveyor of your Kisan Vyapar Kendra to register you.
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-600">
+                    Don't have an account?{' '}
+                    <Link
+                      to={`/register${roleSearch(role)}`}
+                      className={`${roleConfig.theme.link} font-semibold`}
+                    >
+                      {role === 'customer' ? 'Sign Up' : `Register as ${roleConfig.label}`}
+                    </Link>
+                  </p>
+                )}
               </div>
 
             </div>

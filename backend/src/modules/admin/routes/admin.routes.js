@@ -19,6 +19,7 @@ import * as gstController from '../controllers/gst.controller.js';
 import * as shipmentController from '../controllers/shipment.controller.js';
 import * as fieldNetworkController from '../controllers/fieldNetwork.controller.js';
 import * as farmerController from '../controllers/farmer.controller.js';
+import * as procurementController from '../controllers/procurement.controller.js';
 import codRoutes from './cod.routes.js';
 import { authenticate } from '../../../middlewares/authenticate.js';
 import { authorize, enforceAccountStatus } from '../../../middlewares/authorize.js';
@@ -83,6 +84,19 @@ import {
     adminRegistrationListQuerySchema,
     registrationReviewSchema,
 } from '../../../validators/farmerRegistration.validator.js';
+import {
+    idParamSchema,
+    produceSchema,
+    produceStatusSchema,
+    adminKisanSaleListQuerySchema,
+    adminProcurementListQuerySchema,
+    procurementDecisionSchema,
+    paymentUpdateSchema,
+    moveToProductSchema,
+    stockLedgerQuerySchema,
+    kisanListQuerySchema,
+    kisanStatusSchema,
+} from '../../../validators/produceTrade.validator.js';
 import {
     marketingIdParamSchema,
     campaignListQuerySchema,
@@ -209,6 +223,22 @@ router.patch('/surveyors/:id/status', ...adminAuth, validate(fieldAccountIdParam
 router.get('/farmers', ...adminAuth, validate(adminRegistrationListQuerySchema, 'query'), farmerController.getAllFarmers);
 router.get('/farmers/:id', ...adminAuth, validate(registrationIdParamSchema, 'params'), farmerController.getFarmerById);
 router.patch('/farmers/:id/review', ...adminAuth, validate(registrationIdParamSchema, 'params'), validate(registrationReviewSchema), farmerController.reviewFarmer);
+
+// ─── Produce procurement (Kisan → Sanchalak → Admin) ─────────────────────────
+router.get('/produce', ...adminAuth, procurementController.getProduce);
+router.post('/produce', ...adminAuth, validate(produceSchema), procurementController.createProduce);
+router.put('/produce/:id', ...adminAuth, validate(idParamSchema, 'params'), validate(produceSchema), procurementController.updateProduce);
+router.patch('/produce/:id/status', ...adminAuth, validate(idParamSchema, 'params'), validate(produceStatusSchema), procurementController.updateProduceStatus);
+router.get('/kisans', ...adminAuth, validate(kisanListQuerySchema, 'query'), procurementController.getKisans);
+router.patch('/kisans/:id/status', ...adminAuth, validate(idParamSchema, 'params'), validate(kisanStatusSchema), procurementController.updateKisanStatus);
+router.get('/kisan-sale-requests', ...adminAuth, validate(adminKisanSaleListQuerySchema, 'query'), procurementController.getKisanSaleRequests);
+router.get('/procurement-requests', ...adminAuth, validate(adminProcurementListQuerySchema, 'query'), procurementController.getProcurementRequests);
+router.get('/procurement-requests/:id', ...adminAuth, validate(idParamSchema, 'params'), procurementController.getProcurementRequestById);
+router.patch('/procurement-requests/:id/decision', ...adminAuth, validate(idParamSchema, 'params'), validate(procurementDecisionSchema), procurementController.decideProcurementRequest);
+router.patch('/procurement-requests/:id/payment', ...adminAuth, validate(idParamSchema, 'params'), validate(paymentUpdateSchema), procurementController.updateProcurementPayment);
+router.get('/admin-stock', ...adminAuth, procurementController.getAdminStock);
+router.post('/admin-stock/:id/move-to-product', ...adminAuth, validate(idParamSchema, 'params'), validate(moveToProductSchema), procurementController.moveStockToProduct);
+router.get('/stock-ledger', ...adminAuth, validate(stockLedgerQuerySchema, 'query'), procurementController.getStockLedger);
 
 // ─── Return Requests ──────────────────────────────────────────────────────────
 router.get('/return-requests', ...adminAuth, returnController.getAllReturnRequests);

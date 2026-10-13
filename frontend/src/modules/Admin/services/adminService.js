@@ -245,6 +245,49 @@ export const getFarmerById = (id) =>
 export const reviewFarmer = (id, status, remark = '') =>
     api.patch(`/admin/farmers/${id}/review`, { status, remark });
 
+// ─── Produce procurement (Kisan → Sanchalak → Admin) ──────────────────────────
+export const getProduceList = () =>
+    api.get('/admin/produce');
+
+export const createProduce = (data) =>
+    api.post('/admin/produce', data);
+
+export const updateProduce = (id, data) =>
+    api.put(`/admin/produce/${id}`, data);
+
+export const updateProduceStatus = (id, isActive) =>
+    api.patch(`/admin/produce/${id}/status`, { isActive });
+
+export const getProcurementRequests = (params = {}) =>
+    api.get('/admin/procurement-requests', { params });
+
+export const getProcurementRequest = (id) =>
+    api.get(`/admin/procurement-requests/${id}`);
+
+export const decideProcurementRequest = (id, decision, remark = '') =>
+    api.patch(`/admin/procurement-requests/${id}/decision`, { decision, remark });
+
+export const updateProcurementPayment = (id, payload) =>
+    api.patch(`/admin/procurement-requests/${id}/payment`, payload);
+
+export const getAdminStock = () =>
+    api.get('/admin/admin-stock');
+
+export const moveStockToProduct = (produceId, data) =>
+    api.post(`/admin/admin-stock/${produceId}/move-to-product`, data);
+
+export const getStockLedger = (params = {}) =>
+    api.get('/admin/stock-ledger', { params });
+
+export const getKisanSaleRequests = (params = {}) =>
+    api.get('/admin/kisan-sale-requests', { params });
+
+export const getKisans = (params = {}) =>
+    api.get('/admin/kisans', { params });
+
+export const updateKisanStatus = (id, status, reason = '') =>
+    api.patch(`/admin/kisans/${id}/status`, { status, reason });
+
 // ─── Return Requests ──────────────────────────────────────────────────────────
 export const getAllReturnRequests = (params = {}) =>
     api.get('/admin/return-requests', { params });

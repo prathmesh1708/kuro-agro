@@ -124,6 +124,9 @@ import ComingSoon from "./modules/UserApp/pages/ComingSoon";
 import FieldAccounts from "./modules/Admin/pages/fieldNetwork/FieldAccounts";
 import FieldCommissionRates from "./modules/Admin/pages/fieldNetwork/CommissionRates";
 import AdminFarmers from "./modules/Admin/pages/fieldNetwork/Farmers";
+import ProcurementRequests from "./modules/Admin/pages/procurement/ProcurementRequests";
+import ProcuredStock from "./modules/Admin/pages/procurement/ProcuredStock";
+import ProduceList from "./modules/Admin/pages/procurement/ProduceList";
 import FieldAccountProfile from "./modules/Admin/pages/fieldNetwork/FieldAccountProfile";
 import SanchalakProtectedRoute from "./modules/Sanchalak/components/SanchalakProtectedRoute";
 import SanchalakDashboard from "./modules/Sanchalak/pages/Dashboard";
@@ -132,6 +135,18 @@ import SanchalakFarmerDetail from "./modules/Sanchalak/pages/FarmerDetail";
 import SanchalakProfile from "./modules/Sanchalak/pages/Profile";
 import SanchalakSurveyorDetail from "./modules/Sanchalak/pages/SurveyorDetail";
 import SanchalakSurveyors from "./modules/Sanchalak/pages/Surveyors";
+import SanchalakPurchases from "./modules/Sanchalak/pages/Purchases";
+import SanchalakPurchaseDetail from "./modules/Sanchalak/pages/PurchaseDetail";
+import SanchalakWarehouse from "./modules/Sanchalak/pages/Warehouse";
+import SanchalakSellToAdmin from "./modules/Sanchalak/pages/SellToAdmin";
+import SanchalakSales from "./modules/Sanchalak/pages/Sales";
+import SanchalakSaleDetail from "./modules/Sanchalak/pages/SaleDetail";
+import KisanProtectedRoute from "./modules/Kisan/components/KisanProtectedRoute";
+import KisanDashboard from "./modules/Kisan/pages/Dashboard";
+import KisanSell from "./modules/Kisan/pages/Sell";
+import KisanRequests from "./modules/Kisan/pages/Requests";
+import KisanRequestDetail from "./modules/Kisan/pages/RequestDetail";
+import KisanProfile from "./modules/Kisan/pages/Profile";
 import SurveyorProtectedRoute from "./modules/Surveyor/components/SurveyorProtectedRoute";
 import SurveyorDashboard from "./modules/Surveyor/pages/Dashboard";
 import SurveyorFarmers from "./modules/Surveyor/pages/Farmers";
@@ -464,6 +479,8 @@ const AppRoutes = () => {
         <Route path="products/:id" element={<ProductForm />} />
         <Route path="products/manage-products" element={<ManageProducts />} />
         <Route path="products/product-ratings" element={<ProductRatings />} />
+        <Route path="products/procured-stock" element={<ProcuredStock />} />
+        <Route path="products/produce-list" element={<ProduceList />} />
         <Route path="more" element={<More />} />
         <Route path="categories" element={<Categories />} />
         <Route
@@ -493,6 +510,7 @@ const AppRoutes = () => {
         <Route path="field-network/sanchalaks/:id" element={<FieldAccountProfile key="sanchalak" kind="sanchalak" />} />
         <Route path="field-network/surveyors" element={<FieldAccounts key="surveyor" kind="surveyor" />} />
         <Route path="field-network/surveyors/:id" element={<FieldAccountProfile key="surveyor" kind="surveyor" />} />
+        <Route path="field-network/procurement-requests" element={<ProcurementRequests />} />
         <Route path="field-network/commission" element={<FieldCommissionRates />} />
         <Route path="farmers" element={<AdminFarmers />} />
         <Route path="vendors" element={<Vendors />} />
@@ -602,6 +620,27 @@ const AppRoutes = () => {
           </SanchalakProtectedRoute>
         }
       />
+      {[
+        ["purchases", <SanchalakPurchases />],
+        ["purchases/:id", <SanchalakPurchaseDetail />],
+        ["warehouse", <SanchalakWarehouse />],
+        ["warehouse/sell", <SanchalakSellToAdmin />],
+        ["sales", <SanchalakSales />],
+        ["sales/:id", <SanchalakSaleDetail />],
+      ].map(([path, page]) => (
+        <Route key={path} path={`/sanchalak/${path}`} element={<SanchalakProtectedRoute>{page}</SanchalakProtectedRoute>} />
+      ))}
+      {/* Kisan (farmer) Routes — login is the shared /login?role=kisan page (mobile + OTP) */}
+      <Route path="/kisan" element={<Navigate to="/kisan/dashboard" replace />} />
+      {[
+        ["dashboard", <KisanDashboard />],
+        ["sell", <KisanSell />],
+        ["requests", <KisanRequests />],
+        ["requests/:id", <KisanRequestDetail />],
+        ["profile", <KisanProfile />],
+      ].map(([path, page]) => (
+        <Route key={path} path={`/kisan/${path}`} element={<KisanProtectedRoute>{page}</KisanProtectedRoute>} />
+      ))}
       <Route path="/surveyor" element={<Navigate to="/surveyor/dashboard" replace />} />
       <Route
         path="/surveyor/dashboard"

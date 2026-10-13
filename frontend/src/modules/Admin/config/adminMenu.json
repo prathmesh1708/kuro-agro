@@ -22,7 +22,9 @@
     "route": "/admin/products",
     "children": [
       "Manage Products",
-      "Product Ratings"
+      "Product Ratings",
+      "Procured Stock",
+      "Produce List"
     ]
   },
   {
@@ -62,6 +64,7 @@
     "children": [
       "Sanchalaks",
       "Surveyors",
+      "Procurement Requests",
       "Commission"
     ]
   },

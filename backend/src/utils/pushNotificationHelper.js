@@ -4,6 +4,7 @@ import DeliveryBoy from '../models/DeliveryBoy.model.js';
 import Admin from '../models/Admin.model.js';
 import Sanchalak from '../models/Sanchalak.model.js';
 import Surveyor from '../models/Surveyor.model.js';
+import Kisan from '../models/Kisan.model.js';
 import { sendPushNotification } from '../services/firebaseAdmin.js';
 
 export const sendNotificationToUser = async (userId, role, payload, includeMobile = true) => {
@@ -31,6 +32,9 @@ export const sendNotificationToUser = async (userId, role, payload, includeMobil
                 break;
             case 'surveyor':
                 model = Surveyor;
+                break;
+            case 'kisan':
+                model = Kisan;
                 break;
             default:
                 throw new Error(`Invalid role for push notification: ${role}`);

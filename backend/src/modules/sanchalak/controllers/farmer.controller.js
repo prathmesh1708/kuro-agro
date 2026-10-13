@@ -4,6 +4,7 @@ import ApiResponse from '../../../utils/ApiResponse.js';
 import { getCommissionSummary } from '../../../services/fieldCommission.service.js';
 import ApiError from '../../../utils/ApiError.js';
 import Surveyor from '../../../models/Surveyor.model.js';
+import { getTradeDashboard } from './trade.controller.js';
 import {
     countByStatus,
     getRegistrationOrThrow,
@@ -15,15 +16,16 @@ import {
 
 // GET /api/sanchalak/dashboard
 export const getDashboard = asyncHandler(async (req, res) => {
-    const [farmers, surveyorRows] = await Promise.all([
+    const [farmers, surveyorRows, trade] = await Promise.all([
         countByStatus({ sanchalak: req.user.id }),
         Surveyor.aggregate([
             { $match: { sanchalak: new mongoose.Types.ObjectId(req.user.id) } },
             { $group: { _id: '$status', count: { $sum: 1 } } },
         ]),
+        getTradeDashboard(req.user.id),
     ]);
     const surveyors = Object.fromEntries(surveyorRows.map((row) => [row._id, row.count]));
-    res.status(200).json(new ApiResponse(200, { farmers, surveyors }, 'Dashboard fetched.'));
+    res.status(200).json(new ApiResponse(200, { farmers, surveyors, trade }, 'Dashboard fetched.'));
 });
 
 // GET /api/sanchalak/farmers

@@ -5,6 +5,7 @@ import DeliveryBoy from '../models/DeliveryBoy.model.js';
 import Admin from '../models/Admin.model.js';
 import Sanchalak from '../models/Sanchalak.model.js';
 import Surveyor from '../models/Surveyor.model.js';
+import Kisan from '../models/Kisan.model.js';
 import {
     getFieldAccountBlockReason,
     getSurveyorSanchalakBlockReason,
@@ -91,6 +92,13 @@ export const enforceAccountStatus = async (req, res, next) => {
             const reason =
                 getFieldAccountBlockReason(surveyor, 'Surveyor') ||
                 (await getSurveyorSanchalakBlockReason(surveyor.sanchalak));
+            if (reason) return next(new ApiError(reason.status, reason.message));
+            return next();
+        }
+
+        if (role === 'kisan') {
+            const kisan = await Kisan.findById(req.user.id).select(FIELD_ACCOUNT_FIELDS).lean();
+            const reason = getFieldAccountBlockReason(kisan, 'Kisan');
             if (reason) return next(new ApiError(reason.status, reason.message));
             return next();
         }

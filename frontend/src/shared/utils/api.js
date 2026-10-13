@@ -70,6 +70,14 @@ const AUTH_SCOPES = {
     loginPath: '/login?role=surveyor',
     areaPrefix: '/surveyor',
   },
+  kisan: {
+    prefix: '/kisan',
+    accessKey: 'kisan-token',
+    refreshKey: 'kisan-refresh-token',
+    persistKey: 'kisan-auth-storage',
+    loginPath: '/login?role=kisan',
+    areaPrefix: '/kisan',
+  },
   user: {
     prefix: '/user',
     accessKey: 'token',
@@ -98,6 +106,7 @@ const refreshInFlight = {
   delivery: null,
   sanchalak: null,
   surveyor: null,
+  kisan: null,
   user: null,
 };
 
@@ -130,6 +139,7 @@ const getScopeFromUrl = (url = '') => {
   if (url.startsWith('/delivery')) return 'delivery';
   if (url.startsWith('/sanchalak')) return 'sanchalak';
   if (url.startsWith('/surveyor')) return 'surveyor';
+  if (url.startsWith('/kisan')) return 'kisan';
   return 'user';
 };
 
@@ -139,6 +149,7 @@ const getScopeFromPath = (path = window.location.pathname) => {
   if (path.startsWith('/delivery')) return 'delivery';
   if (path.startsWith('/sanchalak')) return 'sanchalak';
   if (path.startsWith('/surveyor')) return 'surveyor';
+  if (path.startsWith('/kisan')) return 'kisan';
   return 'user';
 };
 

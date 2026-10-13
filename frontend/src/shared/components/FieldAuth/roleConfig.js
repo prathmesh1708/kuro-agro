@@ -1,10 +1,10 @@
-import { FiUser, FiClipboard, FiBriefcase } from 'react-icons/fi';
+import { FiUser, FiClipboard, FiBriefcase, FiSun } from 'react-icons/fi';
 
-// Roles selectable on the shared /login and /register pages. Kisan is the existing customer account.
+// Roles selectable on the shared /login and /register pages. Customer (the store account) is the default.
 // Theme classes are written out in full so Tailwind can find them.
 export const ROLE_CONFIG = {
-  kisan: {
-    label: 'Kisan',
+  customer: {
+    label: 'Customer',
     loginTitle: 'Welcome Back',
     loginSubtitle: 'Log in with your email or phone number and password',
     registerTitle: 'Create Account',
@@ -16,6 +16,23 @@ export const ROLE_CONFIG = {
       focus: 'focus:border-primary-500',
       link: 'text-primary-600 hover:text-primary-700',
       badge: 'bg-primary-50 text-primary-700 border-primary-200',
+    },
+  },
+  kisan: {
+    label: 'Kisan / Farmer',
+    loginTitle: 'Kisan Login',
+    loginSubtitle: 'Log in with your registered mobile number and OTP',
+    registerTitle: 'Kisan Registration',
+    registerSubtitle: 'Farmers are registered by a surveyor of your Kisan Vyapar Kendra',
+    icon: FiSun,
+    home: '/kisan/dashboard',
+    codeField: 'kisanCode',
+    otpLogin: true,
+    theme: {
+      button: 'bg-green-600 hover:bg-green-700',
+      focus: 'focus:border-green-500',
+      link: 'text-green-600 hover:text-green-700',
+      badge: 'bg-green-50 text-green-700 border-green-200',
     },
   },
   surveyor: {
@@ -56,7 +73,7 @@ export const ROLE_CONFIG = {
 
 export const ROLE_KEYS = Object.keys(ROLE_CONFIG);
 
-export const resolveRole = (value) => (ROLE_CONFIG[value] ? value : 'kisan');
+export const resolveRole = (value) => (ROLE_CONFIG[value] ? value : 'customer');
 
-// Query string for a role; Kisan is the default and needs none.
-export const roleSearch = (role) => (role === 'kisan' ? '' : `?role=${role}`);
+// Query string for a role; Customer is the default and needs none.
+export const roleSearch = (role) => (role === 'customer' ? '' : `?role=${role}`);

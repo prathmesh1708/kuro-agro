@@ -4,6 +4,7 @@ import { ApiResponse } from '../../../utils/ApiResponse.js';
 import { asyncHandler } from '../../../utils/asyncHandler.js';
 import { createNotification } from '../../../services/notification.service.js';
 import { commissionForApproval } from '../../../services/fieldCommission.service.js';
+import { ensureKisanForRegistration } from '../../../services/kisan.service.js';
 import {
     getRegistrationOrThrow,
     listRegistrations,
@@ -55,6 +56,9 @@ export const reviewFarmer = asyncHandler(async (req, res) => {
         const exists = await FarmerRegistration.exists({ _id: req.params.id });
         throw new ApiError(exists ? 409 : 404, exists ? 'This registration has already been reviewed.' : 'Farmer registration not found.');
     }
+
+    // An approved farmer can now log in to the Kisan app with their mobile number.
+    if (status === 'approved') await ensureKisanForRegistration(registration);
 
     const verdict = status === 'approved' ? 'approved' : 'rejected';
     const message =

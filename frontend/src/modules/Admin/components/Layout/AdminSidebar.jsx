@@ -58,6 +58,8 @@ const getChildRoute = (parentRoute, childName) => {
     "/admin/products": {
       "Manage Products": "/admin/products/manage-products",
       "Product Ratings": "/admin/products/product-ratings",
+      "Procured Stock": "/admin/products/procured-stock",
+      "Produce List": "/admin/products/produce-list",
     },
     "/admin/categories": {
       "Manage Categories": "/admin/categories/manage-categories",
@@ -83,6 +85,7 @@ const getChildRoute = (parentRoute, childName) => {
     "/admin/field-network": {
       Sanchalaks: "/admin/field-network/sanchalaks",
       Surveyors: "/admin/field-network/surveyors",
+      "Procurement Requests": "/admin/field-network/procurement-requests",
       Commission: "/admin/field-network/commission",
     },
     "/admin/offers": {
