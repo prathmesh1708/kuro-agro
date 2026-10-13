@@ -124,6 +124,7 @@ import ComingSoon from "./modules/UserApp/pages/ComingSoon";
 import FieldAccounts from "./modules/Admin/pages/fieldNetwork/FieldAccounts";
 import FieldCommissionRates from "./modules/Admin/pages/fieldNetwork/CommissionRates";
 import AdminFarmers from "./modules/Admin/pages/fieldNetwork/Farmers";
+import FieldAccountProfile from "./modules/Admin/pages/fieldNetwork/FieldAccountProfile";
 import SanchalakProtectedRoute from "./modules/Sanchalak/components/SanchalakProtectedRoute";
 import SanchalakDashboard from "./modules/Sanchalak/pages/Dashboard";
 import SanchalakFarmers from "./modules/Sanchalak/pages/Farmers";
@@ -489,7 +490,9 @@ const AppRoutes = () => {
         <Route path="delivery/assign-delivery" element={<AssignDelivery />} />
         <Route path="field-network" element={<Navigate to="/admin/field-network/sanchalaks" replace />} />
         <Route path="field-network/sanchalaks" element={<FieldAccounts key="sanchalak" kind="sanchalak" />} />
+        <Route path="field-network/sanchalaks/:id" element={<FieldAccountProfile key="sanchalak" kind="sanchalak" />} />
         <Route path="field-network/surveyors" element={<FieldAccounts key="surveyor" kind="surveyor" />} />
+        <Route path="field-network/surveyors/:id" element={<FieldAccountProfile key="surveyor" kind="surveyor" />} />
         <Route path="field-network/commission" element={<FieldCommissionRates />} />
         <Route path="farmers" element={<AdminFarmers />} />
         <Route path="vendors" element={<Vendors />} />

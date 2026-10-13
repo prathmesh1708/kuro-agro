@@ -60,13 +60,12 @@ const MobileLogin = () => {
     }
   };
 
-  const cleanPhone = phone.replace(/\D/g, '').slice(-10);
-
-  // Phone + Password Login
+  // Email / Phone + Password Login
   const handlePasswordLogin = async (e) => {
     e.preventDefault();
-    if (cleanPhone.length !== 10) {
-      toast.error('Please enter a valid 10-digit mobile number.');
+    const rawIdentifier = phone.trim();
+    if (!rawIdentifier) {
+      toast.error('Please enter your email or mobile number.');
       return;
     }
     if (!password) {
@@ -75,7 +74,7 @@ const MobileLogin = () => {
     }
 
     try {
-      await login(cleanPhone, password);
+      await login(rawIdentifier, password);
       replayPendingAction();
       toast.success('Login successful!');
       clearPostLoginRedirect();
@@ -85,7 +84,7 @@ const MobileLogin = () => {
       toast.error(msg);
       // If unverified, redirect to verification
       if (msg.toLowerCase().includes('not verified')) {
-        navigate('/verification', { state: { phone: cleanPhone } });
+        navigate('/verification', { state: { phone: rawIdentifier } });
       }
     }
   };
@@ -198,26 +197,21 @@ const MobileLogin = () => {
                 </form>
               ) : (
               <form onSubmit={handlePasswordLogin} className="space-y-5">
-                {/* Mobile Number */}
+                {/* Mobile Number or Email */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Phone Number
+                    Email or Mobile Number
                   </label>
-                  <div className="flex gap-2">
-                    <div className="w-24 px-3 py-3 rounded-xl border-2 border-gray-200 bg-gray-50 flex items-center justify-center text-sm font-semibold text-gray-700">
-                      +91
-                    </div>
-                    <div className="relative flex-1">
-                      <FiPhone className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                      <input
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                        required
-                        className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:outline-none transition-colors text-base font-medium"
-                        placeholder="9876543210"
-                      />
-                    </div>
+                  <div className="relative">
+                    <FiUser className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      required
+                      className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:outline-none transition-colors text-base font-medium"
+                      placeholder="you@example.com or 10-digit mobile"
+                    />
                   </div>
                 </div>
 

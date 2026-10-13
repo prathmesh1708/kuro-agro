@@ -200,6 +200,7 @@ router.get('/sanchalaks', ...adminAuth, validate(sanchalakListQuerySchema, 'quer
 router.get('/sanchalaks/:id', ...adminAuth, validate(fieldAccountIdParamSchema, 'params'), fieldNetworkController.getSanchalakById);
 router.patch('/sanchalaks/:id/status', ...adminAuth, validate(fieldAccountIdParamSchema, 'params'), validate(fieldAccountStatusSchema), fieldNetworkController.updateSanchalakStatus);
 router.get('/surveyors', ...adminAuth, validate(surveyorListQuerySchema, 'query'), fieldNetworkController.getAllSurveyors);
+router.get('/surveyors/:id', ...adminAuth, validate(fieldAccountIdParamSchema, 'params'), fieldNetworkController.getSurveyorById);
 router.get('/field-commission', ...adminAuth, fieldNetworkController.getCommissionRates);
 router.put('/field-commission', ...adminAuth, validate(commissionRatesSchema), fieldNetworkController.updateCommissionRates);
 router.patch('/surveyors/:id/status', ...adminAuth, validate(fieldAccountIdParamSchema, 'params'), validate(fieldAccountStatusSchema), fieldNetworkController.updateSurveyorStatus);

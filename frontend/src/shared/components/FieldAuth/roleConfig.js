@@ -6,7 +6,7 @@ export const ROLE_CONFIG = {
   kisan: {
     label: 'Kisan',
     loginTitle: 'Welcome Back',
-    loginSubtitle: 'Log in with your phone number and password',
+    loginSubtitle: 'Log in with your email or phone number and password',
     registerTitle: 'Create Account',
     registerSubtitle: 'Sign up to get started with KuroAgro',
     icon: FiUser,

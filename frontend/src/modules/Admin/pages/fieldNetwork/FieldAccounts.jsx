@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { FiSearch, FiX, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -21,6 +22,7 @@ const KIND_CONFIG = {
     fetchList: getAllSanchalaks,
     updateStatus: updateSanchalakStatus,
     listKey: 'sanchalaks',
+    profilePath: '/admin/field-network/sanchalaks',
   },
   surveyor: {
     title: 'Surveyors',
@@ -30,6 +32,7 @@ const KIND_CONFIG = {
     fetchList: getAllSurveyors,
     updateStatus: updateSurveyorStatus,
     listKey: 'surveyors',
+    profilePath: '/admin/field-network/surveyors',
   },
 };
 
@@ -50,12 +53,14 @@ const ITEMS_PER_PAGE = 10;
 const formatDate = (value) =>
   value ? new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
-const FieldAccounts = ({ kind }) => {
+// `sanchalakId` scopes the surveyor list to one Sanchalak; `embedded` drops the page header (used on the profile page).
+const FieldAccounts = ({ kind, sanchalakId, embedded = false, onStatusChanged }) => {
   const config = KIND_CONFIG[kind];
+  const navigate = useNavigate();
   const [rows, setRows] = useState([]);
   const [statusCounts, setStatusCounts] = useState({});
   const [pagination, setPagination] = useState({ total: 0, pages: 1 });
-  const [statusFilter, setStatusFilter] = useState('pending');
+  const [statusFilter, setStatusFilter] = useState(embedded ? 'all' : 'pending');
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -78,6 +83,7 @@ const FieldAccounts = ({ kind }) => {
       const response = await config.fetchList({
         page: currentPage,
         limit: ITEMS_PER_PAGE,
+        ...(sanchalakId && { sanchalak: sanchalakId }),
         ...(search && { search }),
         ...(statusFilter !== 'all' && { status: statusFilter }),
       });
@@ -90,7 +96,7 @@ const FieldAccounts = ({ kind }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [config, currentPage, search, statusFilter]);
+  }, [config, sanchalakId, currentPage, search, statusFilter]);
 
   useEffect(() => {
     load();
@@ -114,6 +120,7 @@ const FieldAccounts = ({ kind }) => {
       toast.success(`${config.label} ${action.status}.`);
       setAction(null);
       load();
+      onStatusChanged?.();
     } catch {
       // The API client already shows the error message.
     } finally {
@@ -125,7 +132,10 @@ const FieldAccounts = ({ kind }) => {
     <button
       key={status}
       type="button"
-      onClick={() => openAction(row, status)}
+      onClick={(e) => {
+        e.stopPropagation();
+        openAction(row, status);
+      }}
       disabled={!row.isPhoneVerified}
       title={row.isPhoneVerified ? undefined : 'Phone number not verified yet'}
       className={`px-3 py-1 rounded-lg text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed ${tone}`}
@@ -152,11 +162,11 @@ const FieldAccounts = ({ kind }) => {
       sortable: true,
       render: (value, row) => (
         <div>
-          <p className="font-semibold text-gray-800">{value}</p>
+          <p className="font-semibold text-gray-800 hover:text-primary-600">{value}</p>
           <p className="text-xs text-gray-500">{row.email}</p>
           <p className={`text-xs flex items-center gap-1 ${row.isPhoneVerified ? 'text-green-600' : 'text-orange-600'}`}>
             {row.isPhoneVerified ? <FiCheckCircle /> : <FiAlertCircle />}
-            {row.phone}
+            {row.phone || (kind === 'surveyor' ? 'No phone (verified)' : 'No phone')}
             <span className="text-gray-400">· {formatDate(row.createdAt)}</span>
           </p>
         </div>
@@ -182,13 +192,23 @@ const FieldAccounts = ({ kind }) => {
           </div>
         ),
       }
-      : {
+      : !sanchalakId && {
         key: 'sanchalak',
         label: 'Sanchalak',
         sortable: false,
         render: (value) => (
           <div>
-            <p className="text-gray-800">{value?.kendraName || '—'}</p>
+            {value?._id ? (
+              <Link
+                to={`${KIND_CONFIG.sanchalak.profilePath}/${value._id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="text-gray-800 hover:text-primary-600 hover:underline"
+              >
+                {value.kendraName}
+              </Link>
+            ) : (
+              <p className="text-gray-800">—</p>
+            )}
             <p className="text-xs text-gray-500">
               {value?.name} · {value?.sanchalakCode}
               {value?.status && value.status !== 'approved' ? ` (${value.status})` : ''}
@@ -196,6 +216,17 @@ const FieldAccounts = ({ kind }) => {
           </div>
         ),
       },
+    kind === 'surveyor' && {
+      key: 'farmerCount',
+      label: 'Farmers',
+      sortable: true,
+      render: (value, row) => (
+        <div>
+          <p className="font-semibold text-gray-800">{value}</p>
+          <p className="text-xs text-gray-500">{row.approvedFarmerCount} approved</p>
+        </div>
+      ),
+    },
     {
       key: 'address',
       label: 'Location',
@@ -226,16 +257,18 @@ const FieldAccounts = ({ kind }) => {
       sortable: false,
       render: (_, row) => <div className="flex items-center gap-2">{actionsFor(row)}</div>,
     },
-  ];
+  ].filter(Boolean);
 
   const totalAll = Object.values(statusCounts).reduce((sum, n) => sum + n, 0);
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">{config.title}</h1>
-        <p className="text-sm sm:text-base text-gray-600">{config.subtitle}</p>
-      </div>
+      {!embedded && (
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">{config.title}</h1>
+          <p className="text-sm sm:text-base text-gray-600">{config.subtitle}</p>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 space-y-4">
         <div className="flex flex-wrap gap-2">
@@ -275,7 +308,12 @@ const FieldAccounts = ({ kind }) => {
         ) : rows.length === 0 ? (
           <p className="text-center text-gray-500 py-8">No {config.title.toLowerCase()} found.</p>
         ) : (
-          <DataTable data={rows} columns={columns} pagination={false} />
+          <DataTable
+            data={rows}
+            columns={columns}
+            pagination={false}
+            onRowClick={(row) => navigate(`${config.profilePath}/${row.id}`)}
+          />
         )}
         <Pagination
           currentPage={currentPage}

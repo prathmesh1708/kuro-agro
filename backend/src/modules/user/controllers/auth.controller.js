@@ -37,38 +37,37 @@ const extractCloudinaryPublicId = (url = '') => {
 export const register = asyncHandler(async (req, res) => {
     const { name, email, password, phone } = req.body;
     const normalizedEmail = String(email || '').trim().toLowerCase();
-    const normalizedPhone = String(phone || '').replace(/\D/g, '').slice(-10);
+    const rawPhone = phone ? String(phone).replace(/\D/g, '').slice(-10) : '';
+    const normalizedPhone = rawPhone && rawPhone.length === 10 ? rawPhone : undefined;
 
-    if (!normalizedPhone || normalizedPhone.length !== 10) {
-        throw new ApiError(400, 'Please provide a valid 10-digit mobile number.');
+    const existingConditions = [{ email: normalizedEmail }];
+    if (normalizedPhone) {
+        existingConditions.push({ phone: normalizedPhone });
     }
 
-    const existing = await User.findOne({
-        $or: [
-            { email: normalizedEmail },
-            { phone: normalizedPhone }
-        ]
-    });
+    const existing = await User.findOne({ $or: existingConditions });
     if (existing) {
         if (existing.email === normalizedEmail) throw new ApiError(409, 'Email already registered.');
-        throw new ApiError(409, 'Phone number already registered.');
+        if (normalizedPhone && existing.phone === normalizedPhone) throw new ApiError(409, 'Phone number already registered.');
     }
 
-    const user = await User.create({
+    const userData = {
         name: String(name || '').trim(),
         email: normalizedEmail,
         password,
-        phone: normalizedPhone,
-    });
+        isVerified: true,
+    };
+    if (normalizedPhone) {
+        userData.phone = normalizedPhone;
+    }
 
-    // Send OTP via SMS (SMS India Hub) and backup email
-    await sendOTP(user, 'phone_verification');
+    const user = await User.create(userData);
 
     res.status(201).json(
         new ApiResponse(
             201, 
             { email: user.email, phone: user.phone }, 
-            'Registration successful. Please verify the OTP sent to your phone number.'
+            'Registration successful! You can now log in.'
         )
     );
 });

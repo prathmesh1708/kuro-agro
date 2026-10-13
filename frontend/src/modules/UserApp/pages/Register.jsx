@@ -35,16 +35,11 @@ const MobileRegister = () => {
   const onSubmit = async (data) => {
     try {
       const fullName = `${data.firstName} ${data.lastName}`.trim();
-      const normalizedPhone = String(data.phone || '').replace(/\D/g, '').slice(-10);
-      if (normalizedPhone.length !== 10) {
-        toast.error('Please enter a valid 10-digit mobile number.');
-        return;
-      }
+      const rawPhone = data.phone ? String(data.phone).replace(/\D/g, '').slice(-10) : '';
 
-      await registerUser(fullName, data.email, data.password, normalizedPhone);
-      toast.success('Registration successful! OTP sent to your phone.');
-      // Navigate to verification page with phone and email state
-      navigate('/verification', { state: { phone: normalizedPhone, email: data.email } });
+      await registerUser(fullName, data.email, data.password, rawPhone);
+      toast.success('Registration successful! You can now log in.');
+      navigate('/login', { replace: true });
     } catch (error) {
       toast.error(error?.response?.data?.message || error.message || 'Registration failed. Please try again.');
     }
@@ -164,43 +159,6 @@ const MobileRegister = () => {
                   )}
                 </div>
 
-                {/* Phone */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Phone Number (for SMS OTP)
-                  </label>
-                  <div className="flex gap-2">
-                    <select
-                      defaultValue="+91"
-                      {...register('countryCode', { required: true })}
-                      className="w-24 px-3 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:outline-none text-sm font-medium"
-                    >
-                      <option value="+91">+91</option>
-                      <option value="+1">+1</option>
-                      <option value="+44">+44</option>
-                      <option value="+880">+880</option>
-                    </select>
-                    <div className="relative flex-1">
-                      <FiPhone className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                      <input
-                        type="tel"
-                        {...register('phone', {
-                          required: 'Phone number is required',
-                          validate: (value) =>
-                            isValidPhone(value) || 'Please enter a valid 10-digit phone number',
-                        })}
-                        className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 ${errors.phone
-                            ? 'border-red-300 focus:border-red-500'
-                            : 'border-gray-200 focus:border-primary-500'
-                          } focus:outline-none transition-colors text-base`}
-                        placeholder="9876543210"
-                      />
-                    </div>
-                  </div>
-                  {errors.phone && (
-                    <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
-                  )}
-                </div>
 
                 {/* Password */}
                 <div>

@@ -81,7 +81,7 @@ const FieldRegisterForm = ({ role, initialPhone = '' }) => {
     const payload = {
       name: data.name.trim(),
       email: data.email.trim(),
-      phone: data.phone.replace(/\D/g, '').slice(-10),
+      ...(data.phone && { phone: data.phone.replace(/\D/g, '').slice(-10) }),
       password: data.password,
       address: {
         village: data.village.trim(),
@@ -97,11 +97,9 @@ const FieldRegisterForm = ({ role, initialPhone = '' }) => {
 
     try {
       const result = await store.register(payload);
-      setPhone(payload.phone);
       setLoginCode(result?.[config.codeField] || '');
-      setCooldown(RESEND_COOLDOWN_SECONDS);
-      setStep('otp');
-      toast.success('OTP sent to your phone number.');
+      setStep('done');
+      toast.success('Registration submitted! Awaiting admin approval.');
     } catch {
       // The API client already shows the error message.
     }
@@ -139,14 +137,16 @@ const FieldRegisterForm = ({ role, initialPhone = '' }) => {
         <div>
           <h2 className="text-xl font-bold text-gray-900 mb-1">Registration submitted</h2>
           <p className="text-sm text-gray-600">
-            Your phone is verified. Admin will review your details; you can log in once your account is approved.
+            Admin will review your details; you can log in once your account is approved.
           </p>
         </div>
         {loginCode && (
           <div className={`rounded-xl border-2 px-4 py-3 ${theme.badge}`}>
             <p className="text-xs font-semibold uppercase tracking-wide">Your Login ID</p>
             <p className="text-2xl font-bold tracking-wider">{loginCode}</p>
-            <p className="text-xs mt-1">Save this ID. You can also log in with your email or phone.</p>
+            <p className="text-xs mt-1">
+              Save this ID. You can also log in with your email.
+            </p>
           </div>
         )}
         <Link
@@ -251,19 +251,6 @@ const FieldRegisterForm = ({ role, initialPhone = '' }) => {
           })}
           className={inputClass(errors.email)}
           placeholder="you@example.com"
-        />
-      </Field>
-
-      <Field label="Phone Number (for SMS OTP)" icon={FiPhone} error={errors.phone}>
-        <input
-          type="tel"
-          inputMode="numeric"
-          {...register('phone', {
-            required: 'Phone number is required',
-            validate: (value) => value.replace(/\D/g, '').length === 10 || 'Please enter a valid 10-digit phone number',
-          })}
-          className={inputClass(errors.phone)}
-          placeholder="9876543210"
         />
       </Field>
 

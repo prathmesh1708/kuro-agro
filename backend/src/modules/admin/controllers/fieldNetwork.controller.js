@@ -1,12 +1,14 @@
 import mongoose from 'mongoose';
 import Sanchalak from '../../../models/Sanchalak.model.js';
 import Surveyor from '../../../models/Surveyor.model.js';
+import FarmerRegistration from '../../../models/FarmerRegistration.model.js';
 import { ApiError } from '../../../utils/ApiError.js';
 import { ApiResponse } from '../../../utils/ApiResponse.js';
 import { asyncHandler } from '../../../utils/asyncHandler.js';
 import { sendEmail } from '../../../services/email.service.js';
 import { createNotification } from '../../../services/notification.service.js';
-import { getFieldCommissionRates, saveFieldCommissionRates } from '../../../services/fieldCommission.service.js';
+import { getCommissionSummary, getFieldCommissionRates, saveFieldCommissionRates } from '../../../services/fieldCommission.service.js';
+import { countByStatus } from '../../../services/farmerRegistration.service.js';
 
 const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -18,6 +20,15 @@ const buildListFilter = ({ search, status }, codeField) => {
         filter.$or = [{ name: pattern }, { email: pattern }, { phone: pattern }, { [codeField]: pattern }];
     }
     return filter;
+};
+
+// Profile header stats: farmer counts and commission totals, without the commission history list.
+const profileStats = async (role, accountId) => {
+    const [farmers, { ratePerFarmer, earned, pending }] = await Promise.all([
+        countByStatus({ [role]: String(accountId) }),
+        getCommissionSummary(role, accountId),
+    ]);
+    return { farmers, commission: { ratePerFarmer, earned, pending } };
 };
 
 const paginate = ({ page = 1, limit = 10 }) => {
@@ -113,7 +124,7 @@ export const getAllSanchalaks = asyncHandler(async (req, res) => {
 });
 
 /**
- * @desc    Sanchalak detail with their surveyors
+ * @desc    Sanchalak profile with surveyor, farmer and commission stats
  * @route   GET /api/admin/sanchalaks/:id
  * @access  Private (Admin)
  */
@@ -121,12 +132,14 @@ export const getSanchalakById = asyncHandler(async (req, res) => {
     const sanchalak = await Sanchalak.findById(req.params.id).lean();
     if (!sanchalak) throw new ApiError(404, 'Sanchalak not found');
 
-    const surveyors = await Surveyor.find({ sanchalak: sanchalak._id })
-        .select('name email phone surveyorCode status isPhoneVerified createdAt')
-        .sort({ createdAt: -1 })
-        .lean();
+    const [surveyorRows, stats] = await Promise.all([
+        Surveyor.aggregate([{ $match: { sanchalak: sanchalak._id } }, { $group: { _id: '$status', count: { $sum: 1 } } }]),
+        profileStats('sanchalak', sanchalak._id),
+    ]);
+    const surveyors = Object.fromEntries(surveyorRows.map((row) => [row._id, row.count]));
+    surveyors.total = surveyorRows.reduce((sum, row) => sum + row.count, 0);
 
-    res.status(200).json(new ApiResponse(200, { ...sanchalak, id: sanchalak._id, surveyors }, 'Sanchalak fetched successfully'));
+    res.status(200).json(new ApiResponse(200, { ...sanchalak, id: sanchalak._id, surveyors, ...stats }, 'Sanchalak fetched successfully'));
 });
 
 /**
@@ -167,13 +180,39 @@ export const getAllSurveyors = asyncHandler(async (req, res) => {
         Surveyor.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
     ]);
 
+    const farmerCounts = await FarmerRegistration.aggregate([
+        { $match: { surveyor: { $in: surveyors.map((s) => s._id) } } },
+        { $group: { _id: '$surveyor', total: { $sum: 1 }, approved: { $sum: { $cond: [{ $eq: ['$status', 'approved'] }, 1, 0] } } } },
+    ]);
+    const farmersById = new Map(farmerCounts.map((c) => [String(c._id), c]));
+
     res.status(200).json(
         new ApiResponse(200, {
-            surveyors: surveyors.map((s) => ({ ...s, id: s._id })),
+            surveyors: surveyors.map((s) => ({
+                ...s,
+                id: s._id,
+                farmerCount: farmersById.get(String(s._id))?.total || 0,
+                approvedFarmerCount: farmersById.get(String(s._id))?.approved || 0,
+            })),
             statusCounts: Object.fromEntries(statusCounts.map((c) => [c._id, c.count])),
             pagination: { total, page, limit, pages: Math.ceil(total / limit) },
         }, 'Surveyors fetched successfully')
     );
+});
+
+/**
+ * @desc    Surveyor profile with their Sanchalak, farmer and commission stats
+ * @route   GET /api/admin/surveyors/:id
+ * @access  Private (Admin)
+ */
+export const getSurveyorById = asyncHandler(async (req, res) => {
+    const surveyor = await Surveyor.findById(req.params.id)
+        .populate('sanchalak', 'name kendraName sanchalakCode status phone')
+        .lean();
+    if (!surveyor) throw new ApiError(404, 'Surveyor not found');
+
+    const stats = await profileStats('surveyor', surveyor._id);
+    res.status(200).json(new ApiResponse(200, { ...surveyor, id: surveyor._id, ...stats }, 'Surveyor fetched successfully'));
 });
 
 /**

@@ -48,7 +48,7 @@ const SanchalakSurveyors = () => {
                     <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border capitalize ${STATUS_CLASS[s.status] || ''}`}>{s.status}</span>
                   </div>
                   <p className="text-xs text-gray-500 mt-1 truncate">
-                    <span className="font-mono">{s.surveyorCode}</span> · {s.phone} · {s.address?.village}, {s.address?.district}
+                    <span className="font-mono">{s.surveyorCode}</span>{s.phone ? ` · ${s.phone}` : ''} · {[s.address?.village, s.address?.district].filter(Boolean).join(', ')}
                   </p>
                 </div>
                 <FiChevronRight className="text-gray-400 shrink-0" />

@@ -61,7 +61,9 @@ const SanchalakSurveyorDetail = () => {
               </span>
             </div>
             <div className="mt-3 space-y-2 text-sm text-gray-700">
-              <p className="flex items-center gap-3"><FiPhone className="text-gray-400 shrink-0" /> {surveyor.phone}</p>
+              {surveyor.phone && (
+                <p className="flex items-center gap-3"><FiPhone className="text-gray-400 shrink-0" /> {surveyor.phone}</p>
+              )}
               <p className="flex items-center gap-3 break-all"><FiMail className="text-gray-400 shrink-0" /> {surveyor.email}</p>
               {(address.village || address.district) && (
                 <p className="flex items-start gap-3">

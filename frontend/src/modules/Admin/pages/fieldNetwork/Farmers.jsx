@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { FiSearch, FiX } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -21,11 +22,12 @@ const formatDate = (value) =>
   value ? new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
 // Kisan / Farmer module: registrations submitted by surveyors, verified here.
-const Farmers = () => {
+// `surveyorId` scopes the list to one surveyor; `embedded` drops the page header (used on the surveyor profile).
+const Farmers = ({ surveyorId, embedded = false, onReviewed }) => {
   const [rows, setRows] = useState([]);
   const [statusCounts, setStatusCounts] = useState({});
   const [pagination, setPagination] = useState({ total: 0, pages: 1 });
-  const [statusFilter, setStatusFilter] = useState('submitted');
+  const [statusFilter, setStatusFilter] = useState(embedded ? 'all' : 'submitted');
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -50,6 +52,7 @@ const Farmers = () => {
       const response = await getAllFarmers({
         page: currentPage,
         limit: ITEMS_PER_PAGE,
+        ...(surveyorId && { surveyor: surveyorId }),
         ...(search && { search }),
         ...(statusFilter !== 'all' && { status: statusFilter }),
       });
@@ -62,7 +65,7 @@ const Farmers = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, search, statusFilter]);
+  }, [surveyorId, currentPage, search, statusFilter]);
 
   useEffect(() => {
     load();
@@ -94,6 +97,7 @@ const Farmers = () => {
       toast.success(status === 'approved' ? 'Farmer approved.' : 'Farmer registration rejected.');
       setSelected(null);
       load();
+      onReviewed?.();
     } catch {
       // The API client already shows the error message.
     } finally {
@@ -135,14 +139,24 @@ const Farmers = () => {
         </span>
       ),
     },
-    {
+    !surveyorId && {
       key: 'surveyor',
       label: 'Surveyor / Kendra',
       sortable: false,
       render: (value, row) => (
         <div>
-          <p className="text-gray-800">{value?.name || '—'}</p>
-          <p className="text-xs text-gray-500">{row.sanchalak?.kendraName}</p>
+          {value?._id ? (
+            <Link to={`/admin/field-network/surveyors/${value._id}`} className="text-gray-800 hover:text-primary-600 hover:underline">
+              {value.name}
+            </Link>
+          ) : (
+            <p className="text-gray-800">—</p>
+          )}
+          {row.sanchalak?._id && (
+            <Link to={`/admin/field-network/sanchalaks/${row.sanchalak._id}`} className="block text-xs text-gray-500 hover:text-primary-600 hover:underline">
+              {row.sanchalak.kendraName}
+            </Link>
+          )}
         </div>
       ),
     },
@@ -171,16 +185,18 @@ const Farmers = () => {
         </button>
       ),
     },
-  ];
+  ].filter(Boolean);
 
   const totalAll = Object.values(statusCounts).reduce((sum, n) => sum + n, 0);
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Farmers (Kisan)</h1>
-        <p className="text-sm sm:text-base text-gray-600">Farmer registrations submitted by surveyors — verify and approve or reject</p>
-      </div>
+      {!embedded && (
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Farmers (Kisan)</h1>
+          <p className="text-sm sm:text-base text-gray-600">Farmer registrations submitted by surveyors — verify and approve or reject</p>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 space-y-4">
         <div className="flex flex-wrap gap-2">

@@ -14,5 +14,6 @@ export {
 
 export const registerSchema = Joi.object({
     ...baseRegisterFields,
+    phone: Joi.string().pattern(/^[0-9]{10}$/).allow('', null).optional(),
     kendraName: Joi.string().trim().min(2).max(120).required(),
 });

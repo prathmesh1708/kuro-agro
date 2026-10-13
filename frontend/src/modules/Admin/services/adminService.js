@@ -214,11 +214,17 @@ export const deleteDeliveryBoy = (id) =>
 export const getAllSanchalaks = (params = {}) =>
     api.get('/admin/sanchalaks', { params });
 
+export const getSanchalakById = (id) =>
+    api.get(`/admin/sanchalaks/${id}`);
+
 export const updateSanchalakStatus = (id, status, reason = '') =>
     api.patch(`/admin/sanchalaks/${id}/status`, { status, reason });
 
 export const getAllSurveyors = (params = {}) =>
     api.get('/admin/surveyors', { params });
+
+export const getSurveyorById = (id) =>
+    api.get(`/admin/surveyors/${id}`);
 
 export const updateSurveyorStatus = (id, status, reason = '') =>
     api.patch(`/admin/surveyors/${id}/status`, { status, reason });
