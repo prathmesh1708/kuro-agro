@@ -4,9 +4,60 @@ import Order from '../../../models/Order.model.js';
 import User from '../../../models/User.model.js';
 import Vendor from '../../../models/Vendor.model.js';
 import Product from '../../../models/Product.model.js';
+import { DASHBOARD_RANGES, bucketExpr, percentChange, resolveRange } from '../../../services/analyticsRange.service.js';
+
+// Dashboard period filter: ?range=today|yesterday|week|month|year limits a query to that period (IST).
+// Without `range` the endpoints behave as before (all time / last 12 buckets), for the other pages using them.
+const rangeFrom = (query) => (DASHBOARD_RANGES.includes(query.range) ? resolveRange(query.range) : null);
+const inRange = (r, field = 'createdAt') => (r ? { [field]: { $gte: r.start, $lte: r.end } } : {});
+
+// Totals for one period: revenue (excluding cancelled orders), order count and new customers.
+const periodTotals = async (start, end) => {
+    const createdAt = { $gte: start, $lte: end };
+    const [orderAgg, newCustomers] = await Promise.all([
+        Order.aggregate([
+            { $match: { isDeleted: { $ne: true }, createdAt } },
+            {
+                $group: {
+                    _id: null,
+                    orders: { $sum: 1 },
+                    revenue: { $sum: { $cond: [{ $eq: ['$status', 'cancelled'] }, 0, '$total'] } },
+                },
+            },
+        ]),
+        User.countDocuments({ role: 'customer', createdAt }),
+    ]);
+    return { revenue: orderAgg[0]?.revenue || 0, orders: orderAgg[0]?.orders || 0, newCustomers };
+};
 
 // GET /api/admin/analytics/dashboard
 export const getDashboardStats = asyncHandler(async (req, res) => {
+    const r = rangeFrom(req.query);
+    if (r) {
+        const [current, previous, totalProducts, totalUsers, pendingOrders] = await Promise.all([
+            periodTotals(r.start, r.end),
+            periodTotals(r.prevStart, r.prevEnd),
+            Product.countDocuments({ isActive: true }),
+            User.countDocuments({ role: 'customer' }),
+            Order.countDocuments({ isDeleted: { $ne: true }, status: 'pending' }),
+        ]);
+        return res.status(200).json(new ApiResponse(200, {
+            range: r.range,
+            start: r.start,
+            end: r.end,
+            totalRevenue: current.revenue,
+            totalOrders: current.orders,
+            newCustomers: current.newCustomers,
+            totalUsers,
+            totalProducts,
+            pendingOrders,
+            previous,
+            revenueChange: percentChange(current.revenue, previous.revenue),
+            ordersChange: percentChange(current.orders, previous.orders),
+            customersChange: percentChange(current.newCustomers, previous.newCustomers),
+        }, 'Dashboard stats fetched.'));
+    }
+
     const activeOrderFilter = { isDeleted: { $ne: true } };
     const [totalOrders, totalUsers, totalVendors, totalProducts, revenueAgg, pendingOrders] = await Promise.all([
         Order.countDocuments(activeOrderFilter),
@@ -29,6 +80,23 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
 
 // GET /api/admin/analytics/revenue
 export const getRevenueData = asyncHandler(async (req, res) => {
+    const r = rangeFrom(req.query);
+    if (r) {
+        // One point per hour / day / month of the period, zero-filled so the chart has no gaps.
+        const rows = await Order.aggregate([
+            { $match: { isDeleted: { $ne: true }, status: { $ne: 'cancelled' }, ...inRange(r) } },
+            { $group: { _id: bucketExpr(r.format), revenue: { $sum: '$total' }, orders: { $sum: 1 } } },
+        ]);
+        const byKey = new Map(rows.map((row) => [row._id, row]));
+        const series = r.buckets.map(({ key, label }) => ({
+            key,
+            label,
+            revenue: byKey.get(key)?.revenue || 0,
+            orders: byKey.get(key)?.orders || 0,
+        }));
+        return res.status(200).json(new ApiResponse(200, series, 'Revenue data fetched.'));
+    }
+
     const { period = 'monthly', startDate, endDate } = req.query;
     const groupFormat = period === 'daily' ? '%Y-%m-%d' : period === 'weekly' ? '%Y-%U' : '%Y-%m';
     const match = { isDeleted: { $ne: true }, status: { $ne: 'cancelled' } };
@@ -55,7 +123,7 @@ export const getRevenueData = asyncHandler(async (req, res) => {
 // GET /api/admin/analytics/order-status
 export const getOrderStatusBreakdown = asyncHandler(async (req, res) => {
     const breakdown = await Order.aggregate([
-        { $match: { isDeleted: { $ne: true } } },
+        { $match: { isDeleted: { $ne: true }, ...inRange(rangeFrom(req.query)) } },
         { $group: { _id: '$status', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
     ]);
@@ -67,7 +135,7 @@ export const getOrderStatusBreakdown = asyncHandler(async (req, res) => {
 // GET /api/admin/analytics/top-products
 export const getTopProducts = asyncHandler(async (req, res) => {
     const topProducts = await Order.aggregate([
-        { $match: { isDeleted: { $ne: true }, status: { $ne: 'cancelled' } } },
+        { $match: { isDeleted: { $ne: true }, status: { $ne: 'cancelled' }, ...inRange(rangeFrom(req.query)) } },
         { $unwind: '$items' },
         { $group: { _id: '$items.productId', totalSold: { $sum: '$items.quantity' }, revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } } } },
         { $sort: { totalSold: -1 } },
@@ -91,6 +159,17 @@ export const getTopProducts = asyncHandler(async (req, res) => {
 
 // GET /api/admin/analytics/customer-growth
 export const getCustomerGrowth = asyncHandler(async (req, res) => {
+    const r = rangeFrom(req.query);
+    if (r) {
+        const rows = await User.aggregate([
+            { $match: { role: 'customer', ...inRange(r) } },
+            { $group: { _id: bucketExpr(r.format), newUsers: { $sum: 1 } } },
+        ]);
+        const byKey = new Map(rows.map((row) => [row._id, row.newUsers]));
+        const series = r.buckets.map(({ key, label }) => ({ _id: key, label, newUsers: byKey.get(key) || 0 }));
+        return res.status(200).json(new ApiResponse(200, series, 'Customer growth fetched.'));
+    }
+
     const { period = 'monthly' } = req.query;
     const groupFormat = period === 'daily' ? '%Y-%m-%d' : period === 'weekly' ? '%Y-%U' : '%Y-%m';
 
@@ -107,7 +186,7 @@ export const getCustomerGrowth = asyncHandler(async (req, res) => {
 
 // GET /api/admin/analytics/recent-orders
 export const getRecentOrders = asyncHandler(async (req, res) => {
-    const orders = await Order.find({ isDeleted: { $ne: true } })
+    const orders = await Order.find({ isDeleted: { $ne: true }, ...inRange(rangeFrom(req.query)) })
         .populate('userId', 'name email')
         .sort({ createdAt: -1 })
         .limit(5)

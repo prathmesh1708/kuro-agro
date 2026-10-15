@@ -35,6 +35,18 @@ const farmerRegistrationSchema = new mongoose.Schema(
         landType: { type: String, enum: LAND_TYPES, required: true },
         irrigation: { type: String, enum: IRRIGATION_TYPES, required: true },
         farmingMethod: { type: String, enum: FARMING_METHODS, required: true },
+        // Crops the farmer grows. `produce` links to the admin produce list; a crop typed in by the
+        // surveyor that is not on the list has only a name.
+        crops: {
+            type: [
+                {
+                    _id: false,
+                    produce: { type: mongoose.Schema.Types.ObjectId, ref: 'Produce' },
+                    name: { type: String, required: true, trim: true },
+                },
+            ],
+            default: [],
+        },
 
         // Agreement (Parts 3–5 + declaration)
         agreement: {
@@ -61,6 +73,7 @@ const farmerRegistrationSchema = new mongoose.Schema(
 
 farmerRegistrationSchema.index({ sanchalak: 1, status: 1, createdAt: -1 });
 farmerRegistrationSchema.index({ surveyor: 1, status: 1, createdAt: -1 });
+farmerRegistrationSchema.index({ 'crops.name': 1 });
 
 farmerRegistrationSchema.pre('validate', async function (next) {
     if (this.registrationCode) return next();

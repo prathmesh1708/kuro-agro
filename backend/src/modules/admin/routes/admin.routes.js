@@ -76,12 +76,15 @@ import {
     fieldAccountIdParamSchema,
     sanchalakListQuerySchema,
     surveyorListQuerySchema,
+    sanchalakExportQuerySchema,
+    surveyorExportQuerySchema,
     fieldAccountStatusSchema,
     commissionRatesSchema,
 } from '../validators/fieldNetwork.validator.js';
 import {
     registrationIdParamSchema,
     adminRegistrationListQuerySchema,
+    adminRegistrationExportQuerySchema,
     registrationReviewSchema,
 } from '../../../validators/farmerRegistration.validator.js';
 import {
@@ -211,9 +214,11 @@ router.post('/delivery-boys/:id/settle-cash', ...adminAuth, validate(deliveryBoy
 
 // ─── Field Network (Sanchalaks & Surveyors) ───────────────────────────────────
 router.get('/sanchalaks', ...adminAuth, validate(sanchalakListQuerySchema, 'query'), fieldNetworkController.getAllSanchalaks);
+router.get('/sanchalaks/export', ...adminAuth, validate(sanchalakExportQuerySchema, 'query'), fieldNetworkController.exportSanchalaks);
 router.get('/sanchalaks/:id', ...adminAuth, validate(fieldAccountIdParamSchema, 'params'), fieldNetworkController.getSanchalakById);
 router.patch('/sanchalaks/:id/status', ...adminAuth, validate(fieldAccountIdParamSchema, 'params'), validate(fieldAccountStatusSchema), fieldNetworkController.updateSanchalakStatus);
 router.get('/surveyors', ...adminAuth, validate(surveyorListQuerySchema, 'query'), fieldNetworkController.getAllSurveyors);
+router.get('/surveyors/export', ...adminAuth, validate(surveyorExportQuerySchema, 'query'), fieldNetworkController.exportSurveyors);
 router.get('/surveyors/:id', ...adminAuth, validate(fieldAccountIdParamSchema, 'params'), fieldNetworkController.getSurveyorById);
 router.get('/field-commission', ...adminAuth, fieldNetworkController.getCommissionRates);
 router.put('/field-commission', ...adminAuth, validate(commissionRatesSchema), fieldNetworkController.updateCommissionRates);
@@ -221,6 +226,7 @@ router.patch('/surveyors/:id/status', ...adminAuth, validate(fieldAccountIdParam
 
 // ─── Farmers (Kisan registrations by surveyors) ───────────────────────────────
 router.get('/farmers', ...adminAuth, validate(adminRegistrationListQuerySchema, 'query'), farmerController.getAllFarmers);
+router.get('/farmers/export', ...adminAuth, validate(adminRegistrationExportQuerySchema, 'query'), farmerController.exportFarmers);
 router.get('/farmers/:id', ...adminAuth, validate(registrationIdParamSchema, 'params'), farmerController.getFarmerById);
 router.patch('/farmers/:id/review', ...adminAuth, validate(registrationIdParamSchema, 'params'), validate(registrationReviewSchema), farmerController.reviewFarmer);
 

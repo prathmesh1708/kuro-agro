@@ -1,18 +1,17 @@
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { FiArrowLeft, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import FieldPanelLayout from '../../../shared/components/FieldAuth/FieldPanelLayout';
 import {
-  AGREEMENT_DECLARATION,
-  AGREEMENT_SECTIONS,
   FARMING_METHOD_OPTIONS,
   IRRIGATION_OPTIONS,
   LAND_TYPE_OPTIONS,
 } from '../../../shared/constants/farmerRegistration';
 import { useSurveyorAuthStore } from '../store/surveyorStore';
-import { getMyFarmer, registerFarmer, resubmitFarmer } from '../services/surveyorService';
+import CropPicker from '../../../shared/components/Farmer/CropPicker';
+import { getCropOptions, getMyFarmer, registerFarmer, resubmitFarmer } from '../services/surveyorService';
 
 const MOBILE_PATTERN = { value: /^[6-9]\d{9}$/, message: 'Enter a 10-digit mobile number starting with 6-9' };
 
@@ -48,14 +47,22 @@ const FarmerForm = () => {
   const [existing, setExisting] = useState(null);
   const [isLoadingExisting, setIsLoadingExisting] = useState(isEdit);
   const [submitted, setSubmitted] = useState(null);
+  const [cropOptions, setCropOptions] = useState([]);
 
   const {
     register,
     handleSubmit,
     reset,
     watch,
+    control,
     formState: { errors, isSubmitting },
-  } = useForm({ defaultValues: { landType: '', irrigation: '', farmingMethod: 'natural', agreementAccepted: false } });
+  } = useForm({ defaultValues: { landType: '', irrigation: '', farmingMethod: 'natural', crops: [] } });
+
+  useEffect(() => {
+    getCropOptions()
+      .then((response) => setCropOptions(response?.data?.produce || []))
+      .catch(() => {});
+  }, []);
 
   const mobile = watch('mobile');
   const landTotal = watch('landTotalAcres');
@@ -87,7 +94,7 @@ const FarmerForm = () => {
           landType: farmer.landType,
           irrigation: farmer.irrigation,
           farmingMethod: farmer.farmingMethod,
-          agreementAccepted: false,
+          crops: (farmer.crops || []).map((c) => ({ ...(c.produce && { produce: String(c.produce) }), name: c.name })),
         });
       })
       .catch(() => navigate('/surveyor/farmers', { replace: true }))
@@ -111,7 +118,8 @@ const FarmerForm = () => {
       landType: values.landType,
       irrigation: values.irrigation,
       farmingMethod: values.farmingMethod,
-      agreementAccepted: values.agreementAccepted === true,
+      crops: values.crops,
+      agreementAccepted: true,
     };
 
     try {
@@ -146,7 +154,7 @@ const FarmerForm = () => {
                 type="button"
                 onClick={() => {
                   setSubmitted(null);
-                  reset({ landType: '', irrigation: '', farmingMethod: 'natural', agreementAccepted: false });
+                  reset({ landType: '', irrigation: '', farmingMethod: 'natural', crops: [] });
                 }}
                 className="py-3 rounded-xl bg-gold-500 hover:bg-gold-600 text-white font-semibold"
               >
@@ -302,37 +310,23 @@ const FarmerForm = () => {
                 {FARMING_METHOD_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </Field>
+            <Field
+              label="🌾 Crops Grown / उगाई जाने वाली फसलें"
+              error={errors.crops}
+              hint="Pick every crop the farmer grows. Not in the list? Choose Other and type it."
+            >
+              <Controller
+                name="crops"
+                control={control}
+                rules={{ validate: (value) => (value?.length > 0) || 'Add at least one crop' }}
+                render={({ field }) => (
+                  <CropPicker value={field.value} onChange={field.onChange} options={cropOptions} hasError={Boolean(errors.crops)} />
+                )}
+              />
+            </Field>
           </SectionCard>
 
-          <SectionCard title="Agreement / सहमति">
-            <div className="max-h-80 overflow-y-auto rounded-xl bg-gray-50 border border-gray-200 p-4 space-y-4 text-sm text-gray-700">
-              {AGREEMENT_SECTIONS.map((section) => (
-                <div key={section.title}>
-                  <p className="font-bold text-gray-900 mb-2">{section.title}</p>
-                  <ul className="space-y-2">
-                    {section.points.map((point) => (
-                      <li key={point} className="flex gap-2">
-                        <span className="text-green-600 shrink-0">✔</span>
-                        <span>{point}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-              <div>
-                <p className="font-bold text-gray-900 mb-1">Declaration / घोषणा</p>
-                <p>{AGREEMENT_DECLARATION}</p>
-              </div>
-            </div>
-            <label className={`flex items-start gap-3 rounded-xl border-2 p-3 cursor-pointer ${errors.agreementAccepted ? 'border-red-300' : 'border-gray-200'}`}>
-              <input
-                type="checkbox"
-                {...register('agreementAccepted', { validate: (v) => v === true || 'The farmer must agree to continue' })}
-                className="mt-1 h-5 w-5 accent-gold-500"
-              />
-              <span className="font-semibold text-gray-900">I Agree / मैं सहमत हूँ</span>
-            </label>
-            {errors.agreementAccepted && <p className="text-sm text-red-600">{errors.agreementAccepted.message}</p>}
+          <SectionCard title="Surveyor / सर्वेक्षक">
             <Field label="Surveyor Name / सर्वेक्षक का नाम">
               <input
                 type="text"

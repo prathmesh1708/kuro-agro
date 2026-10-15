@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import DataTable from '../../components/DataTable';
 import Pagination from '../../components/Pagination';
+import ExportButtons from '../../components/ExportButtons';
 import FarmerDetailCard from '../../../../shared/components/Farmer/FarmerDetailCard';
 import FarmerStatusBadge from '../../../../shared/components/Farmer/FarmerStatusBadge';
 import KisanSalesSection from './KisanSalesSection';
@@ -131,6 +132,14 @@ const Farmers = ({ surveyorId, embedded = false, onReviewed }) => {
       ),
     },
     {
+      key: 'crops',
+      label: 'Crops',
+      sortable: false,
+      render: (value) => (
+        <p className="text-sm text-gray-800 max-w-[180px]">{value?.length ? value.map((c) => c.name).join(', ') : '—'}</p>
+      ),
+    },
+    {
       key: 'landProposedAcres',
       label: 'Land (acre)',
       sortable: true,
@@ -200,6 +209,7 @@ const Farmers = ({ surveyorId, embedded = false, onReviewed }) => {
       )}
 
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 space-y-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-wrap gap-2">
           {STATUS_TABS.map((tab) => {
             const count = tab.value === 'all' ? totalAll : statusCounts[tab.value] || 0;
@@ -219,13 +229,23 @@ const Farmers = ({ surveyorId, embedded = false, onReviewed }) => {
             );
           })}
         </div>
+          <ExportButtons
+            endpoint="/admin/farmers/export"
+            filename="farmers"
+            params={{
+              ...(surveyorId && { surveyor: surveyorId }),
+              ...(search && { search }),
+              ...(statusFilter !== 'all' && { status: statusFilter }),
+            }}
+          />
+        </div>
         <div className="relative">
           <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search by name, father name, mobile, village, district, code or Aadhaar last 4..."
+            placeholder="Search by name, father name, mobile, village, district, code, crop or Aadhaar last 4..."
             className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>

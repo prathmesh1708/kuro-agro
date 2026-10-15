@@ -107,6 +107,9 @@ const FarmerList = ({ fetchFarmers, detailPath, showSurveyor = false, initialSta
                   <p className="text-xs text-gray-500 mt-1 truncate">
                     {farmer.mobile} · {farmer.village}, {farmer.district} · {farmer.landProposedAcres}/{farmer.landTotalAcres} acre
                   </p>
+                  {farmer.crops?.length > 0 && (
+                    <p className="text-xs text-gray-600 mt-0.5 truncate">🌾 {farmer.crops.map((c) => c.name).join(', ')}</p>
+                  )}
                   {showSurveyor && farmer.surveyor && (
                     <p className="text-xs text-gray-500 mt-0.5 truncate">By {farmer.surveyor.name} ({farmer.surveyor.surveyorCode})</p>
                   )}

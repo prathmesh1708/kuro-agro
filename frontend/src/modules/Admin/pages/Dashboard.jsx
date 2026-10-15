@@ -9,7 +9,7 @@ import CustomerGrowthAreaChart from "../components/Analytics/CustomerGrowthAreaC
 import RevenueVsOrdersChart from "../components/Analytics/RevenueVsOrdersChart";
 import TopProducts from "../components/Analytics/TopProducts";
 import RecentOrders from "../components/Analytics/RecentOrders";
-import TimePeriodFilter from "../components/Analytics/TimePeriodFilter";
+import TimePeriodFilter, { DASHBOARD_PERIODS } from "../components/Analytics/TimePeriodFilter";
 import ExportButton from "../components/ExportButton";
 import { formatCurrency } from "../utils/adminHelpers";
 import {
@@ -23,73 +23,43 @@ import {
 import { useReviewsStore } from "../../../shared/store/reviewsStore";
 import { FiMessageSquare, FiStar, FiTrash2, FiAlertTriangle, FiUserX } from "react-icons/fi";
 
+const EMPTY_STATS = {
+  totalRevenue: 0,
+  totalOrders: 0,
+  totalProducts: 0,
+  totalCustomers: 0,
+  totalVendors: 0,
+  pendingOrders: 0,
+};
+
+// Card titles and the comparison shown under the % change, per period.
+const PERIOD_META = {
+  today: { label: "Today", compare: "vs same time yesterday" },
+  yesterday: { label: "Yesterday", compare: "vs the day before" },
+  week: { label: "This Week", compare: "vs same days last week" },
+  month: { label: "This Month", compare: "vs same days last month" },
+  year: { label: "This Year", compare: "vs same period last year" },
+};
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const { allReviews, blockedUsers } = useReviewsStore();
-  const [period, setPeriod] = useState("month");
+  const [period, setPeriod] = useState("today");
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const [stats, setStats] = useState({
-    totalRevenue: 0,
-    totalOrders: 0,
-    totalProducts: 0,
-    totalCustomers: 0,
-    totalVendors: 0,
-    pendingOrders: 0,
-  });
+  const [stats, setStats] = useState(EMPTY_STATS);
   const [revenueData, setRevenueData] = useState([]);
-
-  const mapUiPeriodToApiPeriod = (uiPeriod) => {
-    if (uiPeriod === "today" || uiPeriod === "week") return "daily";
-    if (uiPeriod === "month") return "weekly";
-    return "monthly";
-  };
-
-  const getDateFromBucket = (bucket = "", apiPeriod = "monthly") => {
-    if (!bucket) return new Date();
-
-    if (apiPeriod === "daily") {
-      const d = new Date(bucket);
-      return Number.isNaN(d.getTime()) ? new Date() : d;
-    }
-
-    if (apiPeriod === "weekly") {
-      const [yearStr, weekStr] = String(bucket).split("-");
-      const year = Number(yearStr);
-      const week = Number(weekStr);
-      if (Number.isNaN(year) || Number.isNaN(week)) return new Date();
-
-      const firstDay = new Date(year, 0, 1);
-      const dayOffset = (week - 1) * 7;
-      return new Date(
-        firstDay.getFullYear(),
-        firstDay.getMonth(),
-        firstDay.getDate() + dayOffset
-      );
-    }
-
-    const monthlyDate = new Date(`${bucket}-01`);
-    return Number.isNaN(monthlyDate.getTime()) ? new Date() : monthlyDate;
-  };
-
-  const normalizeRevenueData = (data, apiPeriod) =>
-    (data || []).map((item) => ({
-      date: getDateFromBucket(item._id, apiPeriod).toISOString(),
-      bucket: item._id || "",
-      revenue: item.revenue || 0,
-      orders: item.orders || 0,
-    }));
-
   const [orderStatusData, setOrderStatusData] = useState([]);
   const [topProducts, setTopProducts] = useState([]);
   const [customerGrowth, setCustomerGrowth] = useState([]);
   const [recentOrders, setRecentOrders] = useState([]);
 
+  // Every card, chart and list below follows the selected period; the server works out its dates in IST.
   const fetchDashboardData = useCallback(async () => {
-    setLoading(true);
+    setRefreshing(true);
     try {
-      const apiPeriod = mapUiPeriodToApiPeriod(period);
-
+      const params = { range: period };
       const [
         statsRes,
         revenueRes,
@@ -98,65 +68,39 @@ const Dashboard = () => {
         customerGrowthRes,
         recentOrdersRes,
       ] = await Promise.allSettled([
-        getDashboardStats(),
-        getRevenueData(apiPeriod),
-        getOrderStatusBreakdown(),
-        getTopProducts(),
-        getCustomerGrowth(apiPeriod),
-        getRecentOrders(),
+        getDashboardStats(params),
+        getRevenueData(undefined, params),
+        getOrderStatusBreakdown(params),
+        getTopProducts(params),
+        getCustomerGrowth(undefined, params),
+        getRecentOrders(params),
       ]);
 
-      if (statsRes.status === "fulfilled") {
-        const d = statsRes.value.data;
-        setStats({
-          totalRevenue: d.totalRevenue || 0,
-          totalOrders: d.totalOrders || 0,
-          totalProducts: d.totalProducts || 0,
-          totalCustomers: d.totalUsers || 0,
-          totalVendors: d.totalVendors || 0,
-          pendingOrders: d.pendingOrders || 0,
-        });
-      } else {
-        setStats({
-          totalRevenue: 0,
-          totalOrders: 0,
-          totalProducts: 0,
-          totalCustomers: 0,
-          totalVendors: 0,
-          pendingOrders: 0,
-        });
-      }
-      if (revenueRes.status === "fulfilled") {
-        setRevenueData(normalizeRevenueData(revenueRes.value.data, apiPeriod));
-      } else {
-        setRevenueData([]);
-      }
-      if (orderStatusRes.status === "fulfilled") {
-        setOrderStatusData(orderStatusRes.value.data || []);
-      } else {
-        setOrderStatusData([]);
-      }
-      if (topProductsRes.status === "fulfilled") {
-        setTopProducts(topProductsRes.value.data || []);
-      } else {
-        setTopProducts([]);
-      }
-      if (customerGrowthRes.status === "fulfilled") {
-        setCustomerGrowth(customerGrowthRes.value.data || []);
-      } else {
-        setCustomerGrowth([]);
-      }
-      if (recentOrdersRes.status === "fulfilled") {
-        setRecentOrders(recentOrdersRes.value.data || []);
-      } else {
-        setRecentOrders([]);
-      }
+      const valueOf = (result, fallback) => (result.status === "fulfilled" ? result.value.data || fallback : fallback);
+      const d = valueOf(statsRes, {});
+      setStats({
+        totalRevenue: d.totalRevenue || 0,
+        totalOrders: d.totalOrders || 0,
+        totalProducts: d.totalProducts || 0,
+        totalCustomers: d.newCustomers || 0,
+        totalVendors: d.totalVendors || 0,
+        pendingOrders: d.pendingOrders || 0,
+        revenueChange: d.revenueChange ?? undefined,
+        ordersChange: d.ordersChange ?? undefined,
+        customersChange: d.customersChange ?? undefined,
+      });
+      setRevenueData(valueOf(revenueRes, []));
+      setOrderStatusData(valueOf(orderStatusRes, []));
+      setTopProducts(valueOf(topProductsRes, []));
+      setCustomerGrowth(valueOf(customerGrowthRes, []));
+      setRecentOrders(valueOf(recentOrdersRes, []));
     } catch (error) {
       // Don't toast here as api.js interceptor handled global errors
       // or to avoid 6+ toasts if all parallel requests fail simultaneously
       console.error("Dashboard fetch error:", error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, [period]);
 
@@ -164,6 +108,7 @@ const Dashboard = () => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
+  // Full-page spinner only on first load; switching period keeps the page and dims it while loading.
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -171,6 +116,8 @@ const Dashboard = () => {
       </div>
     );
   }
+
+  const meta = PERIOD_META[period];
 
   return (
     <motion.div
@@ -187,21 +134,31 @@ const Dashboard = () => {
           </p>
         </div>
         <div className="flex items-center gap-2 w-full">
-          <TimePeriodFilter selectedPeriod={period} onPeriodChange={setPeriod} />
+          <TimePeriodFilter selectedPeriod={period} onPeriodChange={setPeriod} periods={DASHBOARD_PERIODS} />
           <ExportButton
             data={revenueData}
             headers={[
-              { label: "Period", accessor: (row) => row.bucket || row.date },
+              { label: meta.label, accessor: (row) => row.label },
               { label: "Revenue", accessor: (row) => formatCurrency(row.revenue) },
               { label: "Orders", accessor: (row) => row.orders },
             ]}
-            filename="revenue_report"
+            filename={`revenue_${period}`}
           />
         </div>
       </div>
 
+      <div className={`space-y-6 transition-opacity ${refreshing ? "opacity-60 pointer-events-none" : ""}`}>
       {/* Stats Cards */}
-      <StatsCards stats={stats} />
+      <StatsCards
+        stats={stats}
+        changeHint={meta.compare}
+        titles={{
+          revenue: `Revenue · ${meta.label}`,
+          orders: `Orders · ${meta.label}`,
+          products: "Active Products",
+          customers: `New Customers · ${meta.label}`,
+        }}
+      />
 
       {/* Review Moderation Overview */}
       <div className="space-y-4">
@@ -294,6 +251,7 @@ const Dashboard = () => {
           orders={recentOrders}
           onViewOrder={(order) => navigate(`/admin/orders/${order._id || order.orderId}`)}
         />
+      </div>
       </div>
     </motion.div>
   );

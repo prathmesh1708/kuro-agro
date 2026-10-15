@@ -10,4 +10,6 @@ export const registerFarmer = (data) => api.post('/surveyor/farmers', data);
 
 export const resubmitFarmer = (id, data) => api.put(`/surveyor/farmers/${id}`, data);
 
+export const getCropOptions = () => api.get('/surveyor/produce');
+
 export const getSurveyorCommission = () => api.get('/surveyor/commission');

@@ -44,6 +44,7 @@ router.get('/dashboard', ...surveyorAuth, farmerController.getDashboard);
 router.get('/commission', ...surveyorAuth, farmerController.getCommission);
 
 // Farmer registrations
+router.get('/produce', ...surveyorAuth, farmerController.getProduceList);
 router.post('/farmers', ...surveyorAuth, validate(farmerRegistrationSchema), farmerController.createFarmer);
 router.get('/farmers', ...surveyorAuth, validate(registrationListQuerySchema, 'query'), farmerController.getFarmers);
 router.get('/farmers/:id', ...surveyorAuth, validate(registrationIdParamSchema, 'params'), farmerController.getFarmerById);

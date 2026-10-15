@@ -1,13 +1,19 @@
-import { useState } from 'react';
 import { FiCalendar } from 'react-icons/fi';
 
-const TimePeriodFilter = ({ onPeriodChange, selectedPeriod = 'month' }) => {
-  const periods = [
-    { value: 'today', label: 'Today', shortLabel: 'Today' },
-    { value: 'week', label: 'This Week', shortLabel: 'Week' },
-    { value: 'month', label: 'This Month', shortLabel: 'Month' },
-    { value: 'year', label: 'This Year', shortLabel: 'Year' },
-  ];
+const DEFAULT_PERIODS = [
+  { value: 'today', label: 'Today', shortLabel: 'Today' },
+  { value: 'week', label: 'This Week', shortLabel: 'Week' },
+  { value: 'month', label: 'This Month', shortLabel: 'Month' },
+  { value: 'year', label: 'This Year', shortLabel: 'Year' },
+];
+
+export const DASHBOARD_PERIODS = [
+  DEFAULT_PERIODS[0],
+  { value: 'yesterday', label: 'Yesterday', shortLabel: 'Yday' },
+  ...DEFAULT_PERIODS.slice(1),
+];
+
+const TimePeriodFilter = ({ onPeriodChange, selectedPeriod = 'month', periods = DEFAULT_PERIODS }) => {
 
   return (
     <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto">

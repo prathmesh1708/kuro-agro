@@ -8,8 +8,9 @@ import { asyncHandler } from '../../../utils/asyncHandler.js';
 import { sendEmail } from '../../../services/email.service.js';
 import { createNotification } from '../../../services/notification.service.js';
 import { getCommissionSummary, getFieldCommissionRates, saveFieldCommissionRates } from '../../../services/fieldCommission.service.js';
-import { countByStatus } from '../../../services/farmerRegistration.service.js';
+import { countByStatus, cropSummaryBySanchalak } from '../../../services/farmerRegistration.service.js';
 import { getSanchalakStockSummary } from '../../../services/produceTrade.service.js';
+import { EXPORT_ROW_LIMIT, formatExportDate, sendExport } from '../../../services/export.service.js';
 
 const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -22,6 +23,61 @@ const buildListFilter = ({ search, status }, codeField) => {
     }
     return filter;
 };
+
+const surveyorFilter = (query) => {
+    const filter = buildListFilter(query, 'surveyorCode');
+    if (query.sanchalak) filter.sanchalak = new mongoose.Types.ObjectId(query.sanchalak);
+    return filter;
+};
+
+// Adds surveyorCount / approvedSurveyorCount and the crops their farmers grow to each Sanchalak.
+const withSurveyorCounts = async (sanchalaks) => {
+    const ids = sanchalaks.map((s) => s._id);
+    const [counts, crops] = await Promise.all([
+        Surveyor.aggregate([
+            { $match: { sanchalak: { $in: ids } } },
+            { $group: { _id: '$sanchalak', total: { $sum: 1 }, approved: { $sum: { $cond: [{ $eq: ['$status', 'approved'] }, 1, 0] } } } },
+        ]),
+        cropSummaryBySanchalak(ids),
+    ]);
+    const byId = new Map(counts.map((c) => [String(c._id), c]));
+    return sanchalaks.map((s) => ({
+        ...s,
+        id: s._id,
+        surveyorCount: byId.get(String(s._id))?.total || 0,
+        approvedSurveyorCount: byId.get(String(s._id))?.approved || 0,
+        crops: crops.get(String(s._id)) || [],
+    }));
+};
+
+// Adds farmerCount / approvedFarmerCount to each Surveyor.
+const withFarmerCounts = async (surveyors) => {
+    const counts = await FarmerRegistration.aggregate([
+        { $match: { surveyor: { $in: surveyors.map((s) => s._id) } } },
+        { $group: { _id: '$surveyor', total: { $sum: 1 }, approved: { $sum: { $cond: [{ $eq: ['$status', 'approved'] }, 1, 0] } } } },
+    ]);
+    const byId = new Map(counts.map((c) => [String(c._id), c]));
+    return surveyors.map((s) => ({
+        ...s,
+        id: s._id,
+        farmerCount: byId.get(String(s._id))?.total || 0,
+        approvedFarmerCount: byId.get(String(s._id))?.approved || 0,
+    }));
+};
+
+// Filter description printed in exported files.
+const filterMeta = ({ status, search }) => [
+    ['Status', status || 'All'],
+    ...(search ? [['Search', search]] : []),
+];
+
+const addressCols = [
+    { header: 'Village', value: (r) => r.address?.village, width: 14 },
+    { header: 'Block', value: (r) => r.address?.block, width: 12 },
+    { header: 'District', value: (r) => r.address?.district, width: 12 },
+    { header: 'State', value: (r) => r.address?.state, width: 12, pdf: false },
+    { header: 'Pincode', value: (r) => r.address?.pincode, width: 9, pdf: false },
+];
 
 // Profile header stats: farmer counts and commission totals, without the commission history list.
 const profileStats = async (role, accountId) => {
@@ -104,24 +160,48 @@ export const getAllSanchalaks = asyncHandler(async (req, res) => {
         Sanchalak.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
     ]);
 
-    const surveyorCounts = await Surveyor.aggregate([
-        { $match: { sanchalak: { $in: sanchalaks.map((s) => s._id) } } },
-        { $group: { _id: '$sanchalak', total: { $sum: 1 }, approved: { $sum: { $cond: [{ $eq: ['$status', 'approved'] }, 1, 0] } } } },
-    ]);
-    const countsById = new Map(surveyorCounts.map((c) => [String(c._id), c]));
-
     res.status(200).json(
         new ApiResponse(200, {
-            sanchalaks: sanchalaks.map((s) => ({
-                ...s,
-                id: s._id,
-                surveyorCount: countsById.get(String(s._id))?.total || 0,
-                approvedSurveyorCount: countsById.get(String(s._id))?.approved || 0,
-            })),
+            sanchalaks: await withSurveyorCounts(sanchalaks),
             statusCounts: Object.fromEntries(statusCounts.map((c) => [c._id, c.count])),
             pagination: { total, page, limit, pages: Math.ceil(total / limit) },
         }, 'Sanchalaks fetched successfully')
     );
+});
+
+/**
+ * @desc    Download the Sanchalak list (same filters as the list) as Excel or PDF
+ * @route   GET /api/admin/sanchalaks/export?format=xlsx|pdf
+ * @access  Private (Admin)
+ */
+export const exportSanchalaks = asyncHandler(async (req, res) => {
+    const sanchalaks = await Sanchalak.find(buildListFilter(req.query, 'sanchalakCode'))
+        .sort({ createdAt: -1 })
+        .limit(EXPORT_ROW_LIMIT)
+        .lean();
+
+    await sendExport(res, {
+        format: req.query.format,
+        title: 'Sanchalaks',
+        filename: 'sanchalaks',
+        meta: filterMeta(req.query),
+        rows: await withSurveyorCounts(sanchalaks),
+        columns: [
+            { header: 'Sanchalak ID', value: (r) => r.sanchalakCode, width: 12 },
+            { header: 'Name', value: (r) => r.name, width: 18 },
+            { header: 'Kendra', value: (r) => r.kendraName, width: 20 },
+            { header: 'Phone', value: (r) => r.phone, width: 12 },
+            { header: 'Email', value: (r) => r.email, width: 24, pdf: false },
+            ...addressCols,
+            { header: 'Surveyors', value: (r) => r.surveyorCount, width: 9 },
+            { header: 'Approved Surveyors', value: (r) => r.approvedSurveyorCount, width: 10 },
+            { header: 'Crops (farmers)', value: (r) => r.crops.map((c) => `${c.name} (${c.farmers})`).join(', '), width: 24 },
+            { header: 'Status', value: (r) => r.status, width: 10 },
+            { header: 'Reason', value: (r) => (r.status !== 'approved' ? r.rejectionReason : ''), width: 18 },
+            { header: 'Registered On', value: (r) => formatExportDate(r.createdAt), width: 12 },
+            { header: 'Approved On', value: (r) => formatExportDate(r.approvedAt), width: 12, pdf: false },
+        ],
+    });
 });
 
 /**
@@ -133,15 +213,16 @@ export const getSanchalakById = asyncHandler(async (req, res) => {
     const sanchalak = await Sanchalak.findById(req.params.id).lean();
     if (!sanchalak) throw new ApiError(404, 'Sanchalak not found');
 
-    const [surveyorRows, stats, stock] = await Promise.all([
+    const [surveyorRows, stats, stock, crops] = await Promise.all([
         Surveyor.aggregate([{ $match: { sanchalak: sanchalak._id } }, { $group: { _id: '$status', count: { $sum: 1 } } }]),
         profileStats('sanchalak', sanchalak._id),
         getSanchalakStockSummary(sanchalak._id),
+        cropSummaryBySanchalak([sanchalak._id]),
     ]);
     const surveyors = Object.fromEntries(surveyorRows.map((row) => [row._id, row.count]));
     surveyors.total = surveyorRows.reduce((sum, row) => sum + row.count, 0);
 
-    res.status(200).json(new ApiResponse(200, { ...sanchalak, id: sanchalak._id, surveyors, ...stats, stock }, 'Sanchalak fetched successfully'));
+    res.status(200).json(new ApiResponse(200, { ...sanchalak, id: sanchalak._id, surveyors, ...stats, stock, crops: crops.get(String(sanchalak._id)) || [] }, 'Sanchalak fetched successfully'));
 });
 
 /**
@@ -168,8 +249,7 @@ export const updateSanchalakStatus = asyncHandler(async (req, res) => {
  */
 export const getAllSurveyors = asyncHandler(async (req, res) => {
     const { page, limit, skip } = paginate(req.query);
-    const filter = buildListFilter(req.query, 'surveyorCode');
-    if (req.query.sanchalak) filter.sanchalak = new mongoose.Types.ObjectId(req.query.sanchalak);
+    const filter = surveyorFilter(req.query);
 
     const [surveyors, total, statusCounts] = await Promise.all([
         Surveyor.find(filter)
@@ -182,24 +262,55 @@ export const getAllSurveyors = asyncHandler(async (req, res) => {
         Surveyor.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
     ]);
 
-    const farmerCounts = await FarmerRegistration.aggregate([
-        { $match: { surveyor: { $in: surveyors.map((s) => s._id) } } },
-        { $group: { _id: '$surveyor', total: { $sum: 1 }, approved: { $sum: { $cond: [{ $eq: ['$status', 'approved'] }, 1, 0] } } } },
-    ]);
-    const farmersById = new Map(farmerCounts.map((c) => [String(c._id), c]));
-
     res.status(200).json(
         new ApiResponse(200, {
-            surveyors: surveyors.map((s) => ({
-                ...s,
-                id: s._id,
-                farmerCount: farmersById.get(String(s._id))?.total || 0,
-                approvedFarmerCount: farmersById.get(String(s._id))?.approved || 0,
-            })),
+            surveyors: await withFarmerCounts(surveyors),
             statusCounts: Object.fromEntries(statusCounts.map((c) => [c._id, c.count])),
             pagination: { total, page, limit, pages: Math.ceil(total / limit) },
         }, 'Surveyors fetched successfully')
     );
+});
+
+/**
+ * @desc    Download the Surveyor list (same filters as the list, optionally one Sanchalak's) as Excel or PDF
+ * @route   GET /api/admin/surveyors/export?format=xlsx|pdf
+ * @access  Private (Admin)
+ */
+export const exportSurveyors = asyncHandler(async (req, res) => {
+    const surveyors = await Surveyor.find(surveyorFilter(req.query))
+        .populate('sanchalak', 'name kendraName sanchalakCode')
+        .sort({ createdAt: -1 })
+        .limit(EXPORT_ROW_LIMIT)
+        .lean();
+
+    const meta = filterMeta(req.query);
+    if (req.query.sanchalak) {
+        const sanchalak = await Sanchalak.findById(req.query.sanchalak).select('kendraName sanchalakCode').lean();
+        if (sanchalak) meta.unshift(['Kendra', `${sanchalak.kendraName} (${sanchalak.sanchalakCode})`]);
+    }
+
+    await sendExport(res, {
+        format: req.query.format,
+        title: 'Surveyors',
+        filename: 'surveyors',
+        meta,
+        rows: await withFarmerCounts(surveyors),
+        columns: [
+            { header: 'Surveyor ID', value: (r) => r.surveyorCode, width: 12 },
+            { header: 'Name', value: (r) => r.name, width: 18 },
+            { header: 'Phone', value: (r) => r.phone, width: 12 },
+            { header: 'Email', value: (r) => r.email, width: 24, pdf: false },
+            { header: 'Kendra', value: (r) => r.sanchalak?.kendraName, width: 18 },
+            { header: 'Sanchalak', value: (r) => (r.sanchalak ? `${r.sanchalak.name} (${r.sanchalak.sanchalakCode})` : ''), width: 20 },
+            ...addressCols,
+            { header: 'Farmers', value: (r) => r.farmerCount, width: 8 },
+            { header: 'Approved Farmers', value: (r) => r.approvedFarmerCount, width: 9 },
+            { header: 'Status', value: (r) => r.status, width: 10 },
+            { header: 'Reason', value: (r) => (r.status !== 'approved' ? r.rejectionReason : ''), width: 18 },
+            { header: 'Registered On', value: (r) => formatExportDate(r.createdAt), width: 12 },
+            { header: 'Approved On', value: (r) => formatExportDate(r.approvedAt), width: 12, pdf: false },
+        ],
+    });
 });
 
 /**

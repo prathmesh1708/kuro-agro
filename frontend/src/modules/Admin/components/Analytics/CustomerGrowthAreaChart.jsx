@@ -18,7 +18,7 @@ const CustomerGrowthAreaChart = ({ data = [], period = 'month' }) => {
     return data.map((item) => {
       cumulative += item.newUsers || 0;
       return {
-        dateLabel: item._id || '',
+        dateLabel: item.label || item._id || '',
         customers: cumulative,
         newCustomers: item.newUsers || 0,
       };

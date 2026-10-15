@@ -3,10 +3,11 @@ import { IndianRupee } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatPrice } from '../../../../shared/utils/helpers';
 
-const StatsCards = ({ stats }) => {
+// `titles` overrides card titles; `changeHint` explains the % badge (e.g. "vs yesterday").
+const StatsCards = ({ stats, titles = {}, changeHint }) => {
   const cards = [
     {
-      title: 'Total Revenue',
+      title: titles.revenue || 'Total Revenue',
       value: formatPrice(stats.totalRevenue || 0),
       change: stats.revenueChange,
       icon: IndianRupee,
@@ -16,7 +17,7 @@ const StatsCards = ({ stats }) => {
       iconBg: 'bg-white/20',
     },
     {
-      title: 'Total Orders',
+      title: titles.orders || 'Total Orders',
       value: (stats.totalOrders || 0).toLocaleString(),
       change: stats.ordersChange,
       icon: FiShoppingBag,
@@ -26,7 +27,7 @@ const StatsCards = ({ stats }) => {
       iconBg: 'bg-white/20',
     },
     {
-      title: 'Total Products',
+      title: titles.products || 'Total Products',
       value: (stats.totalProducts || 0).toLocaleString(),
       change: stats.productsChange,
       icon: FiPackage,
@@ -36,7 +37,7 @@ const StatsCards = ({ stats }) => {
       iconBg: 'bg-white/20',
     },
     {
-      title: 'Total Customers',
+      title: titles.customers || 'Total Customers',
       value: (stats.totalCustomers || 0).toLocaleString(),
       change: stats.customersChange,
       icon: FiUsers,
@@ -82,6 +83,7 @@ const StatsCards = ({ stats }) => {
             <div className="relative z-10">
               <h3 className="text-gray-600 text-xs sm:text-sm font-medium mb-1">{card.title}</h3>
               <p className="text-gray-800 text-xl sm:text-2xl font-bold">{card.value}</p>
+              {hasChange && changeHint && <p className="text-[11px] text-gray-500 mt-1">{changeHint}</p>}
             </div>
           </motion.div>
         );

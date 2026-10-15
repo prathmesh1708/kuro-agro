@@ -15,6 +15,10 @@ import { motion } from 'framer-motion';
 
 const RevenueVsOrdersChart = ({ data, period = 'month' }) => {
   const filteredData = useMemo(() => {
+    // Dashboard data arrives already bucketed for the period (one point per hour / day / month).
+    if ((data || []).some((item) => item.label)) {
+      return data.map((item) => ({ ...item, dateLabel: item.label }));
+    }
     const range = getDateRange(period);
     const filtered = filterByDateRange(data, range.start, range.end);
     // Show last 7 days for better visibility

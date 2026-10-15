@@ -129,6 +129,12 @@ const FieldAccountProfile = ({ kind }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
           {kind === 'sanchalak' && <InfoRow icon={FiHome}>{account.kendraName}</InfoRow>}
+          {kind === 'sanchalak' && account.crops?.length > 0 && (
+            <InfoRow icon={FiHome}>
+              <span className="font-semibold">Crops grown by farmers:</span>{' '}
+              {account.crops.map((c) => `${c.name} (${c.farmers})`).join(', ')}
+            </InfoRow>
+          )}
           {sanchalak && (
             <InfoRow icon={FiHome}>
               <Link

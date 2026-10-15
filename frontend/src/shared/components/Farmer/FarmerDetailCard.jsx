@@ -71,6 +71,7 @@ const FarmerDetailCard = ({ farmer }) => (
       <Row label="Land Type / भूमि प्रकार" value={optionLabel(LAND_TYPE_OPTIONS, farmer.landType)} />
       <Row label="Irrigation / सिंचाई" value={optionLabel(IRRIGATION_OPTIONS, farmer.irrigation)} />
       <Row label="Farming Method / खेती का तरीका" value={optionLabel(FARMING_METHOD_OPTIONS, farmer.farmingMethod)} />
+      <Row label="Crops / फसलें" value={farmer.crops?.length ? farmer.crops.map((c) => c.name).join(', ') : ''} />
     </Section>
 
     <Section title="Agreement & Surveyor / सहमति एवं सर्वेक्षक">

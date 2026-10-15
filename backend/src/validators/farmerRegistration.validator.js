@@ -29,10 +29,17 @@ export const farmerRegistrationSchema = Joi.object({
     landType: Joi.string().valid(...LAND_TYPES).required().label('Land type'),
     irrigation: Joi.string().valid(...IRRIGATION_TYPES).required().label('Irrigation'),
     farmingMethod: Joi.string().valid(...FARMING_METHODS).required().label('Farming method'),
-    agreementAccepted: Joi.boolean().valid(true).required().messages({
-        'any.only': 'The farmer must accept the agreement.',
-        'any.required': 'The farmer must accept the agreement.',
-    }),
+    crops: Joi.array()
+        .items(Joi.object({
+            produce: objectId.optional(),
+            name: Joi.string().trim().min(2).max(60).required().label('Crop name'),
+        }))
+        .min(1)
+        .max(20)
+        .required()
+        .label('Crops')
+        .messages({ 'array.min': 'Add at least one crop the farmer grows.', 'any.required': 'Add at least one crop the farmer grows.' }),
+    agreementAccepted: Joi.boolean().optional(),
 });
 
 export const registrationIdParamSchema = Joi.object({
@@ -54,6 +61,10 @@ export const sanchalakRegistrationListQuerySchema = registrationListQuerySchema.
 export const adminRegistrationListQuerySchema = registrationListQuerySchema.keys({
     surveyor: objectId.optional(),
     sanchalak: objectId.optional(),
+});
+
+export const adminRegistrationExportQuerySchema = adminRegistrationListQuerySchema.keys({
+    format: Joi.string().valid('xlsx', 'pdf').required(),
 });
 
 export const registrationReviewSchema = Joi.object({

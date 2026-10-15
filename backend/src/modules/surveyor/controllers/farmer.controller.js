@@ -6,6 +6,7 @@ import Surveyor from '../../../models/Surveyor.model.js';
 import FarmerRegistration, { AGREEMENT_VERSION } from '../../../models/FarmerRegistration.model.js';
 import { encryptField, hashField } from '../../../utils/fieldCrypto.js';
 import { notifyAdmins } from '../../../services/fieldAccountAuth.service.js';
+import { listProduce, resolveCrops } from '../../../services/produce.service.js';
 import {
     assertNotDuplicate,
     countByStatus,
@@ -14,7 +15,7 @@ import {
     serializeRegistration,
 } from '../../../services/farmerRegistration.service.js';
 
-const toRegistrationFields = (body) => ({
+const toRegistrationFields = async (body) => ({
     aadhaarEnc: encryptField(body.aadhaar),
     aadhaarHash: hashField(body.aadhaar),
     aadhaarLast4: body.aadhaar.slice(-4),
@@ -32,7 +33,14 @@ const toRegistrationFields = (body) => ({
     landType: body.landType,
     irrigation: body.irrigation,
     farmingMethod: body.farmingMethod,
+    crops: await resolveCrops(body.crops),
     agreement: { accepted: true, version: AGREEMENT_VERSION, acceptedAt: new Date() },
+});
+
+// GET /api/surveyor/produce — crop options for the registration form
+export const getProduceList = asyncHandler(async (req, res) => {
+    const produce = await listProduce();
+    res.status(200).json(new ApiResponse(200, { produce: produce.map(({ _id, name, nameHi }) => ({ id: _id, name, nameHi })) }, 'Produce fetched.'));
 });
 
 // GET /api/surveyor/dashboard
@@ -49,7 +57,7 @@ export const createFarmer = asyncHandler(async (req, res) => {
     await assertNotDuplicate({ aadhaar: req.body.aadhaar, mobile: req.body.mobile });
 
     const registration = await FarmerRegistration.create({
-        ...toRegistrationFields(req.body),
+        ...(await toRegistrationFields(req.body)),
         surveyor: surveyor._id,
         sanchalak: surveyor.sanchalak,
         status: 'submitted',
@@ -90,7 +98,7 @@ export const resubmitFarmer = asyncHandler(async (req, res) => {
     await assertNotDuplicate({ aadhaar: req.body.aadhaar, mobile: req.body.mobile, excludeId: registration._id });
 
     registration.set({
-        ...toRegistrationFields(req.body),
+        ...(await toRegistrationFields(req.body)),
         status: 'submitted',
         submittedAt: new Date(),
         resubmitCount: registration.resubmitCount + 1,

@@ -14,7 +14,7 @@ export const castScope = (scope = {}) =>
         ])
     );
 
-const PEOPLE_POPULATE = [
+export const PEOPLE_POPULATE = [
     { path: 'surveyor', select: 'name phone surveyorCode' },
     { path: 'sanchalak', select: 'name kendraName sanchalakCode' },
 ];
@@ -36,11 +36,9 @@ export const serializeRegistration = (doc, { includeAadhaar = false, includeComm
 };
 
 /**
- * Paginated list scoped by `scope` (e.g. { surveyor: id } or { sanchalak: id } or {} for admin).
+ * Query filter for a registration list. `countFilter` leaves out status and search (for the status tab counts).
  */
-export const listRegistrations = async (scope, { page = 1, limit = 10, status, search, surveyor, sanchalak } = {}) => {
-    const numericPage = Number(page) || 1;
-    const numericLimit = Number(limit) || 10;
+export const buildRegistrationFilter = (scope, { status, search, surveyor, sanchalak } = {}) => {
     const filter = castScope(scope);
     if (surveyor) filter.surveyor = new mongoose.Types.ObjectId(surveyor);
     if (sanchalak) filter.sanchalak = new mongoose.Types.ObjectId(sanchalak);
@@ -56,8 +54,19 @@ export const listRegistrations = async (scope, { page = 1, limit = 10, status, s
             { district: pattern },
             { registrationCode: pattern },
             { aadhaarLast4: pattern },
+            { 'crops.name': pattern },
         ];
     }
+    return { filter, countFilter };
+};
+
+/**
+ * Paginated list scoped by `scope` (e.g. { surveyor: id } or { sanchalak: id } or {} for admin).
+ */
+export const listRegistrations = async (scope, query = {}) => {
+    const numericPage = Number(query.page) || 1;
+    const numericLimit = Number(query.limit) || 10;
+    const { filter, countFilter } = buildRegistrationFilter(scope, query);
 
     const [registrations, total, statusCounts] = await Promise.all([
         FarmerRegistration.find(filter)
@@ -83,6 +92,23 @@ export const getRegistrationOrThrow = async (filter, { includeAadhaar = false } 
     const registration = await query;
     if (!registration) throw new ApiError(404, 'Farmer registration not found.');
     return registration;
+};
+
+/** Crops grown by each Sanchalak's farmers: Map of sanchalak id → [{ name, farmers }], most common first. */
+export const cropSummaryBySanchalak = async (sanchalakIds) => {
+    const rows = await FarmerRegistration.aggregate([
+        { $match: { sanchalak: { $in: sanchalakIds }, status: { $ne: 'rejected' } } },
+        { $unwind: '$crops' },
+        { $group: { _id: { sanchalak: '$sanchalak', name: '$crops.name' }, farmers: { $sum: 1 } } },
+        { $sort: { farmers: -1, '_id.name': 1 } },
+    ]);
+    const byId = new Map();
+    rows.forEach(({ _id, farmers }) => {
+        const key = String(_id.sanchalak);
+        if (!byId.has(key)) byId.set(key, []);
+        byId.get(key).push({ name: _id.name, farmers });
+    });
+    return byId;
 };
 
 export const countByStatus = async (scope) => {

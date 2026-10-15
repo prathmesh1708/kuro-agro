@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import DataTable from '../../components/DataTable';
 import Pagination from '../../components/Pagination';
+import ExportButtons from '../../components/ExportButtons';
 import Badge from '../../../../shared/components/Badge';
 import {
   getAllSanchalaks,
@@ -189,6 +190,12 @@ const FieldAccounts = ({ kind, sanchalakId, embedded = false, onStatusChanged })
             <p className="text-xs text-gray-500">
               {row.approvedSurveyorCount}/{row.surveyorCount} surveyors approved
             </p>
+            {row.crops?.length > 0 && (
+              <p className="text-xs text-gray-600 mt-0.5 max-w-[220px]" title={row.crops.map((c) => `${c.name}: ${c.farmers} farmer(s)`).join(', ')}>
+                🌾 {row.crops.slice(0, 4).map((c) => c.name).join(', ')}
+                {row.crops.length > 4 ? ` +${row.crops.length - 4}` : ''}
+              </p>
+            )}
           </div>
         ),
       }
@@ -271,6 +278,7 @@ const FieldAccounts = ({ kind, sanchalakId, embedded = false, onStatusChanged })
       )}
 
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 space-y-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-wrap gap-2">
           {STATUS_TABS.map((tab) => {
             const count = tab.value === 'all' ? totalAll : statusCounts[tab.value] || 0;
@@ -289,6 +297,16 @@ const FieldAccounts = ({ kind, sanchalakId, embedded = false, onStatusChanged })
               </button>
             );
           })}
+        </div>
+          <ExportButtons
+            endpoint={`/admin/${config.listKey}/export`}
+            filename={config.listKey}
+            params={{
+              ...(sanchalakId && { sanchalak: sanchalakId }),
+              ...(search && { search }),
+              ...(statusFilter !== 'all' && { status: statusFilter }),
+            }}
+          />
         </div>
         <div className="relative">
           <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />

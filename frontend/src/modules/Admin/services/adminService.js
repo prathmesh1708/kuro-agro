@@ -16,23 +16,24 @@ export const getAdminProfile = () =>
     api.get('/admin/auth/profile');
 
 // ─── Analytics / Dashboard ────────────────────────────────────────────────────
-export const getDashboardStats = () =>
-    api.get('/admin/analytics/dashboard');
+// `params.range` (today | yesterday | week | month | year) limits dashboard data to that period.
+export const getDashboardStats = (params = {}) =>
+    api.get('/admin/analytics/dashboard', { params });
 
 export const getRevenueData = (period = 'monthly', params = {}) =>
     api.get('/admin/analytics/revenue', { params: { period, ...params } });
 
-export const getOrderStatusBreakdown = () =>
-    api.get('/admin/analytics/order-status');
+export const getOrderStatusBreakdown = (params = {}) =>
+    api.get('/admin/analytics/order-status', { params });
 
-export const getTopProducts = () =>
-    api.get('/admin/analytics/top-products');
+export const getTopProducts = (params = {}) =>
+    api.get('/admin/analytics/top-products', { params });
 
-export const getCustomerGrowth = (period = 'monthly') =>
-    api.get('/admin/analytics/customer-growth', { params: { period } });
+export const getCustomerGrowth = (period = 'monthly', params = {}) =>
+    api.get('/admin/analytics/customer-growth', { params: { period, ...params } });
 
-export const getRecentOrders = () =>
-    api.get('/admin/analytics/recent-orders');
+export const getRecentOrders = (params = {}) =>
+    api.get('/admin/analytics/recent-orders', { params });
 
 export const getSalesData = (period = 'monthly', params = {}) =>
     api.get('/admin/analytics/sales', { params: { period, ...params } });

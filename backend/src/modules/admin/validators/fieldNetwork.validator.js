@@ -17,6 +17,12 @@ export const surveyorListQuerySchema = sanchalakListQuerySchema.keys({
     sanchalak: objectId.optional(),
 });
 
+const exportFormat = Joi.string().valid('xlsx', 'pdf').required();
+
+export const sanchalakExportQuerySchema = sanchalakListQuerySchema.keys({ format: exportFormat });
+
+export const surveyorExportQuerySchema = surveyorListQuerySchema.keys({ format: exportFormat });
+
 export const fieldAccountStatusSchema = Joi.object({
     status: Joi.string().valid('approved', 'rejected', 'suspended').required(),
     reason: Joi.string().trim().max(500).allow('').optional(),
