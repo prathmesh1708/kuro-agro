@@ -37,7 +37,7 @@ const router = Router();
 const customerAuth = [authenticate, authorize('customer'), enforceAccountStatus];
 
 // Auth routes
-router.post('/auth/register', authLimiter, validate(registerSchema), authController.register);
+router.post('/auth/register', authLimiter, otpLimiter, validate(registerSchema), authController.register);
 router.post('/auth/verify-otp', validate(otpSchema), authController.verifyOTP);
 router.post('/auth/resend-otp', otpLimiter, validate(resendOtpSchema), authController.resendOTP);
 router.post('/auth/forgot-password', authLimiter, validate(forgotPasswordSchema), authController.forgotPassword);

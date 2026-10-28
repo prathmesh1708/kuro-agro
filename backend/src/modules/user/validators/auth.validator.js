@@ -1,12 +1,15 @@
 import Joi from 'joi';
 
+const mobilePhone = Joi.string().trim().pattern(/^[6-9][0-9]{9}$/).messages({
+    'string.pattern.base': 'Please enter a valid 10-digit mobile number.',
+    'any.required': 'Mobile number is required.',
+    'string.empty': 'Mobile number is required.',
+});
+
 export const registerSchema = Joi.object({
     name: Joi.string().trim().min(2).max(50).required(),
-    email: Joi.string().email().lowercase().required(),
+    phone: mobilePhone.required(),
     password: Joi.string().min(6).required(),
-    phone: Joi.string().pattern(/^[0-9]{10}$/).allow('', null).optional().messages({
-        'string.pattern.base': 'Please enter a valid 10-digit phone number.',
-    }),
 });
 
 export const loginSchema = Joi.object({
@@ -45,16 +48,16 @@ export const logoutSchema = Joi.object({
 });
 
 export const forgotPasswordSchema = Joi.object({
-    email: Joi.string().email().required(),
+    phone: mobilePhone.required(),
 });
 
 export const verifyResetOtpSchema = Joi.object({
-    email: Joi.string().email().required(),
+    phone: mobilePhone.required(),
     otp: Joi.string().length(6).required(),
 });
 
 export const resetPasswordSchema = Joi.object({
-    email: Joi.string().email().required(),
+    phone: mobilePhone.required(),
     password: Joi.string().min(6).required(),
     confirmPassword: Joi.string().valid(Joi.ref('password')).required().messages({
         'any.only': 'Confirm password must match password.',

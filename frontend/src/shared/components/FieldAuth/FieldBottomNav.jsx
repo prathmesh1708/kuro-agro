@@ -1,14 +1,16 @@
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Users, UserPlus, User, ShoppingBasket, Warehouse, Truck, Wheat, ClipboardList } from 'lucide-react';
+import { Home, Users, User, ShoppingBasket, Warehouse, Truck, Wheat, ClipboardList, Sprout, Wallet } from 'lucide-react';
 
 // Same floating "LumaBar" pill as the customer app, with items per role.
 const NAV_ITEMS = {
+  // Add Farmer is reached from the Home tile, to keep the bar to five items.
   surveyor: [
     { path: '/surveyor/dashboard', icon: Home, label: 'Home' },
     { path: '/surveyor/farmers', icon: Users, label: 'Farmers', exact: true },
-    { path: '/surveyor/farmers/new', icon: UserPlus, label: 'Add Farmer' },
+    { path: '/surveyor/seeds', icon: Sprout, label: 'Seeds' },
+    { path: '/surveyor/seed-account', icon: Wallet, label: 'Account' },
     { path: '/surveyor/profile', icon: User, label: 'Profile' },
   ],
   // Farmers and Surveyors are reached from the Home tiles.
@@ -23,6 +25,7 @@ const NAV_ITEMS = {
     { path: '/kisan/dashboard', icon: Home, label: 'Home' },
     { path: '/kisan/sell', icon: Wheat, label: 'Sell' },
     { path: '/kisan/requests', icon: ClipboardList, label: 'My Offers' },
+    { path: '/kisan/seeds', icon: Sprout, label: 'Seeds' },
     { path: '/kisan/profile', icon: User, label: 'Profile' },
   ],
 };

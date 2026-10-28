@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiPlus, FiClock, FiCheckCircle, FiXCircle, FiUsers } from 'react-icons/fi';
+import { Sprout, Wallet } from 'lucide-react';
 import FieldPanelLayout from '../../../shared/components/FieldAuth/FieldPanelLayout';
 import { useSurveyorAuthStore } from '../store/surveyorStore';
+import { formatInr } from '../../../shared/components/Seed/seedFormat';
 import { getSurveyorDashboard } from '../services/surveyorService';
 
 const TILES = [
@@ -15,12 +17,16 @@ const TILES = [
 const SurveyorDashboard = () => {
   const { account, fetchProfile } = useSurveyorAuthStore();
   const [counts, setCounts] = useState(null);
+  const [seed, setSeed] = useState(null);
   const sanchalak = account?.sanchalak && typeof account.sanchalak === 'object' ? account.sanchalak : null;
 
   useEffect(() => {
     fetchProfile().catch(() => {});
     getSurveyorDashboard()
-      .then((response) => setCounts(response?.data?.farmers || null))
+      .then((response) => {
+        setCounts(response?.data?.farmers || null);
+        setSeed(response?.data?.seed || null);
+      })
       .catch(() => {});
   }, [fetchProfile]);
 
@@ -46,6 +52,42 @@ const SurveyorDashboard = () => {
       >
         <FiPlus size={20} /> Register New Farmer / नया किसान जोड़ें
       </Link>
+
+      {seed && (seed.pendingDispatches > 0 || seed.awaitingConfirmation > 0) && (
+        <section className="space-y-2 mb-5">
+          {seed.pendingDispatches > 0 && (
+            <Link to="/surveyor/seeds" className="flex items-center gap-3 rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3">
+              <Sprout className="text-amber-600 shrink-0" size={20} />
+              <p className="text-sm font-semibold text-amber-900">
+                {seed.pendingDispatches} seed dispatch{seed.pendingDispatches === 1 ? '' : 'es'} waiting for you to confirm
+              </p>
+            </Link>
+          )}
+          {seed.awaitingConfirmation > 0 && (
+            <Link to="/surveyor/seed-issues" className="flex items-center gap-3 rounded-2xl bg-sky-50 border border-sky-200 px-4 py-3">
+              <Wallet className="text-sky-600 shrink-0" size={20} />
+              <p className="text-sm font-semibold text-sky-900">
+                {seed.awaitingConfirmation} farmer payment{seed.awaitingConfirmation === 1 ? '' : 's'} to confirm
+              </p>
+            </Link>
+          )}
+        </section>
+      )}
+
+      <section className="grid grid-cols-2 gap-4 mb-5">
+        <Link to="/surveyor/seeds" className="bg-white rounded-2xl p-4 shadow-sm hover:shadow transition-shadow">
+          <Sprout className="text-gold-600 mb-2" size={20} />
+          <p className="text-xs text-gray-500">Seed in stock</p>
+          <p className="text-2xl font-bold text-gray-900">{seed ? seed.stock.length : '—'}</p>
+          <p className="text-[11px] text-gray-500">{seed ? `${seed.pendingIssues} with farmers` : ' '}</p>
+        </Link>
+        <Link to="/surveyor/seed-account" className="bg-white rounded-2xl p-4 shadow-sm hover:shadow transition-shadow">
+          <Wallet className="text-gold-600 mb-2" size={20} />
+          <p className="text-xs text-gray-500">To transfer to admin</p>
+          <p className="text-2xl font-bold text-gray-900">{seed ? formatInr(seed.account.payableToAdmin) : '—'}</p>
+          <p className="text-[11px] text-green-700">{seed ? `${formatInr(seed.account.commissionEarned)} commission earned` : ' '}</p>
+        </Link>
+      </section>
 
       <section className="grid grid-cols-2 gap-4">
         {TILES.map(({ key, label, icon: Icon }) => (

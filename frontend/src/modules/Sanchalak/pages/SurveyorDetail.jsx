@@ -64,7 +64,9 @@ const SanchalakSurveyorDetail = () => {
               {surveyor.phone && (
                 <p className="flex items-center gap-3"><FiPhone className="text-gray-400 shrink-0" /> {surveyor.phone}</p>
               )}
-              <p className="flex items-center gap-3 break-all"><FiMail className="text-gray-400 shrink-0" /> {surveyor.email}</p>
+              {surveyor.email && (
+                <p className="flex items-center gap-3 break-all"><FiMail className="text-gray-400 shrink-0" /> {surveyor.email}</p>
+              )}
               {(address.village || address.district) && (
                 <p className="flex items-start gap-3">
                   <FiMapPin className="text-gray-400 shrink-0 mt-0.5" />

@@ -10,8 +10,10 @@ export const FIELD_ACCOUNT_STATUSES = ['pending', 'approved', 'rejected', 'suspe
  */
 export const fieldAccountFields = () => ({
     name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    phone: { type: String, required: true, unique: true, trim: true },
+    // Optional: accounts register with a verified phone; email is kept for older accounts.
+    email: { type: String, lowercase: true, trim: true },
+    // Required at registration (validator); not here, so older accounts without a phone still save.
+    phone: { type: String, trim: true },
     password: { type: String, required: true, select: false },
     avatar: { type: String },
     address: {
@@ -46,6 +48,10 @@ export const fieldAccountFields = () => ({
  */
 export const applyFieldAccountBehaviour = (schema, { codeField, codePrefix }) => {
     applyUniqueCode(schema, { codeField, codePrefix });
+
+    // Unique only when present, so phone-only accounts can leave email out.
+    schema.index({ email: 1 }, { unique: true, partialFilterExpression: { email: { $type: 'string' } } });
+    schema.index({ phone: 1 }, { unique: true, partialFilterExpression: { phone: { $type: 'string' } } });
 
     schema.pre('save', async function (next) {
         if (!this.isModified('password')) return next();

@@ -31,7 +31,7 @@ const DeliveryForgotPassword = () => {
 
     try {
       await forgotPassword(email.trim().toLowerCase());
-      toast.success('If the email exists, reset OTP has been sent.');
+      toast.success('If the account exists, a reset OTP has been sent to its registered mobile number.');
       setStep('verify');
     } catch {
       // Global API interceptor shows toast
@@ -93,8 +93,8 @@ const DeliveryForgotPassword = () => {
               <h1 className="text-2xl font-bold text-gray-800 mb-2">Forgot Password</h1>
               <p className="text-gray-600 text-sm">
                 {step === 'request'
-                  ? 'Enter your delivery account email to receive OTP.'
-                  : `Enter the OTP sent to ${email}`}
+                  ? 'Enter your delivery account email. The OTP will be sent to your registered mobile number.'
+                  : 'Enter the OTP sent to your registered mobile number.'}
               </p>
             </div>
 

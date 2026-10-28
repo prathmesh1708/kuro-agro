@@ -29,7 +29,7 @@ export const tradeRequestFields = () => ({
         {
             _id: false,
             action: { type: String, required: true },
-            byType: { type: String, enum: ['kisan', 'sanchalak', 'admin'], required: true },
+            byType: { type: String, enum: ['kisan', 'sanchalak', 'surveyor', 'admin'], required: true },
             by: { type: mongoose.Schema.Types.ObjectId },
             note: { type: String, trim: true },
             at: { type: Date, default: Date.now },

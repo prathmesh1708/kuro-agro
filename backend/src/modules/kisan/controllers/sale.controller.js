@@ -8,6 +8,7 @@ import KisanSaleRequest from '../../../models/KisanSaleRequest.model.js';
 import { createNotification } from '../../../services/notification.service.js';
 import { amountFor, getActiveProduceOrThrow, listProduce, toKg } from '../../../services/produce.service.js';
 import { formatQuantity, listTradeRequests, toPlain } from '../../../services/produceTrade.service.js';
+import { getSeedDashboard } from './seed.controller.js';
 
 const SANCHALAK_POPULATE = { path: 'sanchalak', select: 'name kendraName sanchalakCode phone' };
 
@@ -20,7 +21,7 @@ export const getProduceList = asyncHandler(async (req, res) => {
 // GET /api/kisan/dashboard
 export const getDashboard = asyncHandler(async (req, res) => {
     const kisanId = new mongoose.Types.ObjectId(req.user.id);
-    const [byStatus, unpaid] = await Promise.all([
+    const [byStatus, unpaid, seed] = await Promise.all([
         KisanSaleRequest.aggregate([
             { $match: { kisan: kisanId } },
             {
@@ -36,6 +37,7 @@ export const getDashboard = asyncHandler(async (req, res) => {
             { $match: { kisan: kisanId, status: 'purchased', 'payment.status': 'unpaid' } },
             { $group: { _id: null, amount: { $sum: '$purchased.totalAmount' }, count: { $sum: 1 } } },
         ]),
+        getSeedDashboard(req.user.id),
     ]);
     const statusCounts = Object.fromEntries(byStatus.map((row) => [row._id, row.count]));
     const sold = byStatus.find((row) => row._id === 'purchased');
@@ -45,6 +47,7 @@ export const getDashboard = asyncHandler(async (req, res) => {
             statusCounts,
             sold: { count: sold?.count || 0, amount: sold?.amount || 0 },
             paymentDue: { count: unpaid[0]?.count || 0, amount: unpaid[0]?.amount || 0 },
+            seed,
         }, 'Dashboard fetched.')
     );
 });

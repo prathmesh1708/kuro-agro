@@ -122,15 +122,18 @@ const applyStatusChange = async ({ account, status, reason, adminId, label, role
         suspended: `Your ${label} account has been suspended. Reason: ${reason}`,
     };
 
-    try {
-        await sendEmail({
-            to: account.email,
-            subject: `${label} account ${status}`,
-            text: messages[status],
-            html: `<p>${messages[status]}</p>`,
-        });
-    } catch (err) {
-        console.warn(`[${label} Status Email] Failed for ${account.email}: ${err.message}`);
+    // Accounts registered by phone may have no email; the in-app notification below covers them.
+    if (account.email) {
+        try {
+            await sendEmail({
+                to: account.email,
+                subject: `${label} account ${status}`,
+                text: messages[status],
+                html: `<p>${messages[status]}</p>`,
+            });
+        } catch (err) {
+            console.warn(`[${label} Status Email] Failed for ${account.email}: ${err.message}`);
+        }
     }
 
     await createNotification({

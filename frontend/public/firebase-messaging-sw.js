@@ -4,13 +4,13 @@ importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compa
 
 // Initialize Firebase in service worker
 const firebaseConfig = {
-  apiKey: "AIzaSyDvR_Km7CD7JWqpUP6dp9enS1mG5JKD1fE",
-  authDomain: "rathi-a14db.firebaseapp.com",
-  projectId: "rathi-a14db",
-  storageBucket: "rathi-a14db.firebasestorage.app",
-  messagingSenderId: "519318385056",
-  appId: "1:519318385056:web:ad85415051517ef1c874c5",
-  measurementId: "G-ZRF84VEK1M"
+  apiKey: "AIzaSyAaPxPnj4k5Fb4uYKNPgXL_5c9HPa71UqI",
+  authDomain: "kuroagro.firebaseapp.com",
+  projectId: "kuroagro",
+  storageBucket: "kuroagro.firebasestorage.app",
+  messagingSenderId: "581059219878",
+  appId: "1:581059219878:web:17d5f201098e44b5ac7f67",
+  measurementId: "G-5Z6DSL1C3M"
 };
 
 firebase.initializeApp(firebaseConfig);

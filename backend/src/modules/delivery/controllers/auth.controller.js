@@ -5,7 +5,7 @@ import DeliveryBoy from '../../../models/DeliveryBoy.model.js';
 import Admin from '../../../models/Admin.model.js';
 import { generateTokens } from '../../../utils/generateToken.js';
 import { createNotification } from '../../../services/notification.service.js';
-import { sendEmail } from '../../../services/email.service.js';
+import { sendResetOTP } from '../../../services/otp.service.js';
 import { cleanupLocalFiles, uploadPrivateDocumentAndCleanup } from '../../../services/upload.service.js';
 import {
     clearRefreshSession,
@@ -97,35 +97,12 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     const deliveryBoy = await DeliveryBoy.findOne({ email: normalizedEmail }).select('+resetOtp +resetOtpExpiry +resetOtpVerified');
 
     // Generic response to prevent account enumeration
-    if (!deliveryBoy) {
-        return res.status(200).json(
-            new ApiResponse(200, null, 'If the email exists, a reset OTP has been sent.')
-        );
-    }
+    const genericResponse = new ApiResponse(200, null, 'If the account exists, a reset OTP has been sent to its registered mobile number.');
+    if (!deliveryBoy) return res.status(200).json(genericResponse);
 
-    const otp = String(Math.floor(100000 + Math.random() * 900000));
-    deliveryBoy.resetOtp = otp;
-    deliveryBoy.resetOtpExpiry = new Date(Date.now() + 10 * 60 * 1000);
-    deliveryBoy.resetOtpVerified = false;
-    await deliveryBoy.save({ validateBeforeSave: false });
-
-    try {
-        await sendEmail({
-            to: deliveryBoy.email,
-            subject: 'Delivery password reset OTP',
-            text: `Your password reset OTP is ${otp}. It expires in 10 minutes.`,
-            html: `<p>Your password reset OTP is <strong>${otp}</strong>. It expires in 10 minutes.</p>`,
-        });
-    } catch (err) {
-        console.warn(`[Delivery Forgot Password] Email send failed for ${deliveryBoy.email}: ${err.message}`);
-        if (process.env.NODE_ENV !== 'production') {
-            console.log(`[Delivery Forgot Password] Reset OTP generated for ${deliveryBoy.email}`);
-        }
-    }
-
-    return res.status(200).json(
-        new ApiResponse(200, null, 'If the email exists, a reset OTP has been sent.')
-    );
+    // OTPs go by SMS to the registered mobile number only.
+    await sendResetOTP(deliveryBoy, 'Delivery');
+    return res.status(200).json(genericResponse);
 });
 
 // POST /api/delivery/auth/verify-reset-otp

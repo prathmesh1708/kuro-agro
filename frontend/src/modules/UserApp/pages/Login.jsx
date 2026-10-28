@@ -89,9 +89,13 @@ const MobileLogin = () => {
     } catch (error) {
       const msg = error?.response?.data?.message || error?.message || 'Login failed. Please check your credentials.';
       toast.error(msg);
-      // If unverified, redirect to verification
+      // If unverified, redirect to verification for the account's phone
       if (msg.toLowerCase().includes('not verified')) {
-        navigate('/verification', { state: { phone: rawIdentifier } });
+        const unverified = error?.response?.data?.errors?.find((item) => item.code === 'PHONE_NOT_VERIFIED');
+        const verifyPhone = unverified?.phone || rawIdentifier;
+        navigate('/verification', {
+          state: verifyPhone.includes('@') ? { email: verifyPhone } : { phone: verifyPhone },
+        });
       }
     }
   };
@@ -254,7 +258,7 @@ const MobileLogin = () => {
                 <form onSubmit={handleFieldLogin} className="space-y-5">
                   <div>
                     <label htmlFor="field-identifier" className="block text-sm font-semibold text-gray-700 mb-2">
-                      Login ID, Email or Phone
+                      Login ID or Mobile Number
                     </label>
                     <div className="relative">
                       <FiUser className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -266,15 +270,23 @@ const MobileLogin = () => {
                         onChange={(e) => setIdentifier(e.target.value)}
                         required
                         className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 ${roleConfig.theme.focus} focus:outline-none transition-colors text-base font-medium`}
-                        placeholder={`${roleConfig.codeExample}, email or phone`}
+                        placeholder={`${roleConfig.codeExample} or 10-digit mobile`}
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="field-password" className="block text-sm font-semibold text-gray-700 mb-2">
-                      Password
-                    </label>
+                    <div className="flex justify-between items-center mb-2">
+                      <label htmlFor="field-password" className="block text-sm font-semibold text-gray-700">
+                        Password
+                      </label>
+                      <Link
+                        to={`/forgot-password${roleSearch(role)}`}
+                        className={`text-xs font-semibold ${roleConfig.theme.link}`}
+                      >
+                        Forgot Password?
+                      </Link>
+                    </div>
                     <div className="relative">
                       <FiLock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
                       <input
@@ -311,7 +323,7 @@ const MobileLogin = () => {
                 {/* Mobile Number or Email */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Email or Mobile Number
+                    Mobile Number or Email
                   </label>
                   <div className="relative">
                     <FiUser className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -321,7 +333,7 @@ const MobileLogin = () => {
                       onChange={(e) => setPhone(e.target.value)}
                       required
                       className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:outline-none transition-colors text-base font-medium"
-                      placeholder="you@example.com or 10-digit mobile"
+                      placeholder="10-digit mobile or email"
                     />
                   </div>
                 </div>

@@ -1,18 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiArrowLeft, FiCheck, FiMail, FiRefreshCw } from 'react-icons/fi';
+import { FiArrowLeft, FiCheck, FiPhone, FiRefreshCw } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import MobileLayout from '../components/Layout/MobileLayout';
 import PageTransition from '../../../shared/components/PageTransition';
-import { useAuthStore } from '../../../shared/store/authStore';
+import { usePasswordResetRole } from '../../../shared/components/FieldAuth/usePasswordResetRole';
 
 const OTP_LENGTH = 6;
 
 const MobileForgotPassword = () => {
   const navigate = useNavigate();
-  const { forgotPassword, verifyResetOtp, isLoading } = useAuthStore();
-  const [email, setEmail] = useState('');
+  const { role, roleConfig, store, hasPassword, search, loginPath } = usePasswordResetRole();
+  const { forgotPassword, verifyResetOtp, isLoading } = store;
+  const { theme } = roleConfig;
+  const [phone, setPhone] = useState('');
   const [step, setStep] = useState('request');
   const [codes, setCodes] = useState(Array(OTP_LENGTH).fill(''));
   const inputRefs = useRef([]);
@@ -23,16 +25,19 @@ const MobileForgotPassword = () => {
     }
   }, [step]);
 
+  // Kisan logs in with a mobile OTP and has no password to reset.
+  if (!hasPassword) return <Navigate to={loginPath} replace />;
+
   const handleRequestOtp = async (e) => {
     if (e) e.preventDefault();
-    if (!email.trim()) {
-      toast.error('Please enter your email.');
+    if (!/^[6-9]\d{9}$/.test(phone)) {
+      toast.error('Please enter a valid 10-digit mobile number.');
       return;
     }
 
     try {
-      await forgotPassword(email.trim().toLowerCase());
-      toast.success('If the email exists, reset OTP has been sent.');
+      await forgotPassword(phone);
+      toast.success('If the mobile number is registered, a reset OTP has been sent.');
       setStep('verify');
     } catch (error) {
       const message = String(
@@ -43,11 +48,12 @@ const MobileForgotPassword = () => {
       ).toLowerCase();
 
       if (
-        message.includes('verify your email') ||
-        message.includes('verification otp has been sent')
+        role === 'customer' &&
+        (message.includes('not verified') ||
+        message.includes('verification otp has been sent'))
       ) {
         navigate('/verification', {
-          state: { email: email.trim().toLowerCase() },
+          state: { phone },
           replace: true,
         });
       }
@@ -85,9 +91,9 @@ const MobileForgotPassword = () => {
     }
 
     try {
-      await verifyResetOtp(email.trim().toLowerCase(), otp);
+      await verifyResetOtp(phone, otp);
       toast.success('OTP verified. Please set your new password.');
-      navigate(`/reset-password?email=${encodeURIComponent(email.trim().toLowerCase())}`);
+      navigate(`/reset-password${search}`, { state: { phone } });
     } catch {
       // Global API interceptor shows toast
     }
@@ -105,26 +111,31 @@ const MobileForgotPassword = () => {
           >
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="text-center mb-8">
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">Forgot Password</h1>
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                  {role === 'customer' ? 'Forgot Password' : `${roleConfig.label} Password Reset`}
+                </h1>
                 <p className="text-sm text-gray-600">
                   {step === 'request'
-                    ? 'Enter your account email to receive OTP.'
-                    : `Enter the OTP sent to ${email}`}
+                    ? 'Enter your registered mobile number to receive an OTP.'
+                    : `Enter the OTP sent to +91 ${phone}`}
                 </p>
               </div>
 
               {step === 'request' ? (
                 <form onSubmit={handleRequestOtp} className="space-y-5">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Mobile Number</label>
                     <div className="relative">
-                      <FiMail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <FiPhone className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <span className="absolute left-10 top-1/2 -translate-y-1/2 text-gray-500 text-base">+91</span>
                       <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="your.email@example.com"
-                        className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:outline-none transition-colors text-base"
+                        type="tel"
+                        inputMode="numeric"
+                        autoComplete="tel-national"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                        placeholder="9876543210"
+                        className={`w-full pl-20 pr-4 py-3 rounded-xl border-2 border-gray-200 ${theme.focus} focus:outline-none transition-colors text-base`}
                         required
                       />
                     </div>
@@ -132,7 +143,7 @@ const MobileForgotPassword = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-primary-500 hover:bg-primary-600 text-white py-3.5 rounded-xl font-semibold text-base transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`w-full ${theme.button} text-white py-3.5 rounded-xl font-semibold text-base transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     {isLoading ? 'Sending OTP...' : 'Send OTP'}
                   </button>
@@ -151,7 +162,7 @@ const MobileForgotPassword = () => {
                         onChange={(e) => handleCodeChange(index, e.target.value)}
                         onKeyDown={(e) => handleKeyDown(index, e)}
                         onPaste={index === 0 ? handlePaste : undefined}
-                        className="w-11 h-11 text-center text-lg font-bold bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary-500 text-gray-800"
+                        className={`w-11 h-11 text-center text-lg font-bold bg-white border-2 border-gray-200 rounded-xl focus:outline-none ${theme.focus} text-gray-800`}
                       />
                     ))}
                   </div>
@@ -161,7 +172,7 @@ const MobileForgotPassword = () => {
                       type="button"
                       onClick={handleRequestOtp}
                       disabled={isLoading}
-                      className="text-sm text-primary-600 hover:text-primary-700 font-medium disabled:text-gray-400 inline-flex items-center gap-2"
+                      className={`text-sm ${theme.link} font-medium disabled:text-gray-400 inline-flex items-center gap-2`}
                     >
                       <FiRefreshCw />
                       Resend OTP
@@ -171,14 +182,14 @@ const MobileForgotPassword = () => {
                       onClick={() => setStep('request')}
                       className="text-sm text-gray-600 hover:text-gray-800 font-medium"
                     >
-                      Change Email
+                      Change Number
                     </button>
                   </div>
 
                   <button
                     type="submit"
                     disabled={isLoading || codes.some((c) => !c)}
-                    className="w-full bg-primary-500 hover:bg-primary-600 text-white py-3.5 rounded-xl font-semibold text-base transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className={`w-full ${theme.button} text-white py-3.5 rounded-xl font-semibold text-base transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
                   >
                     {isLoading ? 'Verifying...' : <><FiCheck /> Verify OTP</>}
                   </button>
@@ -186,7 +197,7 @@ const MobileForgotPassword = () => {
               )}
 
               <div className="text-center pt-6">
-                <Link to="/login" className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 font-medium">
+                <Link to={loginPath} className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 font-medium">
                   <FiArrowLeft />
                   Back to Login
                 </Link>

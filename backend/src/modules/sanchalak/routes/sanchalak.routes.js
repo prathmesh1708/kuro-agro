@@ -35,7 +35,7 @@ const router = Router();
 const sanchalakAuth = [authenticate, authorize('sanchalak'), enforceAccountStatus];
 
 // Auth
-router.post('/auth/register', authLimiter, validate(registerSchema), authController.register);
+router.post('/auth/register', authLimiter, otpLimiter, validate(registerSchema), authController.register);
 router.post('/auth/verify-otp', authLimiter, validate(otpSchema), authController.verifyOTP);
 router.post('/auth/resend-otp', otpLimiter, validate(resendOtpSchema), authController.resendOTP);
 router.post('/auth/login', authLimiter, validate(loginSchema), authController.login);

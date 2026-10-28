@@ -78,7 +78,7 @@ export const useVendorAuthStore = create(
       },
 
       // Vendor registration action — calls real POST /vendor/auth/register
-      // Backend sends an OTP email; vendor is NOT authenticated until OTP verified.
+      // Backend sends an OTP by SMS; vendor is NOT authenticated until OTP verified.
       register: async (vendorData) => {
         set({ isLoading: true });
         try {
@@ -92,7 +92,7 @@ export const useVendorAuthStore = create(
             success: true,
             message:
               data?.message ||
-              "Registration successful! Please check your email for the OTP.",
+              "Registration successful! Please enter the OTP sent to your mobile number.",
           };
         } catch (error) {
           set({ isLoading: false });

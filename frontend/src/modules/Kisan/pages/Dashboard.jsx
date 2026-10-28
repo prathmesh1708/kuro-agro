@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiClock, FiCheckCircle, FiXCircle, FiDollarSign } from 'react-icons/fi';
-import { Wheat } from 'lucide-react';
+import { Wheat, Sprout } from 'lucide-react';
 import FieldPanelLayout from '../../../shared/components/FieldAuth/FieldPanelLayout';
 import { formatInr } from '../../../shared/components/Produce/produceFormat';
 import { useKisanAuthStore } from '../store/kisanStore';
@@ -46,6 +46,25 @@ const KisanDashboard = () => {
       >
         <Wheat size={20} /> Sell Produce / फसल बेचें
       </Link>
+
+      {stats?.seed?.pendingSeedRequests > 0 && (
+        <Link to="/kisan/seeds" className="flex items-center gap-3 rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3 mb-5">
+          <Sprout className="text-amber-600 shrink-0" size={20} />
+          <p className="text-sm font-semibold text-amber-900">
+            {stats.seed.pendingSeedRequests} seed delivery{stats.seed.pendingSeedRequests === 1 ? '' : ' deliveries'} to confirm
+          </p>
+        </Link>
+      )}
+
+      {stats?.seed?.seedPaymentDue?.amount > 0 && (
+        <Link to="/kisan/seeds" className="flex items-center justify-between gap-3 rounded-2xl bg-white border border-gray-200 px-4 py-3 mb-5 shadow-sm">
+          <div>
+            <p className="text-xs text-gray-500">Seed payment due to your surveyor</p>
+            <p className="text-xl font-bold text-gray-900">{formatInr(stats.seed.seedPaymentDue.amount)}</p>
+          </div>
+          <Sprout className="text-green-600 shrink-0" size={22} />
+        </Link>
+      )}
 
       <section className="grid grid-cols-2 gap-4">
         {tiles.map(({ label, value, icon: Icon }) => (

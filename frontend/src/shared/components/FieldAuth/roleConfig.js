@@ -6,9 +6,9 @@ export const ROLE_CONFIG = {
   customer: {
     label: 'Customer',
     loginTitle: 'Welcome Back',
-    loginSubtitle: 'Log in with your email or phone number and password',
+    loginSubtitle: 'Log in with your mobile number and password',
     registerTitle: 'Create Account',
-    registerSubtitle: 'Sign up to get started with KuroAgro',
+    registerSubtitle: 'Sign up with your mobile number to get started with KuroAgro',
     icon: FiUser,
     home: '/home',
     theme: {
@@ -38,7 +38,7 @@ export const ROLE_CONFIG = {
   surveyor: {
     label: 'Surveyor',
     loginTitle: 'Surveyor Login',
-    loginSubtitle: 'Use your Surveyor ID (SUR-…), email or phone',
+    loginSubtitle: 'Use your Surveyor ID (SUR-…) or mobile number',
     registerTitle: 'Become a Surveyor',
     registerSubtitle: 'Register under your Kisan Vyapar Kendra using its Sanchalak code',
     icon: FiClipboard,
@@ -55,7 +55,7 @@ export const ROLE_CONFIG = {
   sanchalak: {
     label: 'Manager / Sanchalak',
     loginTitle: 'Sanchalak Login',
-    loginSubtitle: 'Use your Sanchalak ID (SAN-…), email or phone',
+    loginSubtitle: 'Use your Sanchalak ID (SAN-…) or mobile number',
     registerTitle: 'Register Your Kendra',
     registerSubtitle: 'Kisan Vyapar Kendra operator registration',
     icon: FiBriefcase,

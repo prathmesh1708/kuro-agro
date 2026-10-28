@@ -4,7 +4,8 @@ import bcrypt from 'bcryptjs';
 const userSchema = new mongoose.Schema(
     {
         name: { type: String, required: true, trim: true },
-        email: { type: String, required: true, unique: true, lowercase: true, index: true },
+        // Optional: accounts register with a verified phone; email is kept for older accounts.
+        email: { type: String, lowercase: true, trim: true },
         password: { type: String, required: true, select: false },
         phone: { type: String, trim: true },
         avatar: { type: String }, // Cloudinary URL
@@ -25,6 +26,10 @@ const userSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
+
+// Unique only when present, so phone-only accounts can leave email out.
+userSchema.index({ email: 1 }, { unique: true, partialFilterExpression: { email: { $type: 'string' } } });
+userSchema.index({ phone: 1 }, { unique: true, partialFilterExpression: { phone: { $type: 'string' } } });
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {

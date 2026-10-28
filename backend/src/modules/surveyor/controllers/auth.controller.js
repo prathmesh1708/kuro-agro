@@ -6,9 +6,7 @@ import Sanchalak from '../../../models/Sanchalak.model.js';
 import {
     createFieldAuthHandlers,
     getSurveyorSanchalakBlockReason,
-    normalizeEmail,
-    normalizePhone,
-    notifyAdmins,
+    registerUnverifiedFieldAccount,
 } from '../../../services/fieldAccountAuth.service.js';
 
 const SANCHALAK_PUBLIC_FIELDS = 'name kendraName sanchalakCode phone address.district address.state';
@@ -52,50 +50,28 @@ export const lookupSanchalak = asyncHandler(async (req, res) => {
     );
 });
 
-// POST /api/surveyor/auth/register
+// POST /api/surveyor/auth/register — saves the account unverified and sends a phone OTP (then /verify-otp)
 export const register = asyncHandler(async (req, res) => {
     const { name, password, address, sanchalakCode } = req.body;
-    const email = normalizeEmail(req.body.email);
-    const rawPhone = req.body.phone ? normalizePhone(req.body.phone) : undefined;
-    const phone = rawPhone && rawPhone.length === 10 ? rawPhone : undefined;
 
     const sanchalak = await findActiveSanchalakByCode(sanchalakCode).select('_id');
     if (!sanchalak) throw new ApiError(400, 'Invalid Sanchalak code, or that Sanchalak is not active yet.');
 
-    const existingConditions = [{ email }];
-    if (phone) existingConditions.push({ phone });
-    const existing = await Surveyor.findOne({ $or: existingConditions }).select('email phone');
-    if (existing) {
-        if (existing.email === email) throw new ApiError(409, 'Email already registered.');
-        if (phone && existing.phone === phone) throw new ApiError(409, 'Phone number already registered.');
-    }
-
-    const surveyorData = {
-        name,
-        email,
-        password,
-        address,
-        sanchalak: sanchalak._id,
-        status: 'pending',
-        isPhoneVerified: true,
-    };
-    if (phone) {
-        surveyorData.phone = phone;
-    }
-
-    const surveyor = await Surveyor.create(surveyorData);
-
-    await notifyAdmins({
-        title: 'New Surveyor Registration',
-        message: `${surveyor.name} registered under Sanchalak. Pending review.`,
-        data: { role: 'surveyor', accountId: String(surveyor._id), surveyorCode: surveyor.surveyorCode },
-    }).catch(() => {});
+    const { account: surveyor, otp } = await registerUnverifiedFieldAccount({
+        Model: Surveyor,
+        role: 'surveyor',
+        data: { name, password, address, phone: req.body.phone, sanchalak: sanchalak._id },
+    });
 
     return res.status(201).json(
         new ApiResponse(
             201,
-            { email: surveyor.email, phone: surveyor.phone, surveyorCode: surveyor.surveyorCode },
-            'Registration submitted successfully. Your account is pending admin approval.'
+            {
+                phone: surveyor.phone,
+                surveyorCode: surveyor.surveyorCode,
+                ...(process.env.NODE_ENV !== 'production' && { debugOtp: otp }),
+            },
+            'OTP sent to your mobile number. Verify it to submit your registration.'
         )
     );
 });

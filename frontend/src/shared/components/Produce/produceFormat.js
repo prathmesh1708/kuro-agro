@@ -51,9 +51,14 @@ export const HISTORY_LABELS = {
   cancelled: 'Cancelled',
   payment_marked_paid: 'Marked paid',
   payment_marked_unpaid: 'Marked unpaid',
+  sent: 'Sent',
+  payment_reported: 'Payment reported',
+  payment_cleared: 'Payment cleared',
+  payment_confirmed: 'Payment confirmed',
+  payment_disputed: 'Payment not confirmed',
 };
 
-export const ACTOR_LABELS = { kisan: 'Farmer', sanchalak: 'Sanchalak', admin: 'Admin' };
+export const ACTOR_LABELS = { kisan: 'Farmer', sanchalak: 'Sanchalak', surveyor: 'Surveyor', admin: 'Admin' };
 
 /** Final quantity and amount: what was purchased if decided, else the offer. */
 export const finalTerms = (request) => request?.purchased?.quantityKg

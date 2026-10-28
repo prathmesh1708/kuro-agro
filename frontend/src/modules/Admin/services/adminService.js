@@ -425,3 +425,35 @@ export const updateVendorBankStatus = (id, status, remarks) => api.patch(`/admin
 export const getSettlementsList = (params = {}) => api.get('/admin/payouts/settlements', { params });
 export const updateSettlementStatus = (id, action, transactionId, notes) => api.patch(`/admin/payouts/settlements/${id}/status`, { action, transactionId, notes });
 
+
+// ─── Seed distribution (Admin → Surveyor → Kisan) ────────────────────────────
+
+export const getSeedItems = () => api.get('/admin/seed-items');
+
+export const createSeedItem = (payload) => api.post('/admin/seed-items', payload);
+
+export const updateSeedItem = (id, payload) => api.put(`/admin/seed-items/${id}`, payload);
+
+export const updateSeedItemStatus = (id, isActive) => api.patch(`/admin/seed-items/${id}/status`, { isActive });
+
+export const createSeedDispatch = (payload) => api.post('/admin/seed-dispatches', payload);
+
+export const getSeedDispatches = (params = {}) => api.get('/admin/seed-dispatches', { params });
+
+export const getSeedDispatch = (id) => api.get(`/admin/seed-dispatches/${id}`);
+
+export const cancelSeedDispatch = (id, reason = '') => api.patch(`/admin/seed-dispatches/${id}/cancel`, { reason });
+
+export const getSeedIssues = (params = {}) => api.get('/admin/seed-issues', { params });
+
+export const getSeedIssue = (id) => api.get(`/admin/seed-issues/${id}`);
+
+export const getSeedRemittances = (params = {}) => api.get('/admin/seed-remittances', { params });
+
+export const decideSeedRemittance = (id, payload) => api.patch(`/admin/seed-remittances/${id}/decision`, payload);
+
+export const getSeedStockOverview = () => api.get('/admin/seed-stock');
+
+export const getSurveyorSeedSummary = (id) => api.get(`/admin/surveyors/${id}/seed-summary`);
+
+export const getSeedLedger = (params = {}) => api.get('/admin/seed-ledger', { params });

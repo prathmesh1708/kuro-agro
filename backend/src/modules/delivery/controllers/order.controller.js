@@ -2,9 +2,10 @@ import asyncHandler from '../../../utils/asyncHandler.js';
 import ApiResponse from '../../../utils/ApiResponse.js';
 import ApiError from '../../../utils/ApiError.js';
 import Order from '../../../models/Order.model.js';
+import User from '../../../models/User.model.js';
 import mongoose from 'mongoose';
 import crypto from 'crypto';
-import { sendEmail } from '../../../services/email.service.js';
+import { sendSMS } from '../../../services/sms.service.js';
 import { createNotification } from '../../../services/notification.service.js';
 import { updateStatsForUser } from '../../../services/codStats.service.js';
 import { processSettlementForOrder } from '../../../services/payout.service.js';
@@ -22,25 +23,27 @@ const hashDeliveryOtp = (otp) => {
 
 const generateDeliveryOtp = () => String(Math.floor(100000 + Math.random() * 900000));
 
-const getCustomerEmail = (order) => {
-    return (
-        String(order?.shippingAddress?.email || '').trim().toLowerCase() ||
-        String(order?.guestInfo?.email || '').trim().toLowerCase()
-    );
+const toMobile = (value) => {
+    const digits = String(value || '').replace(/\D/g, '').slice(-10);
+    return /^[6-9]\d{9}$/.test(digits) ? digits : '';
 };
 
-const sendDeliveryOtpEmail = async (order, otp) => {
-    const to = getCustomerEmail(order);
-    if (!to) return false;
+// The customer's registered (OTP-verified) mobile first; guest orders fall back to the order's phone.
+const getCustomerPhone = async (order) => {
+    const userId = order?.userId?._id || order?.userId;
+    if (userId) {
+        const user = await User.findById(userId).select('phone').lean();
+        if (toMobile(user?.phone)) return toMobile(user.phone);
+    }
+    return toMobile(order?.shippingAddress?.phone) || toMobile(order?.guestInfo?.phone);
+};
 
-    await sendEmail({
-        to,
-        subject: `Delivery OTP for order ${order.orderId || order._id}`,
-        text: `Your delivery verification OTP is ${otp}. Share it with the delivery partner only after receiving your order. It expires in 10 minutes.`,
-        html: `<p>Your delivery verification OTP is <strong>${otp}</strong>.</p><p>Share it with the delivery partner only after receiving your order.</p><p>This OTP expires in 10 minutes.</p>`,
-    });
-
-    return true;
+/** Sends the delivery handover OTP by SMS. Resolves to 'sent', 'no_phone' or 'failed'. */
+const sendDeliveryOtpSms = async (order, otp) => {
+    const phone = await getCustomerPhone(order);
+    if (!phone) return 'no_phone';
+    const { smsSent } = await sendSMS({ phone, otp });
+    return smsSent ? 'sent' : 'failed';
 };
 
 // GET /api/delivery/orders
@@ -256,12 +259,12 @@ export const updateDeliveryStatus = asyncHandler(async (req, res) => {
         }
 
         try {
-            const sent = await sendDeliveryOtpEmail(order, generatedOtp);
-            if (!sent) {
-                console.warn(`[Delivery OTP] Missing customer email for order ${order.orderId || order._id}`);
+            const result = await sendDeliveryOtpSms(order, generatedOtp);
+            if (result !== 'sent') {
+                console.warn(`[Delivery OTP] SMS ${result} for order ${order.orderId || order._id}; it can be resent.`);
             }
         } catch (err) {
-            console.warn(`[Delivery OTP] Failed to send OTP email for order ${order.orderId || order._id}: ${err.message}`);
+            console.warn(`[Delivery OTP] Failed to send OTP SMS for order ${order.orderId || order._id}: ${err.message}`);
         }
     }
 
@@ -425,16 +428,15 @@ export const resendDeliveryOtp = asyncHandler(async (req, res) => {
     }
     await order.save();
 
+    let result;
     try {
-        const sent = await sendDeliveryOtpEmail(order, generatedOtp);
-        if (!sent) {
-            throw new ApiError(400, 'Customer email is not available for this order.');
-        }
+        result = await sendDeliveryOtpSms(order, generatedOtp);
     } catch (err) {
-        if (err instanceof ApiError) throw err;
         console.warn(`[Delivery OTP] Failed to resend OTP for order ${order.orderId || order._id}: ${err.message}`);
-        throw new ApiError(500, 'Failed to send OTP email. Please try again.');
+        result = 'failed';
     }
+    if (result === 'no_phone') throw new ApiError(400, 'Customer mobile number is not available for this order.');
+    if (result === 'failed' && IS_PRODUCTION) throw new ApiError(502, 'Failed to send the OTP SMS. Please try again.');
 
     return res.status(200).json(new ApiResponse(200, null, 'Delivery OTP resent successfully.'));
 });

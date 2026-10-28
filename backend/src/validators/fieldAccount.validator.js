@@ -2,8 +2,14 @@ import Joi from 'joi';
 
 // Shared request schemas for field-network accounts (Sanchalak, Surveyor).
 
-const phone = Joi.string().pattern(/^[0-9]{10}$/).messages({
+const phone = Joi.string().trim().pattern(/^[0-9]{10}$/).messages({
     'string.pattern.base': 'Please enter a valid 10-digit phone number.',
+});
+
+const mobilePhone = Joi.string().trim().pattern(/^[6-9][0-9]{9}$/).messages({
+    'string.pattern.base': 'Please enter a valid 10-digit mobile number.',
+    'any.required': 'Mobile number is required.',
+    'string.empty': 'Mobile number is required.',
 });
 
 export const addressSchema = Joi.object({
@@ -19,8 +25,7 @@ export const addressSchema = Joi.object({
 
 export const baseRegisterFields = {
     name: Joi.string().trim().min(2).max(80).required(),
-    email: Joi.string().trim().email().lowercase().required(),
-    phone: phone.required(),
+    phone: mobilePhone.required(),
     password: Joi.string().min(6).max(128).required(),
     address: addressSchema.required(),
 };
@@ -45,16 +50,16 @@ export const resendOtpSchema = Joi.object({
 });
 
 export const forgotPasswordSchema = Joi.object({
-    email: Joi.string().trim().email().lowercase().required(),
+    phone: phone.required(),
 });
 
 export const verifyResetOtpSchema = Joi.object({
-    email: Joi.string().trim().email().lowercase().required(),
+    phone: phone.required(),
     otp: Joi.string().pattern(/^\d{6}$/).required(),
 });
 
 export const resetPasswordSchema = Joi.object({
-    email: Joi.string().trim().email().lowercase().required(),
+    phone: phone.required(),
     password: Joi.string().min(6).max(128).required(),
     confirmPassword: Joi.string().valid(Joi.ref('password')).required().messages({
         'any.only': 'Confirm password must match password.',

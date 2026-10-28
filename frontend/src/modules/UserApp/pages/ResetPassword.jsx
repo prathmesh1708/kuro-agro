@@ -1,19 +1,21 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FiArrowLeft, FiEye, FiEyeOff, FiLock } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import MobileLayout from '../components/Layout/MobileLayout';
 import PageTransition from '../../../shared/components/PageTransition';
-import { useAuthStore } from '../../../shared/store/authStore';
+import { usePasswordResetRole } from '../../../shared/components/FieldAuth/usePasswordResetRole';
 
 const MobileResetPassword = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const { resetPassword, isLoading } = useAuthStore();
+  const { roleConfig, store, hasPassword, search, loginPath } = usePasswordResetRole();
+  const { resetPassword, isLoading } = store;
+  const { theme } = roleConfig;
 
-  const email = location.state?.email || searchParams.get('email') || '';
+  const phone = location.state?.phone || searchParams.get('phone') || '';
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -21,11 +23,13 @@ const MobileResetPassword = () => {
     confirmPassword: '',
   });
 
+  if (!hasPassword) return <Navigate to={loginPath} replace />;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email) {
+    if (!phone) {
       toast.error('Session expired. Please start forgot password again.');
-      navigate('/forgot-password', { replace: true });
+      navigate(`/forgot-password${search}`, { replace: true });
       return;
     }
     if (!formData.password || !formData.confirmPassword) {
@@ -38,9 +42,9 @@ const MobileResetPassword = () => {
     }
 
     try {
-      await resetPassword(email, formData.password, formData.confirmPassword);
+      await resetPassword(phone, formData.password, formData.confirmPassword);
       toast.success('Password reset successful. Please login.');
-      navigate('/login', { replace: true });
+      navigate(loginPath, { replace: true });
     } catch {
       // Global API interceptor shows toast
     }
@@ -60,7 +64,7 @@ const MobileResetPassword = () => {
               <div className="text-center mb-8">
                 <h1 className="text-2xl font-bold text-gray-900 mb-2">Reset Password</h1>
                 <p className="text-sm text-gray-600">
-                  Set a new password for <span className="font-medium text-gray-900">{email || 'your account'}</span>
+                  Set a new password for <span className="font-medium text-gray-900">{phone ? `+91 ${phone}` : 'your account'}</span>
                 </p>
               </div>
 
@@ -74,7 +78,7 @@ const MobileResetPassword = () => {
                       value={formData.password}
                       onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
                       placeholder="Enter new password"
-                      className="w-full pl-12 pr-12 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:outline-none transition-colors text-base"
+                      className={`w-full pl-12 pr-12 py-3 rounded-xl border-2 border-gray-200 ${theme.focus} focus:outline-none transition-colors text-base`}
                       required
                       minLength={6}
                     />
@@ -97,7 +101,7 @@ const MobileResetPassword = () => {
                       value={formData.confirmPassword}
                       onChange={(e) => setFormData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
                       placeholder="Confirm new password"
-                      className="w-full pl-12 pr-12 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:outline-none transition-colors text-base"
+                      className={`w-full pl-12 pr-12 py-3 rounded-xl border-2 border-gray-200 ${theme.focus} focus:outline-none transition-colors text-base`}
                       required
                       minLength={6}
                     />
@@ -114,14 +118,14 @@ const MobileResetPassword = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-primary-500 hover:bg-primary-600 text-white py-3.5 rounded-xl font-semibold text-base transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`w-full ${theme.button} text-white py-3.5 rounded-xl font-semibold text-base transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {isLoading ? 'Resetting...' : 'Reset Password'}
                 </button>
               </form>
 
               <div className="text-center pt-6">
-                <Link to="/login" className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 font-medium">
+                <Link to={loginPath} className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 font-medium">
                   <FiArrowLeft />
                   Back to Login
                 </Link>

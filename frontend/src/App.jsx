@@ -127,6 +127,9 @@ import AdminFarmers from "./modules/Admin/pages/fieldNetwork/Farmers";
 import ProcurementRequests from "./modules/Admin/pages/procurement/ProcurementRequests";
 import ProcuredStock from "./modules/Admin/pages/procurement/ProcuredStock";
 import ProduceList from "./modules/Admin/pages/procurement/ProduceList";
+import SeedItems from "./modules/Admin/pages/seeds/SeedItems";
+import SeedDispatches from "./modules/Admin/pages/seeds/SeedDispatches";
+import SeedRemittances from "./modules/Admin/pages/seeds/SeedRemittances";
 import FieldAccountProfile from "./modules/Admin/pages/fieldNetwork/FieldAccountProfile";
 import SanchalakProtectedRoute from "./modules/Sanchalak/components/SanchalakProtectedRoute";
 import SanchalakDashboard from "./modules/Sanchalak/pages/Dashboard";
@@ -147,12 +150,19 @@ import KisanSell from "./modules/Kisan/pages/Sell";
 import KisanRequests from "./modules/Kisan/pages/Requests";
 import KisanRequestDetail from "./modules/Kisan/pages/RequestDetail";
 import KisanProfile from "./modules/Kisan/pages/Profile";
+import KisanSeedRequests from "./modules/Kisan/pages/SeedRequests";
+import KisanSeedRequestDetail from "./modules/Kisan/pages/SeedRequestDetail";
 import SurveyorProtectedRoute from "./modules/Surveyor/components/SurveyorProtectedRoute";
 import SurveyorDashboard from "./modules/Surveyor/pages/Dashboard";
 import SurveyorFarmers from "./modules/Surveyor/pages/Farmers";
 import SurveyorFarmerForm from "./modules/Surveyor/pages/FarmerForm";
 import SurveyorProfile from "./modules/Surveyor/pages/Profile";
 import SurveyorFarmerDetail from "./modules/Surveyor/pages/FarmerDetail";
+import SurveyorSeeds from "./modules/Surveyor/pages/Seeds";
+import SurveyorIssueSeed from "./modules/Surveyor/pages/IssueSeed";
+import SurveyorSeedIssues from "./modules/Surveyor/pages/SeedIssues";
+import SurveyorSeedIssueDetail from "./modules/Surveyor/pages/SeedIssueDetail";
+import SurveyorSeedAccount from "./modules/Surveyor/pages/SeedAccount";
 // Delivery Routes
 import DeliveryLogin from "./modules/Delivery/pages/Login";
 import DeliveryRegister from "./modules/Delivery/pages/Register";
@@ -511,6 +521,9 @@ const AppRoutes = () => {
         <Route path="field-network/surveyors" element={<FieldAccounts key="surveyor" kind="surveyor" />} />
         <Route path="field-network/surveyors/:id" element={<FieldAccountProfile key="surveyor" kind="surveyor" />} />
         <Route path="field-network/procurement-requests" element={<ProcurementRequests />} />
+        <Route path="field-network/seeds" element={<SeedItems />} />
+        <Route path="field-network/seed-dispatches" element={<SeedDispatches />} />
+        <Route path="field-network/seed-payments" element={<SeedRemittances />} />
         <Route path="field-network/commission" element={<FieldCommissionRates />} />
         <Route path="farmers" element={<AdminFarmers />} />
         <Route path="vendors" element={<Vendors />} />
@@ -637,6 +650,8 @@ const AppRoutes = () => {
         ["sell", <KisanSell />],
         ["requests", <KisanRequests />],
         ["requests/:id", <KisanRequestDetail />],
+        ["seeds", <KisanSeedRequests />],
+        ["seeds/:id", <KisanSeedRequestDetail />],
         ["profile", <KisanProfile />],
       ].map(([path, page]) => (
         <Route key={path} path={`/kisan/${path}`} element={<KisanProtectedRoute>{page}</KisanProtectedRoute>} />
@@ -682,6 +697,15 @@ const AppRoutes = () => {
           </SurveyorProtectedRoute>
         }
       />
+      {[
+        ["seeds", <SurveyorSeeds />],
+        ["seed-issues", <SurveyorSeedIssues />],
+        ["seed-issues/new", <SurveyorIssueSeed />],
+        ["seed-issues/:id", <SurveyorSeedIssueDetail />],
+        ["seed-account", <SurveyorSeedAccount />],
+      ].map(([path, page]) => (
+        <Route key={path} path={`/surveyor/${path}`} element={<SurveyorProtectedRoute>{page}</SurveyorProtectedRoute>} />
+      ))}
       <Route
         path="/surveyor/profile"
         element={

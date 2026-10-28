@@ -5,9 +5,8 @@ import Vendor from '../../../models/Vendor.model.js';
 import Admin from '../../../models/Admin.model.js';
 import Category from '../../../models/Category.model.js';
 import { generateTokens } from '../../../utils/generateToken.js';
-import { sendOTP, sendOTPWithStatus } from '../../../services/otp.service.js';
+import { sendOTP, sendOTPWithStatus, sendResetOTP } from '../../../services/otp.service.js';
 import { createNotification } from '../../../services/notification.service.js';
-import { sendEmail } from '../../../services/email.service.js';
 import {
     clearRefreshSession,
     decodeRefreshTokenOrThrow,
@@ -265,35 +264,12 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     const vendor = await Vendor.findOne({ email: normalizedEmail }).select('+resetOtp +resetOtpExpiry +resetOtpVerified');
 
     // Keep response generic to avoid account enumeration.
-    if (!vendor) {
-        return res.status(200).json(
-            new ApiResponse(200, null, 'If the email exists, a reset OTP has been sent.')
-        );
-    }
+    const genericResponse = new ApiResponse(200, null, 'If the account exists, a reset OTP has been sent to its registered mobile number.');
+    if (!vendor) return res.status(200).json(genericResponse);
 
-    const otp = String(Math.floor(100000 + Math.random() * 900000));
-    vendor.resetOtp = otp;
-    vendor.resetOtpExpiry = new Date(Date.now() + 10 * 60 * 1000);
-    vendor.resetOtpVerified = false;
-    await vendor.save({ validateBeforeSave: false });
-
-    try {
-        await sendEmail({
-            to: vendor.email,
-            subject: 'Vendor password reset OTP',
-            text: `Your password reset OTP is ${otp}. It expires in 10 minutes.`,
-            html: `<p>Your password reset OTP is <strong>${otp}</strong>. It expires in 10 minutes.</p>`,
-        });
-    } catch (err) {
-        console.warn(`[Vendor Forgot Password] Email send failed for ${vendor.email}: ${err.message}`);
-        if (process.env.NODE_ENV !== 'production') {
-            console.log(`[Vendor Forgot Password] Reset OTP generated for ${vendor.email}`);
-        }
-    }
-
-    return res.status(200).json(
-        new ApiResponse(200, null, 'If the email exists, a reset OTP has been sent.')
-    );
+    // OTPs go by SMS to the registered mobile number only.
+    await sendResetOTP(vendor, 'Vendor');
+    return res.status(200).json(genericResponse);
 });
 
 // POST /api/vendor/auth/verify-reset-otp
@@ -344,7 +320,7 @@ export const sendLoginOTP = asyncHandler(async (req, res) => {
     if (!vendor) throw new ApiError(404, 'Vendor account not found.');
 
     await sendOTP(vendor, 'vendor_login');
-    res.status(200).json(new ApiResponse(200, null, 'OTP sent successfully. Please check your email.'));
+    res.status(200).json(new ApiResponse(200, null, 'OTP sent to your registered mobile number.'));
 });
 
 // POST /api/vendor/auth/login

@@ -30,7 +30,7 @@ const VendorForgotPassword = () => {
 
     try {
       await forgotPassword(email.trim().toLowerCase());
-      toast.success("If the email exists, reset OTP has been sent.");
+      toast.success("If the account exists, a reset OTP has been sent to its registered mobile number.");
       setStep("verify");
     } catch {
       // Global api interceptor shows toast
@@ -96,8 +96,8 @@ const VendorForgotPassword = () => {
           </h1>
           <p className="text-gray-600">
             {step === "request"
-              ? "Enter your vendor account email to receive an OTP."
-              : `Enter the OTP sent to ${email}`}
+              ? "Enter your vendor account email. The OTP will be sent to your registered mobile number."
+              : "Enter the OTP sent to your registered mobile number."}
           </p>
         </div>
 

@@ -77,17 +77,15 @@ export const useAuthStore = create(
         }
       },
 
-      // Register action (stores pendingPhone and dispatches SMS OTP)
-      register: async (name, email, password, phone) => {
+      // Register action: the server sends an SMS OTP; verifyOTP(phone, otp) completes sign-up and logs in.
+      register: async (name, phone, password) => {
         set({ isLoading: true });
         try {
           const normalizedPhone = String(phone || '').replace(/\D/g, '').slice(-10);
-          const normalizedEmail = String(email || '').trim().toLowerCase();
           const payload = {
             name,
-            email: normalizedEmail,
-            password,
             phone: normalizedPhone,
+            password,
           };
 
           await api.post('/user/auth/register', payload);
@@ -97,7 +95,7 @@ export const useAuthStore = create(
             token: null,
             refreshToken: null,
             isAuthenticated: false,
-            pendingEmail: normalizedEmail,
+            pendingEmail: null,
             pendingPhone: normalizedPhone,
             isLoading: false,
           });
@@ -105,7 +103,7 @@ export const useAuthStore = create(
           localStorage.removeItem('token');
           localStorage.removeItem('refresh-token');
 
-          return { success: true, email: normalizedEmail, phone: normalizedPhone };
+          return { success: true, phone: normalizedPhone };
         } catch (error) {
           set({ isLoading: false });
           throw error;
@@ -283,11 +281,11 @@ export const useAuthStore = create(
         }
       },
 
-      forgotPassword: async (email) => {
+      forgotPassword: async (phone) => {
         set({ isLoading: true });
         try {
-          const normalizedEmail = String(email || '').trim().toLowerCase();
-          await api.post('/user/auth/forgot-password', { email: normalizedEmail });
+          const normalizedPhone = String(phone || '').replace(/\D/g, '').slice(-10);
+          await api.post('/user/auth/forgot-password', { phone: normalizedPhone });
           set({ isLoading: false });
           return { success: true };
         } catch (error) {
@@ -296,11 +294,11 @@ export const useAuthStore = create(
         }
       },
 
-      verifyResetOtp: async (email, otp) => {
+      verifyResetOtp: async (phone, otp) => {
         set({ isLoading: true });
         try {
-          const normalizedEmail = String(email || '').trim().toLowerCase();
-          await api.post('/user/auth/verify-reset-otp', { email: normalizedEmail, otp });
+          const normalizedPhone = String(phone || '').replace(/\D/g, '').slice(-10);
+          await api.post('/user/auth/verify-reset-otp', { phone: normalizedPhone, otp });
           set({ isLoading: false });
           return { success: true };
         } catch (error) {
@@ -309,11 +307,11 @@ export const useAuthStore = create(
         }
       },
 
-      resetPassword: async (email, password, confirmPassword) => {
+      resetPassword: async (phone, password, confirmPassword) => {
         set({ isLoading: true });
         try {
-          const normalizedEmail = String(email || '').trim().toLowerCase();
-          await api.post('/user/auth/reset-password', { email: normalizedEmail, password, confirmPassword });
+          const normalizedPhone = String(phone || '').replace(/\D/g, '').slice(-10);
+          await api.post('/user/auth/reset-password', { phone: normalizedPhone, password, confirmPassword });
           set({ isLoading: false });
           return { success: true };
         } catch (error) {

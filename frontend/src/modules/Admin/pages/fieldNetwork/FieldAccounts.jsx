@@ -164,7 +164,7 @@ const FieldAccounts = ({ kind, sanchalakId, embedded = false, onStatusChanged })
       render: (value, row) => (
         <div>
           <p className="font-semibold text-gray-800 hover:text-primary-600">{value}</p>
-          <p className="text-xs text-gray-500">{row.email}</p>
+          {row.email && <p className="text-xs text-gray-500">{row.email}</p>}
           <p className={`text-xs flex items-center gap-1 ${row.isPhoneVerified ? 'text-green-600' : 'text-orange-600'}`}>
             {row.isPhoneVerified ? <FiCheckCircle /> : <FiAlertCircle />}
             {row.phone || (kind === 'surveyor' ? 'No phone (verified)' : 'No phone')}

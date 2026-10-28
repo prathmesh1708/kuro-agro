@@ -7,6 +7,7 @@ import { formatPrice } from '../../../../shared/utils/helpers';
 import { formatInr, formatQty } from '../../../../shared/components/Produce/produceFormat';
 import { getSanchalakById, getSurveyorById } from '../../services/adminService';
 import FieldAccounts from './FieldAccounts';
+import SurveyorSeedSection from './SurveyorSeedSection';
 import Farmers from './Farmers';
 
 const KIND_CONFIG = {
@@ -153,7 +154,7 @@ const FieldAccountProfile = ({ kind }) => {
             {account.phone || 'No phone'}
             {account.phone && !account.isPhoneVerified && <span className="text-orange-600"> (not verified)</span>}
           </InfoRow>
-          <InfoRow icon={FiMail}>{account.email}</InfoRow>
+          {account.email && <InfoRow icon={FiMail}>{account.email}</InfoRow>}
           <InfoRow icon={FiMapPin}>{formatAddress(account.address)}</InfoRow>
           <InfoRow icon={FiCalendar}>
             Joined {formatDate(account.createdAt)}
@@ -238,6 +239,10 @@ const FieldAccountProfile = ({ kind }) => {
             </div>
           )}
         </div>
+      )}
+
+      {kind === 'surveyor' && (
+        <SurveyorSeedSection surveyorId={account.id} canDispatch={account.status === 'approved' && account.isActive} />
       )}
 
       <div>

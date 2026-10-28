@@ -7,6 +7,7 @@ import FarmerRegistration, { AGREEMENT_VERSION } from '../../../models/FarmerReg
 import { encryptField, hashField } from '../../../utils/fieldCrypto.js';
 import { notifyAdmins } from '../../../services/fieldAccountAuth.service.js';
 import { listProduce, resolveCrops } from '../../../services/produce.service.js';
+import { getSeedDashboard } from './seed.controller.js';
 import {
     assertNotDuplicate,
     countByStatus,
@@ -45,8 +46,11 @@ export const getProduceList = asyncHandler(async (req, res) => {
 
 // GET /api/surveyor/dashboard
 export const getDashboard = asyncHandler(async (req, res) => {
-    const counts = await countByStatus({ surveyor: req.user.id });
-    res.status(200).json(new ApiResponse(200, { farmers: counts }, 'Dashboard fetched.'));
+    const [counts, seed] = await Promise.all([
+        countByStatus({ surveyor: req.user.id }),
+        getSeedDashboard(req.user.id),
+    ]);
+    res.status(200).json(new ApiResponse(200, { farmers: counts, seed }, 'Dashboard fetched.'));
 });
 
 // POST /api/surveyor/farmers

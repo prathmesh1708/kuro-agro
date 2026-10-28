@@ -25,7 +25,7 @@ const stockLedgerSchema = new mongoose.Schema(
         refModel: { type: String, enum: ['KisanSaleRequest', 'SanchalakSaleRequest', 'Product'] },
         refId: { type: mongoose.Schema.Types.ObjectId },
         productUnits: { type: Number }, // units added to the Product's stock, for 'moved_to_product'
-        byType: { type: String, enum: ['kisan', 'sanchalak', 'admin'], required: true },
+        byType: { type: String, enum: ['kisan', 'sanchalak', 'surveyor', 'admin'], required: true },
         by: { type: mongoose.Schema.Types.ObjectId },
         note: { type: String, trim: true },
     },

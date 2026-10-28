@@ -5,8 +5,6 @@ import { fieldAccountFields, applyFieldAccountBehaviour } from './shared/fieldAc
 const surveyorSchema = new mongoose.Schema(
     {
         ...fieldAccountFields(),
-        phone: { type: String, required: false, unique: true, sparse: true, trim: true, default: undefined },
-        isPhoneVerified: { type: Boolean, default: true },
         sanchalak: { type: mongoose.Schema.Types.ObjectId, ref: 'Sanchalak', required: true, index: true },
         surveyorCode: { type: String, unique: true, uppercase: true, trim: true },
     },

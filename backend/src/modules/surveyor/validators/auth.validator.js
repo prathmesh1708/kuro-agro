@@ -18,7 +18,6 @@ const sanchalakCode = Joi.string().trim().uppercase().pattern(/^SAN-\d{6}$/).mes
 
 export const registerSchema = Joi.object({
     ...baseRegisterFields,
-    phone: Joi.string().pattern(/^[0-9]{10}$/).allow('', null).optional(),
     sanchalakCode: sanchalakCode.required(),
 });
 

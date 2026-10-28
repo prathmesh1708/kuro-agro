@@ -4,8 +4,7 @@ import ApiError from '../utils/ApiError.js';
 import Admin from '../models/Admin.model.js';
 import Sanchalak from '../models/Sanchalak.model.js';
 import { generateTokens } from '../utils/generateToken.js';
-import { sendOTP } from './otp.service.js';
-import { sendEmail } from './email.service.js';
+import { sendOTP, sendResetOTP, getOtpCooldownSeconds } from './otp.service.js';
 import { createNotification } from './notification.service.js';
 import {
     clearRefreshSession,
@@ -75,6 +74,31 @@ export const notifyAdmins = async ({ title, message, data }) => {
 };
 
 /**
+ * Shared registration step for Sanchalak and Surveyor: saves an unverified account for the phone
+ * and sends the verification OTP. An earlier sign-up that never verified is taken over so it
+ * cannot block the number. Admins are notified only once the phone is verified (verifyOTP).
+ *
+ * @returns {Promise<{ account: import('mongoose').Document, otp: string }>}
+ */
+export const registerUnverifiedFieldAccount = async ({ Model, role, data }) => {
+    const phone = normalizePhone(data.phone);
+    let account = await Model.findOne({ phone }).select('+otpExpiry');
+
+    if (account?.isPhoneVerified) throw new ApiError(409, 'Mobile number already registered. Please log in.');
+    if (account) {
+        const wait = getOtpCooldownSeconds(account);
+        if (wait > 0) throw new ApiError(429, `Please wait ${wait}s before requesting another OTP.`);
+        account.set({ ...data, phone, status: 'pending', isPhoneVerified: false });
+        await account.save();
+    } else {
+        account = await Model.create({ ...data, phone, status: 'pending', isPhoneVerified: false });
+    }
+
+    const otp = await sendOTP(account, `${role}_phone_verification`);
+    return { account, otp };
+};
+
+/**
  * Builds the auth handlers shared by the Sanchalak and Surveyor modules.
  * Registration stays in each module because the fields differ.
  *
@@ -126,7 +150,7 @@ export const createFieldAuthHandlers = ({
 
         const isDev = process.env.NODE_ENV !== 'production';
         const isMasterBypass = isDev && otp === '123456';
-        if (!isMasterBypass && account.otp !== otp) throw new ApiError(400, 'Invalid OTP.');
+        if (!isMasterBypass && (!account.otp || account.otp !== otp)) throw new ApiError(400, 'Invalid OTP.');
         if (!isMasterBypass && (!account.otpExpiry || account.otpExpiry < Date.now())) {
             throw new ApiError(400, 'OTP has expired. Please request a new one.');
         }
@@ -154,9 +178,11 @@ export const createFieldAuthHandlers = ({
     // POST /auth/resend-otp
     const resendOTP = asyncHandler(async (req, res) => {
         const phone = normalizePhone(req.body.phone);
-        const account = await Model.findOne({ phone });
+        const account = await Model.findOne({ phone }).select('+otpExpiry');
         if (!account) throw new ApiError(404, `${label} account not found.`);
         if (account.isPhoneVerified) throw new ApiError(400, 'Phone number is already verified.');
+        const wait = getOtpCooldownSeconds(account);
+        if (wait > 0) throw new ApiError(429, `Please wait ${wait}s before requesting another OTP.`);
 
         await sendOTP(account, `${role}_phone_verification`);
         return res.status(200).json(new ApiResponse(200, null, 'OTP resent to your phone number.'));
@@ -221,35 +247,19 @@ export const createFieldAuthHandlers = ({
 
     // POST /auth/forgot-password
     const forgotPassword = asyncHandler(async (req, res) => {
-        const email = normalizeEmail(req.body.email);
-        const account = await Model.findOne({ email }).select('+resetOtp +resetOtpExpiry +resetOtpVerified');
-        const genericResponse = new ApiResponse(200, null, 'If the email exists, a reset OTP has been sent.');
+        const phone = normalizePhone(req.body.phone);
+        const account = await Model.findOne({ phone }).select('+resetOtp +resetOtpExpiry +resetOtpVerified');
+        const genericResponse = new ApiResponse(200, null, 'If the mobile number is registered, a reset OTP has been sent.');
         if (!account) return res.status(200).json(genericResponse);
 
-        const otp = String(Math.floor(100000 + Math.random() * 900000));
-        account.resetOtp = otp;
-        account.resetOtpExpiry = new Date(Date.now() + 10 * 60 * 1000);
-        account.resetOtpVerified = false;
-        await account.save({ validateBeforeSave: false });
-
-        try {
-            await sendEmail({
-                to: account.email,
-                subject: `${label} password reset OTP`,
-                text: `Your password reset OTP is ${otp}. It expires in 10 minutes.`,
-                html: `<p>Your password reset OTP is <strong>${otp}</strong>. It expires in 10 minutes.</p>`,
-            });
-        } catch (err) {
-            console.warn(`[${label} Forgot Password] Email send failed for ${account.email}: ${err.message}`);
-        }
-
+        await sendResetOTP(account, label);
         return res.status(200).json(genericResponse);
     });
 
     // POST /auth/verify-reset-otp
     const verifyResetOTP = asyncHandler(async (req, res) => {
-        const email = normalizeEmail(req.body.email);
-        const account = await Model.findOne({ email }).select('+resetOtp +resetOtpExpiry +resetOtpVerified');
+        const phone = normalizePhone(req.body.phone);
+        const account = await Model.findOne({ phone }).select('+resetOtp +resetOtpExpiry +resetOtpVerified');
         if (!account) throw new ApiError(404, `${label} account not found.`);
         if (!account.resetOtp || !account.resetOtpExpiry) throw new ApiError(400, 'No reset OTP requested.');
         if (account.resetOtpExpiry < new Date()) throw new ApiError(400, 'Reset OTP has expired.');
@@ -262,8 +272,8 @@ export const createFieldAuthHandlers = ({
 
     // POST /auth/reset-password
     const resetPassword = asyncHandler(async (req, res) => {
-        const email = normalizeEmail(req.body.email);
-        const account = await Model.findOne({ email }).select('+password +resetOtp +resetOtpExpiry +resetOtpVerified');
+        const phone = normalizePhone(req.body.phone);
+        const account = await Model.findOne({ phone }).select('+password +resetOtp +resetOtpExpiry +resetOtpVerified');
         if (!account) throw new ApiError(404, `${label} account not found.`);
         if (!account.resetOtpVerified) throw new ApiError(400, 'Please verify reset OTP first.');
         if (!account.resetOtpExpiry || account.resetOtpExpiry < new Date()) throw new ApiError(400, 'Reset OTP has expired.');

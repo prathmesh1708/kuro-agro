@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import MobileLayout from "../components/Layout/MobileLayout";
 import { useAuthStore } from '../../../shared/store/authStore';
-import { isValidEmail, isValidPhone } from '../../../shared/utils/helpers';
+import { isValidPhone } from '../../../shared/utils/helpers';
 import toast from 'react-hot-toast';
 import PageTransition from '../../../shared/components/PageTransition';
 import PasswordStrengthMeter from '../components/Mobile/PasswordStrengthMeter';
@@ -247,7 +247,7 @@ const MobileProfile = () => {
                         )}
                       </div>
                       <h2 className="text-xl font-extrabold text-gray-800 mb-1">{user?.name}</h2>
-                      <p className="text-gray-500 text-sm mb-4 font-medium">{user?.email}</p>
+                      <p className="text-gray-500 text-sm mb-4 font-medium">{user?.phone ? `+91 ${user.phone}` : user?.email}</p>
                       <div className="flex gap-2 w-full">
                         <button
                           onClick={() => setActiveTab('personal')}
@@ -403,6 +403,7 @@ const MobileProfile = () => {
                         </AnimatePresence>
                       </div>
 
+                      {user?.email && (
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
                           Email Address
@@ -411,11 +412,7 @@ const MobileProfile = () => {
                           <FiMail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
                           <input
                             type="email"
-                            {...registerPersonal('email', {
-                              required: 'Email is required',
-                              validate: (value) =>
-                                isValidEmail(value) || 'Please enter a valid email',
-                            })}
+                            {...registerPersonal('email')}
                             readOnly
                             className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 ${personalErrors.email
                               ? 'border-red-300 focus:border-red-500'
@@ -440,6 +437,7 @@ const MobileProfile = () => {
                           )}
                         </AnimatePresence>
                       </div>
+                      )}
 
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -453,13 +451,19 @@ const MobileProfile = () => {
                               validate: (value) =>
                                 !value || isValidPhone(value) || 'Please enter a valid phone number',
                             })}
+                            readOnly={Boolean(user?.phone)}
                             className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 ${personalErrors.phone
                               ? 'border-red-300 focus:border-red-500'
                               : 'border-gray-200 focus:border-primary-500'
-                              } focus:outline-none transition-colors text-base`}
+                              } focus:outline-none transition-colors text-base ${user?.phone ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : ''}`}
                             placeholder="1234567890"
                           />
                         </div>
+                        {user?.phone && (
+                          <p className="mt-1 text-xs text-gray-500">
+                            Your verified mobile number is your login ID and cannot be changed here.
+                          </p>
+                        )}
                         <AnimatePresence>
                           {personalErrors.phone && (
                             <motion.p

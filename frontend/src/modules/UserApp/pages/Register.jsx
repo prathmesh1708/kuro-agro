@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
-import { FiMail, FiLock, FiEye, FiEyeOff, FiUser, FiPhone } from 'react-icons/fi';
+import { FiLock, FiEye, FiEyeOff, FiUser, FiPhone } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../../../shared/store/authStore';
-import { isValidEmail, isValidPhone } from '../../../shared/utils/helpers';
+import { isValidPhone } from '../../../shared/utils/helpers';
 import toast from 'react-hot-toast';
 import MobileLayout from "../components/Layout/MobileLayout";
 import PageTransition from '../../../shared/components/PageTransition';
@@ -26,20 +26,17 @@ const MobileRegister = () => {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm();
-
-  const password = watch('password');
 
   const onSubmit = async (data) => {
     try {
       const fullName = `${data.firstName} ${data.lastName}`.trim();
-      const rawPhone = data.phone ? String(data.phone).replace(/\D/g, '').slice(-10) : '';
+      const phone = String(data.phone).replace(/\D/g, '').slice(-10);
 
-      await registerUser(fullName, data.email, data.password, rawPhone);
-      toast.success('Registration successful! You can now log in.');
-      navigate('/login', { replace: true });
+      await registerUser(fullName, phone, data.password);
+      toast.success(`OTP sent to +91 ${phone}`);
+      navigate('/verification', { state: { phone } });
     } catch (error) {
       toast.error(error?.response?.data?.message || error.message || 'Registration failed. Please try again.');
     }
@@ -143,29 +140,38 @@ const MobileRegister = () => {
                   )}
                 </div>
 
-                {/* Email */}
+                {/* Mobile Number */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Email
+                    Mobile Number
                   </label>
                   <div className="relative">
-                    <FiMail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <FiPhone className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <span className="absolute left-10 top-1/2 -translate-y-1/2 text-gray-500 text-base">+91</span>
                     <input
-                      type="email"
-                      {...register('email', {
-                        required: 'Email is required',
+                      type="tel"
+                      inputMode="numeric"
+                      autoComplete="tel-national"
+                      maxLength={10}
+                      {...register('phone', {
+                        required: 'Mobile number is required',
                         validate: (value) =>
-                          isValidEmail(value) || 'Please enter a valid email',
+                          isValidPhone(value) || 'Please enter a valid 10-digit mobile number',
+                        onChange: (e) => {
+                          e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                        },
                       })}
-                      className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 ${errors.email
+                      className={`w-full pl-20 pr-4 py-3 rounded-xl border-2 ${errors.phone
                           ? 'border-red-300 focus:border-red-500'
                           : 'border-gray-200 focus:border-primary-500'
                         } focus:outline-none transition-colors text-base`}
-                      placeholder="sarkarraj0766@gmail.com"
+                      placeholder="9876543210"
                     />
                   </div>
-                  {errors.email && (
-                    <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                  {errors.phone ? (
+                    <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
+                  ) : (
+                    <p className="mt-1 text-xs text-gray-500">We'll send an OTP to verify this number.</p>
                   )}
                 </div>
 
@@ -211,7 +217,7 @@ const MobileRegister = () => {
                   disabled={isLoading}
                   className="w-full bg-primary-500 hover:bg-primary-600 text-white py-3.5 rounded-xl font-semibold text-base transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? 'Creating Account...' : 'Sign Up'}
+                  {isLoading ? 'Sending OTP...' : 'Sign Up & Send OTP'}
                 </button>
               </form>
 

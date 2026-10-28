@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
-import { FiMail, FiLock, FiEye, FiEyeOff, FiUser, FiPhone, FiHome, FiHash, FiCheckCircle, FiMapPin } from 'react-icons/fi';
+import { FiLock, FiEye, FiEyeOff, FiUser, FiPhone, FiHome, FiHash, FiCheckCircle, FiMapPin } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
 import { INDIAN_STATES } from '../../constants/indianStates';
@@ -80,8 +80,7 @@ const FieldRegisterForm = ({ role, initialPhone = '' }) => {
   const onSubmitDetails = async (data) => {
     const payload = {
       name: data.name.trim(),
-      email: data.email.trim(),
-      ...(data.phone && { phone: data.phone.replace(/\D/g, '').slice(-10) }),
+      phone: data.phone.replace(/\D/g, '').slice(-10),
       password: data.password,
       address: {
         village: data.village.trim(),
@@ -98,8 +97,11 @@ const FieldRegisterForm = ({ role, initialPhone = '' }) => {
     try {
       const result = await store.register(payload);
       setLoginCode(result?.[config.codeField] || '');
-      setStep('done');
-      toast.success('Registration submitted! Awaiting admin approval.');
+      setPhone(payload.phone);
+      setOtp('');
+      setCooldown(RESEND_COOLDOWN_SECONDS);
+      setStep('otp');
+      toast.success(`OTP sent to +91 ${payload.phone}`);
     } catch {
       // The API client already shows the error message.
     }
@@ -115,6 +117,7 @@ const FieldRegisterForm = ({ role, initialPhone = '' }) => {
       const result = await store.verifyOtp(phone, otp);
       if (result?.[config.codeField]) setLoginCode(result[config.codeField]);
       setStep('done');
+      toast.success('Mobile number verified! Awaiting admin approval.');
     } catch {
       // The API client already shows the error message.
     }
@@ -145,7 +148,7 @@ const FieldRegisterForm = ({ role, initialPhone = '' }) => {
             <p className="text-xs font-semibold uppercase tracking-wide">Your Login ID</p>
             <p className="text-2xl font-bold tracking-wider">{loginCode}</p>
             <p className="text-xs mt-1">
-              Save this ID. You can also log in with your email.
+              Save this ID. You can also log in with your mobile number.
             </p>
           </div>
         )}
@@ -182,7 +185,14 @@ const FieldRegisterForm = ({ role, initialPhone = '' }) => {
         >
           {store.isLoading ? 'Verifying...' : 'Verify OTP'}
         </button>
-        <div className="text-center">
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => setStep('details')}
+            className="text-sm font-semibold text-gray-600 hover:text-gray-800"
+          >
+            Change number
+          </button>
           <button
             type="button"
             onClick={onResend}
@@ -242,15 +252,22 @@ const FieldRegisterForm = ({ role, initialPhone = '' }) => {
         />
       </Field>
 
-      <Field label="Email" icon={FiMail} error={errors.email}>
+      <Field label="Mobile Number" icon={FiPhone} error={errors.phone}>
+        <span className="absolute left-10 top-1/2 -translate-y-1/2 text-gray-500 text-base pointer-events-none">+91</span>
         <input
-          type="email"
-          {...register('email', {
-            required: 'Email is required',
-            pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Please enter a valid email' },
+          type="tel"
+          inputMode="numeric"
+          autoComplete="tel-national"
+          maxLength={10}
+          {...register('phone', {
+            required: 'Mobile number is required',
+            pattern: { value: /^[6-9]\d{9}$/, message: 'Please enter a valid 10-digit mobile number' },
+            onChange: (e) => {
+              e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+            },
           })}
-          className={inputClass(errors.email)}
-          placeholder="you@example.com"
+          className={inputClass(errors.phone).replace('pl-12', 'pl-20')}
+          placeholder="9876543210"
         />
       </Field>
 

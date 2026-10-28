@@ -74,6 +74,18 @@ export const createFieldAuthStore = ({ prefix, accessKey, refreshKey, persistKey
             get().startSession(await api.post(`${prefix}/auth/login/verify-otp`, { phone, otp }))
           ),
 
+        // Password reset by registered mobile number: send OTP → verify OTP → set new password.
+        forgotPassword: (phone) =>
+          get().withLoading(() => api.post(`${prefix}/auth/forgot-password`, { phone })),
+
+        verifyResetOtp: (phone, otp) =>
+          get().withLoading(() => api.post(`${prefix}/auth/verify-reset-otp`, { phone, otp })),
+
+        resetPassword: (phone, password, confirmPassword) =>
+          get().withLoading(() =>
+            api.post(`${prefix}/auth/reset-password`, { phone, password, confirmPassword })
+          ),
+
         fetchProfile: async () => {
           const response = await api.get(`${prefix}/auth/profile`);
           const profile = response?.data;

@@ -85,7 +85,7 @@ const VendorVerification = () => {
     if (resendCooldown > 0 || !identifier) return;
     try {
       await resendVendorOTP(identifier);
-      toast.success(phone ? `OTP resent to +91 ${phone} via SMS` : 'OTP resent to email');
+      toast.success(phone ? `OTP resent to +91 ${phone} via SMS` : 'OTP resent to your registered mobile number');
       // Start 30 second cooldown
       setResendCooldown(30);
       const timer = setInterval(() => {

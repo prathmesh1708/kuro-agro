@@ -86,6 +86,9 @@ const getChildRoute = (parentRoute, childName) => {
       Sanchalaks: "/admin/field-network/sanchalaks",
       Surveyors: "/admin/field-network/surveyors",
       "Procurement Requests": "/admin/field-network/procurement-requests",
+      "Seeds & Inputs": "/admin/field-network/seeds",
+      "Seed Dispatches": "/admin/field-network/seed-dispatches",
+      "Seed Payments": "/admin/field-network/seed-payments",
       Commission: "/admin/field-network/commission",
     },
     "/admin/offers": {

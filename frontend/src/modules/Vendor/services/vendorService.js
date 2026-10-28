@@ -3,7 +3,7 @@ import api from '../../../shared/utils/api';
 // ─── AUTH ──────────────────────────────────────────────────────────────────────
 
 /**
- * Register a new vendor (pending approval + OTP email sent)
+ * Register a new vendor (pending approval + OTP SMS sent)
  * @param {{ name, email, password, phone, storeName, storeDescription }} data
  */
 export const registerVendor = (data) => {

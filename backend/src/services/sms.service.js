@@ -1,18 +1,17 @@
 import https from 'https';
 import http from 'http';
-import { sendEmail, sendOTPEmail } from './email.service.js';
 
 /**
- * Sends SMS via configured SMS Provider (SMS India Hub / Fast2SMS / Twilio / Console)
- * Falls back to Email delivery and console logging when SMS gateway credentials are not configured or fail.
- * 
+ * Sends an OTP SMS to an Indian mobile number via the configured provider
+ * (SMS India Hub, then Fast2SMS, then Twilio). OTPs go to the mobile number only:
+ * there is no email fallback.
+ *
  * @param {Object} options
  * @param {string} options.phone - 10-digit recipient phone number
  * @param {string} options.otp - 6-digit OTP code
- * @param {string} [options.email] - Optional recipient email address for fallback delivery
- * @param {boolean} [options.skipEmailFallback] - Skip the email fallback (caller sends the email itself)
+ * @returns {Promise<{ smsSent: boolean }>}
  */
-export const sendSMS = async ({ phone, otp, email, skipEmailFallback = false }) => {
+export const sendSMS = async ({ phone, otp }) => {
     const normalizedPhone = String(phone || '').replace(/\D/g, '').slice(-10);
     const defaultMessage = `Your KuroAgro verification code is ${otp}. Valid for 10 minutes.`;
 
@@ -63,25 +62,12 @@ export const sendSMS = async ({ phone, otp, email, skipEmailFallback = false }) 
         }
     }
 
-    // Always log OTP to server console
-    console.log(`[PHONE OTP] OTP for +91${normalizedPhone} is: ${otp}`);
-
-    // 4. Dispatch Email OTP backup if user has a valid non-dummy email address.
-    // Awaited: serverless platforms freeze the process once the response is sent.
-    if (!skipEmailFallback && email && !email.endsWith('@raathi.com')) {
-        try {
-            await sendOTPEmail({
-                to: email,
-                otp,
-                title: 'Login OTP Verification',
-                userType: 'Customer',
-            });
-        } catch (err) {
-            console.warn(`[SMS Fallback Email] Failed to send email to ${email}: ${err.message}`);
-        }
+    // Never write OTPs to production logs.
+    if (process.env.NODE_ENV !== 'production') {
+        console.log(`[PHONE OTP] OTP for +91${normalizedPhone} is: ${otp}`);
     }
 
-    return { success: true, smsSent };
+    return { success: smsSent, smsSent };
 };
 
 /**

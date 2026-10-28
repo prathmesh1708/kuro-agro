@@ -80,7 +80,7 @@ const FieldProfile = ({ role, account, fetchProfile, fetchCommission, logout, ch
 
         <div className="mt-4 space-y-2.5">
           <InfoRow icon={FiPhone}>{account?.phone}</InfoRow>
-          <InfoRow icon={FiMail}>{account?.email}</InfoRow>
+          {account?.email && <InfoRow icon={FiMail}>{account.email}</InfoRow>}
           {(address.village || address.district) && (
             <InfoRow icon={FiMapPin}>
               {[address.village, address.block, address.district, address.state, address.pincode].filter(Boolean).join(', ')}

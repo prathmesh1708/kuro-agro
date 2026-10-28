@@ -20,6 +20,7 @@ import * as shipmentController from '../controllers/shipment.controller.js';
 import * as fieldNetworkController from '../controllers/fieldNetwork.controller.js';
 import * as farmerController from '../controllers/farmer.controller.js';
 import * as procurementController from '../controllers/procurement.controller.js';
+import * as seedController from '../controllers/seed.controller.js';
 import codRoutes from './cod.routes.js';
 import { authenticate } from '../../../middlewares/authenticate.js';
 import { authorize, enforceAccountStatus } from '../../../middlewares/authorize.js';
@@ -100,6 +101,17 @@ import {
     kisanListQuerySchema,
     kisanStatusSchema,
 } from '../../../validators/produceTrade.validator.js';
+import {
+    seedItemSchema,
+    seedItemStatusSchema,
+    seedDispatchSchema,
+    seedDispatchListQuerySchema,
+    seedIssueListQuerySchema,
+    seedRemittanceListQuerySchema,
+    seedRemittanceDecisionSchema,
+    seedLedgerQuerySchema,
+    cancelSeedRequestSchema,
+} from '../../../validators/seedDistribution.validator.js';
 import {
     marketingIdParamSchema,
     campaignListQuerySchema,
@@ -245,6 +257,23 @@ router.patch('/procurement-requests/:id/payment', ...adminAuth, validate(idParam
 router.get('/admin-stock', ...adminAuth, procurementController.getAdminStock);
 router.post('/admin-stock/:id/move-to-product', ...adminAuth, validate(idParamSchema, 'params'), validate(moveToProductSchema), procurementController.moveStockToProduct);
 router.get('/stock-ledger', ...adminAuth, validate(stockLedgerQuerySchema, 'query'), procurementController.getStockLedger);
+
+// ─── Seed distribution (Admin → Surveyor → Kisan) ────────────────────────────
+router.get('/seed-items', ...adminAuth, seedController.getSeedItems);
+router.post('/seed-items', ...adminAuth, validate(seedItemSchema), seedController.createSeedItem);
+router.put('/seed-items/:id', ...adminAuth, validate(idParamSchema, 'params'), validate(seedItemSchema), seedController.updateSeedItem);
+router.patch('/seed-items/:id/status', ...adminAuth, validate(idParamSchema, 'params'), validate(seedItemStatusSchema), seedController.updateSeedItemStatus);
+router.post('/seed-dispatches', ...adminAuth, validate(seedDispatchSchema), seedController.createSeedDispatch);
+router.get('/seed-dispatches', ...adminAuth, validate(seedDispatchListQuerySchema, 'query'), seedController.getSeedDispatches);
+router.get('/seed-dispatches/:id', ...adminAuth, validate(idParamSchema, 'params'), seedController.getSeedDispatchById);
+router.patch('/seed-dispatches/:id/cancel', ...adminAuth, validate(idParamSchema, 'params'), validate(cancelSeedRequestSchema), seedController.cancelSeedDispatch);
+router.get('/seed-issues', ...adminAuth, validate(seedIssueListQuerySchema, 'query'), seedController.getSeedIssues);
+router.get('/seed-issues/:id', ...adminAuth, validate(idParamSchema, 'params'), seedController.getSeedIssueById);
+router.get('/seed-remittances', ...adminAuth, validate(seedRemittanceListQuerySchema, 'query'), seedController.getSeedRemittances);
+router.patch('/seed-remittances/:id/decision', ...adminAuth, validate(idParamSchema, 'params'), validate(seedRemittanceDecisionSchema), seedController.decideSeedRemittance);
+router.get('/seed-stock', ...adminAuth, seedController.getSeedStockOverview);
+router.get('/surveyors/:id/seed-summary', ...adminAuth, validate(fieldAccountIdParamSchema, 'params'), seedController.getSurveyorSeedSummary);
+router.get('/seed-ledger', ...adminAuth, validate(seedLedgerQuerySchema, 'query'), seedController.getSeedLedger);
 
 // ─── Return Requests ──────────────────────────────────────────────────────────
 router.get('/return-requests', ...adminAuth, returnController.getAllReturnRequests);
