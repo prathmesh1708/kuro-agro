@@ -187,6 +187,17 @@ const DeliveryRegister = () => {
             </p>
           </div>
 
+          <p className="text-xs text-gray-500 text-center px-2">
+            By registering, you agree to KuroAgro's{' '}
+            <Link to="/delivery/terms" target="_blank" className="text-primary-600 underline font-medium">
+              Delivery Partner Terms
+            </Link>{' '}
+            and{' '}
+            <Link to="/delivery/privacy" target="_blank" className="text-primary-600 underline font-medium">
+              Privacy Policy
+            </Link>.
+          </p>
+
           <button type="submit" disabled={isLoading} className="w-full gradient-green text-white py-3 rounded-xl font-semibold hover:shadow-glow-green transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
             {isLoading ? 'Registering...' : 'Register as Delivery Partner'}
           </button>

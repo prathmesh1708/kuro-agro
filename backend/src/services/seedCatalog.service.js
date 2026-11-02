@@ -3,15 +3,73 @@ import ApiError from '../utils/ApiError.js';
 import { slugify } from '../utils/slugify.js';
 
 // Starting catalog, created the first time the seed list is read. Admin can add, edit or hide items.
-// Commission is the surveyor's ₹ per unit; min/max record the agreed band for range-priced items.
+// `commission` is the surveyor's ₹ per unit and `sanchalakCommission` the Kendra Sanchalak's;
+// min/max record the agreed band for range-priced items. `basis` is the condition the commission
+// is paid on, shown on the earning model card in the field panels.
 const DEFAULT_SEED_ITEMS = [
-    { name: 'Black Kuro Rice', nameHi: 'ब्लैक कुरो चावल', unit: 'kg', commission: { perUnit: 16, min: 16, max: 16 } },
-    { name: 'Basmati Paddy Seed', nameHi: 'बासमती धान बीज', unit: 'kg', commission: { perUnit: 5, min: 5, max: 5 } },
-    { name: 'Wheat Seed', nameHi: 'गेहूं बीज', unit: 'kg', commission: { perUnit: 5, min: 5, max: 5 } },
-    { name: 'Kuro Rice Seed', nameHi: 'कुरो चावल बीज', unit: 'kg', commission: { perUnit: 25, min: 25, max: 25 } },
-    { name: 'Organic Fertilizer Kit', nameHi: 'जैविक खाद किट', unit: 'kit', commission: { perUnit: 500, min: 500, max: 500 } },
-    { name: 'Green Vegetables', nameHi: 'हरी सब्जियां', unit: 'kg', commission: { perUnit: 1, min: 1, max: 50 } },
-    { name: 'Mango / Guava & Other Fruit Plants', nameHi: 'आम / अमरूद व अन्य फलदार पौधे', unit: 'plant', commission: { perUnit: 500, min: 500, max: 1000 } },
+    {
+        name: 'Black Kuro Rice',
+        nameHi: 'ब्लैक कुरो चावल',
+        unit: 'kg',
+        commission: { perUnit: 16, min: 16, max: 16 },
+        sanchalakCommission: { perUnit: 10, min: 10, max: 10 },
+        basis: 'Verified quantity accepted by the company',
+        basisHi: 'कंपनी द्वारा स्वीकृत सत्यापित मात्रा',
+    },
+    {
+        name: 'Basmati Paddy Seed',
+        nameHi: 'बासमती धान बीज',
+        unit: 'kg',
+        commission: { perUnit: 5, min: 5, max: 5 },
+        sanchalakCommission: { perUnit: 5, min: 5, max: 5 },
+        basis: 'Verified quantity',
+        basisHi: 'सत्यापित मात्रा',
+    },
+    {
+        name: 'Wheat Seed',
+        nameHi: 'गेहूं बीज',
+        unit: 'kg',
+        commission: { perUnit: 5, min: 5, max: 5 },
+        sanchalakCommission: { perUnit: 5, min: 5, max: 5 },
+        basis: 'Verified quantity',
+        basisHi: 'सत्यापित मात्रा',
+    },
+    {
+        name: 'Kuro Rice Seed',
+        nameHi: 'कुरो चावल बीज',
+        unit: 'kg',
+        commission: { perUnit: 25, min: 25, max: 25 },
+        sanchalakCommission: { perUnit: 10, min: 10, max: 10 },
+        basis: 'Verified sales / distribution quantity',
+        basisHi: 'सत्यापित बिक्री / वितरण मात्रा',
+    },
+    {
+        name: 'Organic Fertilizer Kit',
+        nameHi: 'जैविक खाद किट',
+        unit: 'kit',
+        commission: { perUnit: 500, min: 500, max: 500 },
+        sanchalakCommission: { perUnit: 200, min: 200, max: 200 },
+        basis: 'Verified distribution and records',
+        basisHi: 'सत्यापित वितरण एवं रिकॉर्ड',
+    },
+    {
+        name: 'Green Vegetables',
+        nameHi: 'हरी सब्जियां',
+        unit: 'kg',
+        commission: { perUnit: 1, min: 1, max: 50 },
+        sanchalakCommission: { perUnit: 1, min: 1, max: 30 },
+        basis: 'As per crop, quality and approved rate',
+        basisHi: 'फसल, गुणवत्ता और स्वीकृत दर के अनुसार',
+    },
+    {
+        name: 'Mango / Guava & Other Fruit Plants',
+        nameHi: 'आम / अमरूद व अन्य फलदार पौधे',
+        unit: 'plant',
+        commission: { perUnit: 500, min: 500, max: 1000 },
+        sanchalakCommission: { perUnit: 100, min: 100, max: 500 },
+        basis: 'Verified eligible plants / units',
+        basisHi: 'सत्यापित योग्य पौधे / इकाई',
+    },
 ];
 
 export const ensureDefaultSeedItems = async () => {
@@ -44,18 +102,25 @@ export const amountFor = (quantity, pricePerUnit) => round2(Number(quantity) * N
 /** Quantity as shown to people, e.g. "12 kg", "2 kit". */
 export const formatSeedQty = (quantity, unit) => `${Number(Number(quantity).toFixed(2))} ${unit}`;
 
+/** The agreed commission band on an item for 'surveyor' (the default) or 'sanchalak'. */
+export const commissionBand = (item, role = 'surveyor') => {
+    const band = (role === 'sanchalak' ? item?.sanchalakCommission : item?.commission) || {};
+    return { perUnit: band.perUnit || 0, min: band.min || 0, max: band.max || 0 };
+};
+
 /**
- * Checks a commission rate against the item's agreed band.
+ * Checks a commission rate against the agreed band for `role`.
  * Admin may set any rate within [min, max]; outside it the dispatch is refused.
  */
-export const resolveCommissionRate = (item, requested) => {
-    const { perUnit = 0, min = 0, max = 0 } = item.commission || {};
+export const resolveCommissionRate = (item, requested, role = 'surveyor') => {
+    const { perUnit, min, max } = commissionBand(item, role);
     if (requested === undefined || requested === null || requested === '') return perUnit;
     const rate = Number(requested);
-    const floor = Math.min(min || 0, perUnit);
-    const ceiling = Math.max(max || 0, perUnit);
+    const floor = Math.min(min, perUnit);
+    const ceiling = Math.max(max, perUnit);
     if (rate < floor || rate > ceiling) {
-        throw new ApiError(400, `Commission for ${item.name} must be between ₹${floor} and ₹${ceiling} per ${item.unit}.`);
+        const who = role === 'sanchalak' ? 'Sanchalak commission' : 'Commission';
+        throw new ApiError(400, `${who} for ${item.name} must be between ₹${floor} and ₹${ceiling} per ${item.unit}.`);
     }
     return rate;
 };

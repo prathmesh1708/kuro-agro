@@ -130,12 +130,14 @@ export const createSeedIssue = asyncHandler(async (req, res) => {
     const item = await getActiveSeedItemOrThrow(req.body.seedItem);
     const { quantity, pricePerUnit } = req.body;
 
-    // The commission rate the surveyor was promised when admin dispatched this seed to them.
+    // The commission rates promised when admin dispatched this seed: the surveyor's own, and the
+    // one their Kendra's Sanchalak earns on the same distribution.
     const lastDispatch = await SeedDispatch.findOne({ surveyor: req.user.id, seedItem: item._id, status: 'received' })
         .sort({ decidedAt: -1 })
-        .select('commissionPerUnit')
+        .select('commissionPerUnit sanchalakCommissionPerUnit')
         .lean();
     const commissionPerUnit = lastDispatch?.commissionPerUnit ?? item.commission?.perUnit ?? 0;
+    const sanchalakCommissionPerUnit = lastDispatch?.sanchalakCommissionPerUnit ?? item.sanchalakCommission?.perUnit ?? 0;
 
     const issue = await runInTransaction(async (session) => {
         const [created] = await SeedIssue.create([{
@@ -151,6 +153,8 @@ export const createSeedIssue = asyncHandler(async (req, res) => {
             totalAmount: amountFor(quantity, pricePerUnit),
             commissionPerUnit,
             commissionAmount: round2(quantity * commissionPerUnit),
+            sanchalakCommissionPerUnit,
+            sanchalakCommissionAmount: round2(quantity * sanchalakCommissionPerUnit),
             surveyorNote: req.body.note || '',
             history: [{ action: 'sent', byType: 'surveyor', by: req.user.id, note: req.body.note || '' }],
         }], { session });

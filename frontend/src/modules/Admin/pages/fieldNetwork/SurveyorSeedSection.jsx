@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { FiSend } from 'react-icons/fi';
 import TradeStatusBadge from '../../../../shared/components/Produce/TradeStatusBadge';
-import { commissionLabel, formatDate, formatInr, formatSeedQty, paymentMethodLabel, paymentState } from '../../../../shared/components/Seed/seedFormat';
+import { commissionLabel, formatDate, formatInr, formatSeedQty, paymentMethodLabel, paymentState, sanchalakCommissionLabel } from '../../../../shared/components/Seed/seedFormat';
 import {
   createSeedDispatch,
   getSeedDispatches,
@@ -31,7 +31,7 @@ const SurveyorSeedSection = ({ surveyorId, canDispatch }) => {
   const [items, setItems] = useState([]);
   const [dispatches, setDispatches] = useState([]);
   const [issues, setIssues] = useState([]);
-  const [form, setForm] = useState({ seedItem: '', quantity: '', pricePerUnit: '', commissionPerUnit: '', note: '' });
+  const [form, setForm] = useState({ seedItem: '', quantity: '', pricePerUnit: '', commissionPerUnit: '', sanchalakCommissionPerUnit: '', note: '' });
   const [isSending, setIsSending] = useState(false);
 
   const load = useCallback(async () => {
@@ -68,10 +68,11 @@ const SurveyorSeedSection = ({ surveyorId, canDispatch }) => {
         quantity: Number(form.quantity),
         pricePerUnit: Number(form.pricePerUnit),
         ...(form.commissionPerUnit !== '' && { commissionPerUnit: Number(form.commissionPerUnit) }),
+        ...(form.sanchalakCommissionPerUnit !== '' && { sanchalakCommissionPerUnit: Number(form.sanchalakCommissionPerUnit) }),
         note: form.note.trim(),
       });
       toast.success('Sent. The surveyor will confirm when it arrives.');
-      setForm({ seedItem: '', quantity: '', pricePerUnit: '', commissionPerUnit: '', note: '' });
+      setForm({ seedItem: '', quantity: '', pricePerUnit: '', commissionPerUnit: '', sanchalakCommissionPerUnit: '', note: '' });
       await load();
     } catch {
       // The API client already shows the error message.
@@ -129,6 +130,7 @@ const SurveyorSeedSection = ({ surveyorId, canDispatch }) => {
                     seedItem: e.target.value,
                     pricePerUnit: item?.defaultPricePerUnit ? String(item.defaultPricePerUnit) : '',
                     commissionPerUnit: item?.commission?.perUnit != null ? String(item.commission.perUnit) : '',
+                    sanchalakCommissionPerUnit: item?.sanchalakCommission?.perUnit != null ? String(item.sanchalakCommission.perUnit) : '',
                   });
                 }}
                 className={inputClass}
@@ -136,7 +138,11 @@ const SurveyorSeedSection = ({ surveyorId, canDispatch }) => {
                 <option value="">Choose a seed…</option>
                 {items.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
               </select>
-              {selected && <p className="mt-1 text-xs text-gray-500">Commission band: {commissionLabel(selected)}</p>}
+              {selected && (
+                <p className="mt-1 text-xs text-gray-500">
+                  Surveyor band {commissionLabel(selected)} · Sanchalak band {sanchalakCommissionLabel(selected)}
+                </p>
+              )}
             </div>
             <div>
               <label htmlFor="quantity" className="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -149,10 +155,14 @@ const SurveyorSeedSection = ({ surveyorId, canDispatch }) => {
               <input id="price" type="number" min="0" step="0.01" value={form.pricePerUnit} onChange={(e) => setForm({ ...form, pricePerUnit: e.target.value })} className={inputClass} />
             </div>
             <div>
-              <label htmlFor="commission" className="block text-sm font-semibold text-gray-700 mb-1.5">Commission per {selected?.unit || 'unit'} (₹)</label>
+              <label htmlFor="commission" className="block text-sm font-semibold text-gray-700 mb-1.5">Surveyor commission per {selected?.unit || 'unit'} (₹)</label>
               <input id="commission" type="number" min="0" step="0.01" value={form.commissionPerUnit} onChange={(e) => setForm({ ...form, commissionPerUnit: e.target.value })} className={inputClass} />
             </div>
-            <div className="sm:col-span-2 lg:col-span-3">
+            <div>
+              <label htmlFor="sanchalakCommission" className="block text-sm font-semibold text-gray-700 mb-1.5">Sanchalak commission per {selected?.unit || 'unit'} (₹)</label>
+              <input id="sanchalakCommission" type="number" min="0" step="0.01" value={form.sanchalakCommissionPerUnit} onChange={(e) => setForm({ ...form, sanchalakCommissionPerUnit: e.target.value })} className={inputClass} />
+            </div>
+            <div className="sm:col-span-2 lg:col-span-4">
               <label htmlFor="note" className="block text-sm font-semibold text-gray-700 mb-1.5">Note (optional)</label>
               <input id="note" value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} placeholder="Batch, transport, instructions…" className={inputClass} />
             </div>
@@ -167,7 +177,8 @@ const SurveyorSeedSection = ({ surveyorId, canDispatch }) => {
             </button>
           </div>
           <p className="text-xs text-gray-500">
-            The surveyor marks it received or not received. Only then does it enter their stock, at the commission rate above.
+            The surveyor marks it received or not received. Only then does it enter their stock, at the rates above. Each
+            hand-out made from it earns the surveyor their rate and their Kendra's Sanchalak theirs.
           </p>
         </form>
       ) : (

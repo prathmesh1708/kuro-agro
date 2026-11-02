@@ -3,15 +3,55 @@ import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { FiPlus, FiEdit2 } from 'react-icons/fi';
 import Badge from '../../../../shared/components/Badge';
-import { SEED_UNITS, commissionLabel, formatInr } from '../../../../shared/components/Seed/seedFormat';
+import { SEED_UNITS, commissionLabel, formatInr, sanchalakCommissionLabel } from '../../../../shared/components/Seed/seedFormat';
 import { createSeedItem, getProduceList, getSeedItems, updateSeedItem, updateSeedItemStatus } from '../../services/adminService';
 
-const EMPTY = { name: '', nameHi: '', unit: 'kg', produce: '', defaultPricePerUnit: '', perUnit: '', min: '', max: '' };
+const EMPTY_BAND = { perUnit: '', min: '', max: '' };
+const EMPTY = {
+  name: '', nameHi: '', unit: 'kg', produce: '', defaultPricePerUnit: '', basis: '', basisHi: '',
+  surveyor: { ...EMPTY_BAND }, sanchalak: { ...EMPTY_BAND },
+};
 
 const inputClass = 'w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500';
 
-// The seed / input catalog admin distributes through the field network, with the surveyor
-// commission band for each item.
+const BAND_FIELDS = [['perUnit', 'Rate'], ['min', 'Minimum'], ['max', 'Maximum']];
+
+// A commission band: the rate used, plus the agreed band for range-priced items.
+const BandFields = ({ idPrefix, legend, unit, band, onChange }) => (
+  <fieldset className="border border-gray-200 rounded-lg p-3">
+    <legend className="text-sm font-semibold text-gray-700 px-1">{legend} (₹ per {unit})</legend>
+    <div className="grid grid-cols-3 gap-3">
+      {BAND_FIELDS.map(([key, label]) => (
+        <div key={key}>
+          <label htmlFor={`${idPrefix}-${key}`} className="block text-xs text-gray-600 mb-1">{label}</label>
+          <input
+            id={`${idPrefix}-${key}`}
+            type="number"
+            min="0"
+            step="0.01"
+            required={key === 'perUnit'}
+            value={band[key]}
+            onChange={(e) => onChange({ ...band, [key]: e.target.value })}
+            className={inputClass}
+          />
+        </div>
+      ))}
+    </div>
+  </fieldset>
+);
+
+/** Normalises a band from the form; an empty min or max means the rate is fixed. */
+const toBand = (band, label) => {
+  const perUnit = Number(band.perUnit || 0);
+  const min = band.min === '' ? perUnit : Number(band.min);
+  const max = band.max === '' ? perUnit : Number(band.max);
+  if (min > max) return { error: `The ${label} minimum cannot be above the maximum.` };
+  if (perUnit < min || perUnit > max) return { error: `The ${label} rate must sit between the minimum and maximum.` };
+  return { value: { perUnit, min, max } };
+};
+
+// The seed / input catalog admin distributes through the field network, with the commission band
+// the surveyor and their Kendra's Sanchalak each earn on it.
 const SeedItems = () => {
   const [items, setItems] = useState([]);
   const [produce, setProduce] = useState([]);
@@ -37,18 +77,26 @@ const SeedItems = () => {
     unit: item.unit,
     produce: item.produce || '',
     defaultPricePerUnit: String(item.defaultPricePerUnit ?? ''),
-    perUnit: String(item.commission?.perUnit ?? ''),
-    min: String(item.commission?.min ?? ''),
-    max: String(item.commission?.max ?? ''),
+    basis: item.basis || '',
+    basisHi: item.basisHi || '',
+    surveyor: {
+      perUnit: String(item.commission?.perUnit ?? ''),
+      min: String(item.commission?.min ?? ''),
+      max: String(item.commission?.max ?? ''),
+    },
+    sanchalak: {
+      perUnit: String(item.sanchalakCommission?.perUnit ?? ''),
+      min: String(item.sanchalakCommission?.min ?? ''),
+      max: String(item.sanchalakCommission?.max ?? ''),
+    },
   });
 
   const save = async (e) => {
     e.preventDefault();
-    const perUnit = Number(form.perUnit || 0);
-    const min = form.min === '' ? perUnit : Number(form.min);
-    const max = form.max === '' ? perUnit : Number(form.max);
-    if (min > max) return toast.error('The commission minimum cannot be above the maximum.');
-    if (perUnit < min || perUnit > max) return toast.error('The commission rate must sit between the minimum and maximum.');
+    const surveyor = toBand(form.surveyor, 'surveyor commission');
+    if (surveyor.error) return toast.error(surveyor.error);
+    const sanchalak = toBand(form.sanchalak, 'Sanchalak commission');
+    if (sanchalak.error) return toast.error(sanchalak.error);
 
     const payload = {
       name: form.name.trim(),
@@ -56,7 +104,10 @@ const SeedItems = () => {
       unit: form.unit,
       produce: form.produce || null,
       defaultPricePerUnit: Number(form.defaultPricePerUnit || 0),
-      commission: { perUnit, min, max },
+      basis: form.basis.trim(),
+      basisHi: form.basisHi.trim(),
+      commission: surveyor.value,
+      sanchalakCommission: sanchalak.value,
     };
 
     setIsSaving(true);
@@ -88,7 +139,7 @@ const SeedItems = () => {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">Seeds &amp; Inputs</h1>
           <p className="text-sm sm:text-base text-gray-600">
-            What you send to surveyors, and the commission they earn per unit
+            What you send to surveyors, and the commission the surveyor and their Kendra each earn per unit
           </p>
         </div>
         <button type="button" onClick={openNew} className="inline-flex items-center gap-2 px-4 py-2.5 gradient-green text-white rounded-lg font-semibold text-sm">
@@ -104,6 +155,7 @@ const SeedItems = () => {
               <th className="py-3 px-4">Unit</th>
               <th className="py-3 px-4">Default price</th>
               <th className="py-3 px-4">Surveyor commission</th>
+              <th className="py-3 px-4">Sanchalak commission</th>
               <th className="py-3 px-4">Linked crop</th>
               <th className="py-3 px-4">Status</th>
               <th className="py-3 px-4" />
@@ -111,7 +163,7 @@ const SeedItems = () => {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {items.length === 0 ? (
-              <tr><td colSpan={7} className="py-10 text-center text-gray-500">No seed items yet.</td></tr>
+              <tr><td colSpan={8} className="py-10 text-center text-gray-500">No seed items yet.</td></tr>
             ) : items.map((item) => (
               <tr key={item.id}>
                 <td className="py-3 px-4">
@@ -121,6 +173,11 @@ const SeedItems = () => {
                 <td className="py-3 px-4 text-gray-700">{item.unit}</td>
                 <td className="py-3 px-4 text-gray-700">{item.defaultPricePerUnit ? formatInr(item.defaultPricePerUnit) : '—'}</td>
                 <td className="py-3 px-4 font-semibold text-gray-800">{commissionLabel(item)}</td>
+                <td className="py-3 px-4 font-semibold text-gray-800">
+                  {item.sanchalakCommission?.perUnit > 0 || item.sanchalakCommission?.max > 0
+                    ? sanchalakCommissionLabel(item)
+                    : <span className="font-normal text-amber-600">Not set</span>}
+                </td>
                 <td className="py-3 px-4 text-gray-600">{produce.find((p) => String(p.id) === String(item.produce))?.name || '—'}</td>
                 <td className="py-3 px-4">
                   <button type="button" onClick={() => toggle(item)}>
@@ -174,26 +231,40 @@ const SeedItems = () => {
               </div>
             </div>
 
-            <fieldset className="border border-gray-200 rounded-lg p-3">
-              <legend className="text-sm font-semibold text-gray-700 px-1">Surveyor commission (₹ per {form.unit})</legend>
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label htmlFor="perUnit" className="block text-xs text-gray-600 mb-1">Rate</label>
-                  <input id="perUnit" type="number" min="0" step="0.01" value={form.perUnit} onChange={(e) => setForm({ ...form, perUnit: e.target.value })} required className={inputClass} />
-                </div>
-                <div>
-                  <label htmlFor="min" className="block text-xs text-gray-600 mb-1">Minimum</label>
-                  <input id="min" type="number" min="0" step="0.01" value={form.min} onChange={(e) => setForm({ ...form, min: e.target.value })} className={inputClass} />
-                </div>
-                <div>
-                  <label htmlFor="max" className="block text-xs text-gray-600 mb-1">Maximum</label>
-                  <input id="max" type="number" min="0" step="0.01" value={form.max} onChange={(e) => setForm({ ...form, max: e.target.value })} className={inputClass} />
-                </div>
+            <BandFields
+              idPrefix="surveyor"
+              legend="Surveyor commission"
+              unit={form.unit}
+              band={form.surveyor}
+              onChange={(band) => setForm({ ...form, surveyor: band })}
+            />
+
+            <BandFields
+              idPrefix="sanchalak"
+              legend="Sanchalak commission"
+              unit={form.unit}
+              band={form.sanchalak}
+              onChange={(band) => setForm({ ...form, sanchalak: band })}
+            />
+
+            <p className="text-xs text-gray-500">
+              Leave min and max equal to the rate for a fixed commission. A band (e.g. ₹1–₹50) lets you pick any rate
+              inside it when you dispatch. The Sanchalak of the surveyor's Kendra earns their rate on the same hand-out.
+            </p>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2 sm:col-span-1">
+                <label htmlFor="basis" className="block text-sm font-semibold text-gray-700 mb-1.5">Basis of payment</label>
+                <input id="basis" value={form.basis} onChange={(e) => setForm({ ...form, basis: e.target.value })} placeholder="Verified quantity accepted by the company" className={inputClass} />
               </div>
-              <p className="mt-2 text-xs text-gray-500">
-                Leave min and max equal to the rate for a fixed commission. A band (e.g. ₹1–₹50) lets you pick any rate inside it when you dispatch.
+              <div className="col-span-2 sm:col-span-1">
+                <label htmlFor="basisHi" className="block text-sm font-semibold text-gray-700 mb-1.5">Basis in Hindi</label>
+                <input id="basisHi" value={form.basisHi} onChange={(e) => setForm({ ...form, basisHi: e.target.value })} className={inputClass} />
+              </div>
+              <p className="col-span-2 text-xs text-gray-500">
+                Shown under the rate on the Sanchalak's earning model card in their app.
               </p>
-            </fieldset>
+            </div>
 
             <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
               Changing a rate applies only to dispatches sent <strong>after</strong> you save. Commission already promised does not change.

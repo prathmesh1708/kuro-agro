@@ -17,13 +17,18 @@ export const SEED_UNITS = [
   { value: 'bag', label: 'bag' },
 ];
 
-/** The commission band for an item, as text: "₹25 per kg" or "₹500 – ₹1,000 per plant". */
-export const commissionLabel = (item) => {
-  const { perUnit = 0, min = 0, max = 0 } = item?.commission || {};
-  const unit = item?.unit || 'unit';
+/** A commission band as text: "₹25 per kg" or "₹500 – ₹1,000 per plant". */
+export const bandLabel = (band, unit = 'unit') => {
+  const { perUnit = 0, min = 0, max = 0 } = band || {};
   const inr = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`;
   return max && max !== min ? `${inr(min)} – ${inr(max)} per ${unit}` : `${inr(perUnit)} per ${unit}`;
 };
+
+/** The surveyor's band on a catalog item, and on a Sanchalak rate card row (already projected). */
+export const commissionLabel = (item) => bandLabel(item?.commission, item?.unit || 'unit');
+
+/** The Sanchalak's band on a raw catalog item. */
+export const sanchalakCommissionLabel = (item) => bandLabel(item?.sanchalakCommission, item?.unit || 'unit');
 
 /** How a seed issue's payment reads to each side. */
 export const paymentState = (payment) => {

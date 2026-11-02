@@ -27,7 +27,10 @@ const MAIN_LINKS = [
   { to: "/support", label: "Support" },
 ];
 
-const LEGAL_LINKS = [{ to: "/privacy-policy", label: "Privacy Policy" }];
+const LEGAL_LINKS = [
+  { to: "/privacy-policy", label: "Privacy Policy" },
+  { to: "/terms-and-conditions", label: "Terms & Conditions" },
+];
 
 // Desktop-only site footer; hidden below the md breakpoint (mobile uses the bottom nav).
 const Footer = () => {

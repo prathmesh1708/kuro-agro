@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as authController from '../controllers/auth.controller.js';
 import * as farmerController from '../controllers/farmer.controller.js';
 import * as tradeController from '../controllers/trade.controller.js';
+import * as seedController from '../controllers/seed.controller.js';
 import { authenticate } from '../../../middlewares/authenticate.js';
 import { authorize, enforceAccountStatus } from '../../../middlewares/authorize.js';
 import { authLimiter, otpLimiter } from '../../../middlewares/rateLimiter.js';
@@ -21,6 +22,7 @@ import {
     registrationIdParamSchema,
     sanchalakRegistrationListQuerySchema,
 } from '../../../validators/farmerRegistration.validator.js';
+import { seedIssueListQuerySchema } from '../../../validators/seedDistribution.validator.js';
 import {
     idParamSchema,
     produceSaleSchema,
@@ -72,5 +74,9 @@ router.post('/sale-requests', ...sanchalakAuth, validate(produceSaleSchema), tra
 router.get('/sale-requests', ...sanchalakAuth, validate(sanchalakSaleListQuerySchema, 'query'), tradeController.getSaleRequests);
 router.get('/sale-requests/:id', ...sanchalakAuth, validate(idParamSchema, 'params'), tradeController.getSaleRequestById);
 router.patch('/sale-requests/:id/cancel', ...sanchalakAuth, validate(idParamSchema, 'params'), validate(cancelRequestSchema), tradeController.cancelSaleRequest);
+
+// Seed and inputs given out in this Kendra (read-only; the surveyors run the distribution)
+router.get('/seed-issues', ...sanchalakAuth, validate(seedIssueListQuerySchema, 'query'), seedController.getSeedIssues);
+router.get('/seed-issues/:id', ...sanchalakAuth, validate(idParamSchema, 'params'), seedController.getSeedIssueById);
 
 export default router;

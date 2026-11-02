@@ -144,6 +144,7 @@ import SanchalakWarehouse from "./modules/Sanchalak/pages/Warehouse";
 import SanchalakSellToAdmin from "./modules/Sanchalak/pages/SellToAdmin";
 import SanchalakSales from "./modules/Sanchalak/pages/Sales";
 import SanchalakSaleDetail from "./modules/Sanchalak/pages/SaleDetail";
+import SanchalakSeedGiven from "./modules/Sanchalak/pages/SeedGiven";
 import KisanProtectedRoute from "./modules/Kisan/components/KisanProtectedRoute";
 import KisanDashboard from "./modules/Kisan/pages/Dashboard";
 import KisanSell from "./modules/Kisan/pages/Sell";
@@ -215,6 +216,7 @@ import VendorPickupLocations from "./modules/Vendor/pages/PickupLocations";
 import VendorReports from "./modules/Vendor/pages/Reports";
 import VendorLanguageSettings from "./modules/Vendor/pages/LanguageSettings";
 import StaticPrivacyPolicy from "./shared/pages/StaticPrivacyPolicy";
+import StaticTermsConditions from "./shared/pages/StaticTermsConditions";
 import StaticSupport from "./shared/pages/StaticSupport";
 
 // Inner component that has access to useLocation
@@ -223,10 +225,20 @@ const AppRoutes = () => {
     <Routes>
       {/* Publicly accessible static pages */}
       <Route path="/privacy-policy" element={<RouteWrapper><StaticPrivacyPolicy /></RouteWrapper>} />
+      <Route path="/privacy" element={<RouteWrapper><StaticPrivacyPolicy /></RouteWrapper>} />
+      <Route path="/terms-and-conditions" element={<RouteWrapper><StaticTermsConditions /></RouteWrapper>} />
+      <Route path="/terms" element={<RouteWrapper><StaticTermsConditions /></RouteWrapper>} />
+      <Route path="/terms-conditions" element={<RouteWrapper><StaticTermsConditions /></RouteWrapper>} />
       <Route path="/support" element={<RouteWrapper><StaticSupport /></RouteWrapper>} />
-      <Route path="/vendor/privacy-policy" element={<RouteWrapper><StaticPrivacyPolicy /></RouteWrapper>} />
+      <Route path="/vendor/privacy-policy" element={<RouteWrapper><StaticPrivacyPolicy defaultRole="vendor" /></RouteWrapper>} />
+      <Route path="/vendor/privacy" element={<RouteWrapper><StaticPrivacyPolicy defaultRole="vendor" /></RouteWrapper>} />
+      <Route path="/vendor/terms" element={<RouteWrapper><StaticTermsConditions defaultRole="vendor" /></RouteWrapper>} />
+      <Route path="/vendor/terms-conditions" element={<RouteWrapper><StaticTermsConditions defaultRole="vendor" /></RouteWrapper>} />
       <Route path="/vendor/support" element={<RouteWrapper><StaticSupport /></RouteWrapper>} />
-      <Route path="/delivery/privacy-policy" element={<RouteWrapper><StaticPrivacyPolicy /></RouteWrapper>} />
+      <Route path="/delivery/privacy-policy" element={<RouteWrapper><StaticPrivacyPolicy defaultRole="delivery" /></RouteWrapper>} />
+      <Route path="/delivery/privacy" element={<RouteWrapper><StaticPrivacyPolicy defaultRole="delivery" /></RouteWrapper>} />
+      <Route path="/delivery/terms" element={<RouteWrapper><StaticTermsConditions defaultRole="delivery" /></RouteWrapper>} />
+      <Route path="/delivery/terms-conditions" element={<RouteWrapper><StaticTermsConditions defaultRole="delivery" /></RouteWrapper>} />
       <Route path="/delivery/support" element={<RouteWrapper><StaticSupport /></RouteWrapper>} />
 
       <Route
@@ -640,6 +652,7 @@ const AppRoutes = () => {
         ["warehouse/sell", <SanchalakSellToAdmin />],
         ["sales", <SanchalakSales />],
         ["sales/:id", <SanchalakSaleDetail />],
+        ["seed-given", <SanchalakSeedGiven />],
       ].map(([path, page]) => (
         <Route key={path} path={`/sanchalak/${path}`} element={<SanchalakProtectedRoute>{page}</SanchalakProtectedRoute>} />
       ))}

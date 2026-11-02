@@ -20,6 +20,7 @@ import {
     resolveCommissionRate,
 } from '../../../services/seedCatalog.service.js';
 import {
+    getSeedCommission,
     getSurveyorSeedAccount,
     getSurveyorSeedStock,
     listSeedRequests,
@@ -123,6 +124,7 @@ export const createSeedDispatch = asyncHandler(async (req, res) => {
 
     const item = await getActiveSeedItemOrThrow(req.body.seedItem);
     const commissionPerUnit = resolveCommissionRate(item, req.body.commissionPerUnit);
+    const sanchalakCommissionPerUnit = resolveCommissionRate(item, req.body.sanchalakCommissionPerUnit, 'sanchalak');
     const { quantity, pricePerUnit } = req.body;
 
     const dispatch = await SeedDispatch.create({
@@ -135,6 +137,7 @@ export const createSeedDispatch = asyncHandler(async (req, res) => {
         pricePerUnit,
         totalAmount: amountFor(quantity, pricePerUnit),
         commissionPerUnit,
+        sanchalakCommissionPerUnit,
         adminNote: req.body.note || '',
         sentBy: req.user.id,
         history: [{ action: 'sent', byType: 'admin', by: req.user.id, note: req.body.note || '' }],
@@ -375,6 +378,16 @@ export const getSurveyorSeedSummary = asyncHandler(async (req, res) => {
         getSurveyorSeedAccount(req.params.id),
     ]);
     res.status(200).json(new ApiResponse(200, { stock, account }, 'Seed summary fetched.'));
+});
+
+/**
+ * @desc    Seed commission earned by one Sanchalak's Kendra
+ * @route   GET /api/admin/sanchalaks/:id/seed-summary
+ * @access  Private (Admin)
+ */
+export const getSanchalakSeedSummary = asyncHandler(async (req, res) => {
+    const commission = await getSeedCommission('sanchalak', req.params.id);
+    res.status(200).json(new ApiResponse(200, { commission }, 'Seed summary fetched.'));
 });
 
 /**

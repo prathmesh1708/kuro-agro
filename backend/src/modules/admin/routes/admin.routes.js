@@ -228,6 +228,7 @@ router.post('/delivery-boys/:id/settle-cash', ...adminAuth, validate(deliveryBoy
 router.get('/sanchalaks', ...adminAuth, validate(sanchalakListQuerySchema, 'query'), fieldNetworkController.getAllSanchalaks);
 router.get('/sanchalaks/export', ...adminAuth, validate(sanchalakExportQuerySchema, 'query'), fieldNetworkController.exportSanchalaks);
 router.get('/sanchalaks/:id', ...adminAuth, validate(fieldAccountIdParamSchema, 'params'), fieldNetworkController.getSanchalakById);
+router.get('/sanchalaks/:id/seed-summary', ...adminAuth, validate(fieldAccountIdParamSchema, 'params'), seedController.getSanchalakSeedSummary);
 router.patch('/sanchalaks/:id/status', ...adminAuth, validate(fieldAccountIdParamSchema, 'params'), validate(fieldAccountStatusSchema), fieldNetworkController.updateSanchalakStatus);
 router.get('/surveyors', ...adminAuth, validate(surveyorListQuerySchema, 'query'), fieldNetworkController.getAllSurveyors);
 router.get('/surveyors/export', ...adminAuth, validate(surveyorExportQuerySchema, 'query'), fieldNetworkController.exportSurveyors);

@@ -3,6 +3,9 @@ import SurveyorSeedStock from '../models/SurveyorSeedStock.model.js';
 import SeedLedger from '../models/SeedLedger.model.js';
 import SeedIssue from '../models/SeedIssue.model.js';
 import SeedRemittance from '../models/SeedRemittance.model.js';
+// Imported so the models this file populates are registered wherever it is used.
+import '../models/Kisan.model.js';
+import '../models/Surveyor.model.js';
 import ApiError from '../utils/ApiError.js';
 import { formatSeedQty } from './seedCatalog.service.js';
 import { runInTransaction, toPlain } from './produceTrade.service.js';
@@ -222,6 +225,85 @@ export const getSurveyorSeedAccount = async (surveyorId) => {
         payableToAdmin: Math.max(collected - commissionEarned - remitted - remittancePending, 0),
         awaitingConfirmation: { amount: t.reportedUnconfirmed || 0 },
         outstandingFromFarmers: { amount: t.unpaidAmount || 0, count: t.unpaidCount || 0 },
+    };
+};
+
+// Which fields on a SeedIssue hold each role's commission.
+const COMMISSION_FIELDS = {
+    surveyor: { amount: 'commissionAmount', rate: 'commissionPerUnit' },
+    sanchalak: { amount: 'sanchalakCommissionAmount', rate: 'sanchalakCommissionPerUnit' },
+};
+
+/**
+ * Seed commission for one Surveyor or Sanchalak: the surveyor earns for giving seed out, the
+ * Sanchalak for the same distribution happening inside their Kendra.
+ *
+ * Earned on `received`, the moment the farmer confirms the seed arrived. Pending sums the amounts
+ * already locked onto the open issues, so it needs no rate lookup and cannot drift if a rate changes.
+ *
+ * This is commission earned, not money owed. For a surveyor the same figure is also deducted from
+ * what they must remit to admin — see getSurveyorSeedAccount().
+ *
+ * @param {'surveyor'|'sanchalak'} role
+ * @param {string} accountId
+ */
+export const getSeedCommission = async (role, accountId) => {
+    const { amount: amountField, rate: rateField } = COMMISSION_FIELDS[role];
+    const scope = { [role]: new mongoose.Types.ObjectId(accountId) };
+    const amount = { $sum: { $ifNull: [`$${amountField}`, 0] } };
+
+    const [byItem, pendingRows, history] = await Promise.all([
+        SeedIssue.aggregate([
+            { $match: { ...scope, status: 'received' } },
+            {
+                $group: {
+                    _id: '$seedItem',
+                    seedName: { $first: '$seedName' },
+                    unit: { $first: '$unit' },
+                    quantity: { $sum: '$quantity' },
+                    amount,
+                    issues: { $sum: 1 },
+                },
+            },
+            { $sort: { amount: -1 } },
+        ]),
+        SeedIssue.aggregate([
+            { $match: { ...scope, status: 'pending' } },
+            { $group: { _id: null, amount, count: { $sum: 1 } } },
+        ]),
+        SeedIssue.find({ ...scope, status: 'received' })
+            .select(`issueCode seedName unit quantity ${rateField} ${amountField} decidedAt kisan surveyor`)
+            .populate([
+                { path: 'kisan', select: 'name kisanCode' },
+                // Named on a Sanchalak's history so they can see which surveyor earned it.
+                ...(role === 'sanchalak' ? [{ path: 'surveyor', select: 'name surveyorCode' }] : []),
+            ])
+            .sort({ decidedAt: -1 })
+            .limit(50)
+            .lean(),
+    ]);
+
+    const earned = byItem.reduce(
+        (acc, row) => ({ amount: acc.amount + row.amount, count: acc.count + row.issues }),
+        { amount: 0, count: 0 }
+    );
+
+    return {
+        earned,
+        pending: { amount: pendingRows[0]?.amount || 0, count: pendingRows[0]?.count || 0 },
+        byItem: byItem.map((row) => ({ ...row, seedItem: row._id, id: row._id })),
+        history: history.map((issue) => ({
+            id: issue._id,
+            issueCode: issue.issueCode,
+            seedName: issue.seedName,
+            quantity: issue.quantity,
+            unit: issue.unit,
+            ratePerUnit: issue[rateField] || 0,
+            amount: issue[amountField] || 0,
+            earnedAt: issue.decidedAt,
+            farmerName: issue.kisan?.name || '',
+            surveyorName: issue.surveyor?.name || '',
+        })),
     };
 };
 

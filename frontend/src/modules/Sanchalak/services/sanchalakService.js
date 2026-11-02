@@ -34,3 +34,8 @@ export const getSaleToAdmin = (id) => api.get(`/sanchalak/sale-requests/${id}`);
 export const cancelSaleToAdmin = (id, reason = '') => api.patch(`/sanchalak/sale-requests/${id}/cancel`, { reason });
 
 export const getSanchalakProduce = () => api.get('/sanchalak/produce');
+
+// ─── Seed distribution (read-only; the surveyors run it) ─────────────────────
+export const getKendraSeedIssues = (params = {}) => api.get('/sanchalak/seed-issues', { params });
+
+export const getKendraSeedIssue = (id) => api.get(`/sanchalak/seed-issues/${id}`);

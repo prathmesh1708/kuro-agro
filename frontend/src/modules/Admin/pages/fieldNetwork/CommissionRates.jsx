@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { getFieldCommissionRates, updateFieldCommissionRates } from '../../services/adminService';
@@ -46,6 +47,14 @@ const CommissionRates = () => {
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Field Commission</h1>
         <p className="text-sm sm:text-base text-gray-600">Fixed amount (₹) earned for every farmer you approve</p>
+        <p className="text-sm text-gray-600 mt-2">
+          Commission per product — what a surveyor and their Kendra earn per kg, kit or plant distributed — is set on each
+          item in{' '}
+          <Link to="/admin/field-network/seeds" className="font-semibold text-primary-600 hover:underline">
+            Seeds &amp; Inputs
+          </Link>
+          .
+        </p>
       </div>
 
       <form onSubmit={save} className="bg-white rounded-xl p-5 sm:p-6 shadow-sm border border-gray-200 space-y-5">

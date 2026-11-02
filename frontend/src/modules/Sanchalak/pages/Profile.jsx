@@ -50,11 +50,26 @@ const WarehouseSummary = () => {
   );
 };
 
+// Seed given out in the Kendra backs the seed half of the commission below.
+const SeedGivenLink = () => (
+  <Link
+    to="/sanchalak/seed-given"
+    className="mt-5 bg-white rounded-2xl p-4 shadow-sm flex items-center justify-between gap-3"
+  >
+    <span className="min-w-0">
+      <span className="block text-base font-bold text-gray-900">Seed Given / बीज वितरण</span>
+      <span className="block text-sm text-gray-500">What your surveyors have distributed</span>
+    </span>
+    <FiChevronRight className="shrink-0 text-gray-400" />
+  </Link>
+);
+
 const SanchalakProfile = () => {
   const { account, fetchProfile, logout } = useSanchalakAuthStore();
   return (
     <FieldProfile role="sanchalak" account={account} fetchProfile={fetchProfile} fetchCommission={getSanchalakCommission} logout={logout}>
       <WarehouseSummary />
+      <SeedGivenLink />
     </FieldProfile>
   );
 };

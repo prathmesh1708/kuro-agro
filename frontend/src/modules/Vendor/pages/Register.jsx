@@ -765,6 +765,17 @@ const VendorRegister = () => {
             </p>
           </div>
 
+          <p className="text-xs text-gray-500 text-center px-2">
+            By registering as a seller, you agree to KuroAgro's{' '}
+            <Link to="/vendor/terms" target="_blank" className="text-primary-600 underline font-medium">
+              Vendor Terms & Conditions
+            </Link>{' '}
+            and{' '}
+            <Link to="/vendor/privacy-policy" target="_blank" className="text-primary-600 underline font-medium">
+              Privacy Policy
+            </Link>.
+          </p>
+
           {/* Submit Button */}
           <button
             type="submit"

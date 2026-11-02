@@ -79,13 +79,24 @@ const addressCols = [
     { header: 'Pincode', value: (r) => r.address?.pincode, width: 9, pdf: false },
 ];
 
-// Profile header stats: farmer counts and commission totals, without the commission history list.
+// Profile header stats: farmer counts and commission totals, without the history lists.
+// A Sanchalak also earns on seed distributed in their Kendra, so `seed` and `total` come along.
 const profileStats = async (role, accountId) => {
-    const [farmers, { ratePerFarmer, earned, pending }] = await Promise.all([
+    const [farmers, summary] = await Promise.all([
         countByStatus({ [role]: String(accountId) }),
         getCommissionSummary(role, accountId),
     ]);
-    return { farmers, commission: { ratePerFarmer, earned, pending } };
+    const { ratePerFarmer, earned, pending, seed, total } = summary;
+    return {
+        farmers,
+        commission: {
+            ratePerFarmer,
+            earned,
+            pending,
+            ...(seed && { seed: { earned: seed.earned, pending: seed.pending, byItem: seed.byItem } }),
+            ...(total && { total }),
+        },
+    };
 };
 
 const paginate = ({ page = 1, limit = 10 }) => {

@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiLogOut, FiPhone, FiMail, FiMapPin, FiCopy, FiTrendingUp, FiClock } from 'react-icons/fi';
+import { FiLogOut, FiPhone, FiMail, FiMapPin, FiCopy, FiTrendingUp, FiClock, FiUsers } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import FieldPanelLayout from './FieldPanelLayout';
+import CommissionRateCard from '../Seed/CommissionRateCard';
+import { formatSeedQty } from '../Seed/seedFormat';
 import { ROLE_CONFIG } from './roleConfig';
 
 const formatInr = (value) => `₹${Number(value || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
@@ -16,6 +18,46 @@ const InfoRow = ({ icon: Icon, children }) => (
     <span className="min-w-0 break-words">{children}</span>
   </p>
 );
+
+const BreakdownRow = ({ icon: Icon, label, hint, value }) => (
+  <div className="flex items-start justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
+    <div className="min-w-0">
+      <p className="text-sm text-gray-700 flex items-center gap-1.5">
+        <Icon className="shrink-0 text-gray-400" /> {label}
+      </p>
+      {hint && <p className="text-[11px] text-gray-400 mt-0.5">{hint}</p>}
+    </div>
+    <span className="text-base font-bold text-gray-900 whitespace-nowrap">{value}</span>
+  </div>
+);
+
+const SOURCE_META = {
+  farmer: { label: 'Farmer', className: 'bg-primary-50 text-primary-700' },
+  seed: { label: 'Seed', className: 'bg-sky-50 text-sky-700' },
+};
+
+/** Farmer-registration and seed-distribution commission as one list, newest first. */
+const mergeHistory = (commission) => {
+  const farmers = (commission?.history || []).map((item) => ({
+    key: `farmer-${item.id}`,
+    source: 'farmer',
+    title: item.farmerName,
+    code: item.registrationCode,
+    detail: item.location,
+    amount: item.amount,
+    earnedAt: item.earnedAt,
+  }));
+  const seed = (commission?.seed?.history || []).map((item) => ({
+    key: `seed-${item.id}`,
+    source: 'seed',
+    title: item.seedName,
+    code: item.issueCode,
+    detail: [formatSeedQty(item.quantity, item.unit), item.farmerName].filter(Boolean).join(' → '),
+    amount: item.amount,
+    earnedAt: item.earnedAt,
+  }));
+  return [...farmers, ...seed].sort((a, b) => new Date(b.earnedAt || 0) - new Date(a.earnedAt || 0));
+};
 
 /**
  * Profile for Surveyor / Sanchalak: identity, login ID, commission earned, and logout.
@@ -34,6 +76,16 @@ const FieldProfile = ({ role, account, fetchProfile, fetchCommission, logout, ch
       .then((response) => setCommission(response?.data || null))
       .catch(() => setLoadFailed(true));
   }, [fetchProfile, fetchCommission]);
+
+  // Both roles earn from two sources: farmers admin approves, and seed distributed in the field.
+  // The seed half only has figures to show once rates are set on the catalog.
+  const hasRateCard = (commission?.rateCard?.length || 0) > 0;
+  const seedHint = role === 'sanchalak' ? 'Per unit your surveyors distribute' : 'Per unit you give to farmers';
+  const seedEmptyHint = role === 'sanchalak' ? 'your surveyors give out seed' : 'you give seed to a farmer';
+  const totals = commission?.total || { earned: commission?.earned, pending: commission?.pending };
+  const entries = useMemo(() => mergeHistory(commission), [commission]);
+  const farmerCount = commission?.earned?.count || 0;
+  const seedCount = commission?.seed?.earned?.count || 0;
 
   const code = account?.[codeField];
   const kendra = role === 'surveyor' && account?.sanchalak && typeof account.sanchalak === 'object' ? account.sanchalak : null;
@@ -102,46 +154,94 @@ const FieldProfile = ({ role, account, fetchProfile, fetchCommission, logout, ch
           <>
             <div className="rounded-2xl bg-gradient-to-br from-primary-600 to-primary-800 text-white p-5 shadow-sm">
               <p className="text-xs uppercase tracking-wide text-white/70">Total Earned</p>
-              <p className="text-3xl font-bold mt-1">{commission ? formatInr(commission.earned.amount) : '—'}</p>
+              <p className="text-3xl font-bold mt-1">{commission ? formatInr(totals.earned?.amount) : '—'}</p>
               <p className="text-xs text-white/70 mt-1">
-                {commission ? `from ${commission.earned.count} approved farmer${commission.earned.count === 1 ? '' : 's'}` : ' '}
+                {!commission
+                  ? ' '
+                  : hasRateCard
+                    ? `from ${farmerCount} farmer${farmerCount === 1 ? '' : 's'} and ${seedCount} seed hand-out${seedCount === 1 ? '' : 's'}`
+                    : `from ${farmerCount} approved farmer${farmerCount === 1 ? '' : 's'}`}
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 mt-3">
-              <div className="bg-white rounded-2xl p-4 shadow-sm">
-                <p className="text-xs text-gray-500 flex items-center gap-1.5"><FiClock /> Pending</p>
-                <p className="text-xl font-bold text-gray-900 mt-1">{commission ? formatInr(commission.pending.amount) : '—'}</p>
-                <p className="text-[11px] text-gray-400">{commission ? `${commission.pending.count} awaiting verification` : ' '}</p>
+            {hasRateCard ? (
+              <div className="bg-white rounded-2xl p-4 shadow-sm mt-3 divide-y divide-gray-100">
+                <BreakdownRow
+                  icon={FiUsers}
+                  label="From farmers"
+                  hint={`${formatInr(commission.ratePerFarmer)} per farmer admin approves`}
+                  value={formatInr(commission.earned.amount)}
+                />
+                <BreakdownRow
+                  icon={FiTrendingUp}
+                  label="From seed given out"
+                  hint={seedHint}
+                  value={formatInr(commission.seed.earned.amount)}
+                />
+                <BreakdownRow
+                  icon={FiClock}
+                  label="Pending"
+                  hint="Awaiting farmer or admin confirmation"
+                  value={formatInr(totals.pending?.amount)}
+                />
               </div>
-              <div className="bg-white rounded-2xl p-4 shadow-sm">
-                <p className="text-xs text-gray-500 flex items-center gap-1.5"><FiTrendingUp /> Per Farmer</p>
-                <p className="text-xl font-bold text-gray-900 mt-1">{commission ? formatInr(commission.ratePerFarmer) : '—'}</p>
-                <p className="text-[11px] text-gray-400">on admin approval</p>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 mt-3">
+                <div className="bg-white rounded-2xl p-4 shadow-sm">
+                  <p className="text-xs text-gray-500 flex items-center gap-1.5"><FiClock /> Pending</p>
+                  <p className="text-xl font-bold text-gray-900 mt-1">{commission ? formatInr(commission.pending.amount) : '—'}</p>
+                  <p className="text-[11px] text-gray-400">{commission ? `${commission.pending.count} awaiting verification` : ' '}</p>
+                </div>
+                <div className="bg-white rounded-2xl p-4 shadow-sm">
+                  <p className="text-xs text-gray-500 flex items-center gap-1.5"><FiTrendingUp /> Per Farmer</p>
+                  <p className="text-xl font-bold text-gray-900 mt-1">{commission ? formatInr(commission.ratePerFarmer) : '—'}</p>
+                  <p className="text-[11px] text-gray-400">on admin approval</p>
+                </div>
               </div>
-            </div>
+            )}
+
+            <CommissionRateCard rows={commission?.rateCard || []} />
 
             <h3 className="text-sm font-bold text-gray-800 mt-5 mb-2">Commission History</h3>
-            {commission && commission.history.length === 0 ? (
+            {commission && entries.length === 0 ? (
               <p className="text-sm text-gray-500 bg-white rounded-2xl p-4 shadow-sm">
-                No commission yet. You earn it when admin approves a farmer.
+                {hasRateCard
+                  ? `No commission yet. You earn it when admin approves a farmer, and when ${seedEmptyHint}.`
+                  : 'No commission yet. You earn it when admin approves a farmer.'}
               </p>
             ) : (
               <ul className="space-y-2">
-                {(commission?.history || []).map((item) => (
-                  <li key={item.id} className="bg-white rounded-2xl p-3.5 shadow-sm flex items-center justify-between gap-3">
+                {entries.map((item) => (
+                  <li key={item.key} className="bg-white rounded-2xl p-3.5 shadow-sm flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="font-semibold text-gray-900 text-sm truncate">{item.farmerName}</p>
+                      <p className="font-semibold text-gray-900 text-sm truncate">{item.title}</p>
                       <p className="text-xs text-gray-500 truncate">
-                        <span className="font-mono">{item.registrationCode}</span> · {formatDate(item.earnedAt)}
+                        <span className="font-mono">{item.code}</span> · {formatDate(item.earnedAt)}
+                        {item.detail && ` · ${item.detail}`}
                       </p>
                     </div>
-                    <p className="font-bold text-green-600 shrink-0">+{formatInr(item.amount)}</p>
+                    <div className="shrink-0 text-right">
+                      <p className="font-bold text-green-600">+{formatInr(item.amount)}</p>
+                      {hasRateCard && (
+                        <span className={`inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold ${SOURCE_META[item.source].className}`}>
+                          {SOURCE_META[item.source].label}
+                        </span>
+                      )}
+                    </div>
                   </li>
                 ))}
               </ul>
             )}
-            <p className="text-[11px] text-gray-400 mt-3">Commission is credited per verified farmer. Payout status will appear here once payments are enabled.</p>
+            {!hasRateCard ? (
+              <p className="text-[11px] text-gray-400 mt-3">
+                Commission is credited per verified farmer. Payout status will appear here once payments are enabled.
+              </p>
+            ) : role === 'sanchalak' ? (
+              <p className="text-[11px] text-gray-400 mt-3">
+                Commission is credited on verified farmers and verified seed distribution. Payout status will appear here once
+                payments are enabled.
+              </p>
+            ) : null}
           </>
         )}
       </section>

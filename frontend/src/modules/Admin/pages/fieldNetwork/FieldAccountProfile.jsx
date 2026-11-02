@@ -8,6 +8,7 @@ import { formatInr, formatQty } from '../../../../shared/components/Produce/prod
 import { getSanchalakById, getSurveyorById } from '../../services/adminService';
 import FieldAccounts from './FieldAccounts';
 import SurveyorSeedSection from './SurveyorSeedSection';
+import SanchalakSeedSection from './SanchalakSeedSection';
 import Farmers from './Farmers';
 
 const KIND_CONFIG = {
@@ -180,16 +181,22 @@ const FieldAccountProfile = ({ kind }) => {
         />
         <StatTile
           label="Commission Earned"
-          value={formatPrice(commission.earned?.amount)}
-          hint={`${formatPrice(commission.ratePerFarmer)} per approved farmer`}
+          value={formatPrice(commission.total?.earned?.amount ?? commission.earned?.amount)}
+          hint={
+            commission.seed
+              ? `${formatPrice(commission.earned?.amount)} farmers · ${formatPrice(commission.seed.earned?.amount)} seed`
+              : `${formatPrice(commission.ratePerFarmer)} per approved farmer`
+          }
         />
-        {kind === 'surveyor' && (
-          <StatTile
-            label="Commission Pending"
-            value={formatPrice(commission.pending?.amount)}
-            hint={`${commission.pending?.count || 0} farmers awaiting verification`}
-          />
-        )}
+        <StatTile
+          label="Commission Pending"
+          value={formatPrice(commission.total?.pending?.amount ?? commission.pending?.amount)}
+          hint={
+            kind === 'surveyor'
+              ? `${commission.pending?.count || 0} farmers awaiting verification`
+              : 'Awaiting farmer or admin confirmation'
+          }
+        />
       </div>
 
       {kind === 'sanchalak' && account.stock && (
@@ -244,6 +251,8 @@ const FieldAccountProfile = ({ kind }) => {
       {kind === 'surveyor' && (
         <SurveyorSeedSection surveyorId={account.id} canDispatch={account.status === 'approved' && account.isActive} />
       )}
+
+      {kind === 'sanchalak' && <SanchalakSeedSection sanchalakId={account.id} />}
 
       <div>
         <h2 className="text-xl font-bold text-gray-800">{config.childTitle}</h2>

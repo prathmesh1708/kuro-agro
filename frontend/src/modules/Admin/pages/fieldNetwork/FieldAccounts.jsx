@@ -61,7 +61,7 @@ const FieldAccounts = ({ kind, sanchalakId, embedded = false, onStatusChanged })
   const [rows, setRows] = useState([]);
   const [statusCounts, setStatusCounts] = useState({});
   const [pagination, setPagination] = useState({ total: 0, pages: 1 });
-  const [statusFilter, setStatusFilter] = useState(embedded ? 'all' : 'pending');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);

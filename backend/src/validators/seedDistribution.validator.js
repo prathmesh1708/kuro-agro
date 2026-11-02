@@ -24,26 +24,32 @@ const listQuery = (statuses) => Joi.object({
 
 // ─── Seed catalog (admin) ─────────────────────────────────────────────────────
 
+// A commission band: the rate used, plus the agreed minimum and maximum for range-priced items.
+const commissionBand = (label) => Joi.object({
+    perUnit: price.required().label(label),
+    min: price.optional(),
+    max: price.optional(),
+})
+    .optional()
+    .custom((value, helpers) => {
+        const { perUnit, min = 0, max = 0 } = value;
+        if (max && min > max) return helpers.message(`${label} minimum cannot be above the maximum.`);
+        if (max && (perUnit < min || perUnit > max)) {
+            return helpers.message(`The ${label.toLowerCase()} rate must sit between the minimum and maximum.`);
+        }
+        return value;
+    });
+
 export const seedItemSchema = Joi.object({
     name: Joi.string().trim().min(2).max(80).required().label('Name'),
     nameHi: Joi.string().trim().max(80).allow('').optional(),
     unit: Joi.string().valid(...SEED_UNITS).optional(),
     produce: objectId.allow('', null).optional().label('Linked crop'),
     defaultPricePerUnit: price.optional(),
-    commission: Joi.object({
-        perUnit: price.required().label('Commission'),
-        min: price.optional(),
-        max: price.optional(),
-    })
-        .optional()
-        .custom((value, helpers) => {
-            const { perUnit, min = 0, max = 0 } = value;
-            if (max && min > max) return helpers.message('Commission minimum cannot be above the maximum.');
-            if (max && (perUnit < min || perUnit > max)) {
-                return helpers.message('The commission rate must sit between the minimum and maximum.');
-            }
-            return value;
-        }),
+    commission: commissionBand('Surveyor commission'),
+    sanchalakCommission: commissionBand('Sanchalak commission'),
+    basis: Joi.string().trim().max(160).allow('').optional().label('Basis of payment'),
+    basisHi: Joi.string().trim().max(160).allow('').optional(),
     sortOrder: Joi.number().integer().min(0).max(10000).optional(),
 });
 
@@ -57,6 +63,7 @@ export const seedDispatchSchema = Joi.object({
     quantity: quantity.required().label('Quantity'),
     pricePerUnit: price.required().label('Price'),
     commissionPerUnit: price.optional().label('Commission'),
+    sanchalakCommissionPerUnit: price.optional().label('Sanchalak commission'),
     note: note.optional(),
 });
 

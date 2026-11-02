@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { FiUser, FiMail, FiPhone, FiLock, FiEye, FiEyeOff, FiSave, FiCamera, FiArrowLeft, FiPackage, FiMapPin, FiLogOut, FiChevronRight, FiBell, FiShield, FiSlash, FiAlertTriangle, FiCheckCircle, FiShoppingBag } from 'react-icons/fi';
+import { FiUser, FiMail, FiPhone, FiLock, FiEye, FiEyeOff, FiSave, FiCamera, FiArrowLeft, FiPackage, FiMapPin, FiLogOut, FiChevronRight, FiBell, FiShield, FiSlash, FiAlertTriangle, FiCheckCircle, FiFileText } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -148,7 +148,24 @@ const MobileProfile = () => {
     },
     { id: 'codStats', label: 'COD Account Standing', icon: FiShield, color: 'text-primary-600', bg: 'bg-primary-50' },
     { id: 'password', label: 'Change Password', icon: FiLock, color: 'text-gold-600', bg: 'bg-gold-50' },
-    { id: 'sell', label: 'Sell on KuroAgro', icon: FiShoppingBag, color: 'text-primary-600', bg: 'bg-primary-50', link: '/vendor/login' },
+    {
+      id: 'privacy',
+      label: 'Privacy Policy',
+      subtitle: 'How we collect, use & protect your data',
+      icon: FiShield,
+      color: 'text-primary-600',
+      bg: 'bg-primary-50',
+      link: '/privacy-policy',
+    },
+    {
+      id: 'terms',
+      label: 'Terms & Conditions',
+      subtitle: 'Rules for using KuroAgro',
+      icon: FiFileText,
+      color: 'text-purple-600',
+      bg: 'bg-purple-50',
+      link: '/terms-and-conditions',
+    },
   ];
 
   return (
@@ -220,6 +237,22 @@ const MobileProfile = () => {
                       <FiLock className="text-lg" />
                       Password
                     </button>
+                    <div className="pt-2 mt-2 border-t border-gray-100 space-y-0.5">
+                      <Link
+                        to="/privacy-policy"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-500 hover:text-primary-700 hover:bg-gray-50 transition-all"
+                      >
+                        <FiShield className="text-base text-primary-600" />
+                        Privacy Policy
+                      </Link>
+                      <Link
+                        to="/terms-and-conditions"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-500 hover:text-purple-700 hover:bg-gray-50 transition-all"
+                      >
+                        <FiFileText className="text-base text-purple-600" />
+                        Terms & Conditions
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -270,10 +303,15 @@ const MobileProfile = () => {
                               className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors bg-white"
                             >
                               <div className="flex items-center gap-4">
-                                <div className={`w-10 h-10 rounded-xl ${option.bg} ${option.color} flex items-center justify-center`}>
+                                <div className={`w-10 h-10 rounded-xl ${option.bg} ${option.color} flex items-center justify-center shrink-0`}>
                                   <option.icon className="text-lg" />
                                 </div>
-                                <span className="font-bold text-gray-700 text-sm">{option.label}</span>
+                                <div className="text-left min-w-0">
+                                  <span className="font-bold text-gray-700 text-sm block truncate">{option.label}</span>
+                                  {option.subtitle && (
+                                    <span className="text-xs text-gray-400 font-normal block truncate mt-0.5">{option.subtitle}</span>
+                                  )}
+                                </div>
                               </div>
                               <div className="flex items-center gap-2">
                                 {option.badge ? (
@@ -291,10 +329,15 @@ const MobileProfile = () => {
                               className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors bg-white"
                             >
                               <div className="flex items-center gap-4">
-                                <div className={`w-10 h-10 rounded-xl ${option.bg} ${option.color} flex items-center justify-center`}>
+                                <div className={`w-10 h-10 rounded-xl ${option.bg} ${option.color} flex items-center justify-center shrink-0`}>
                                   <option.icon className="text-lg" />
                                 </div>
-                                <span className="font-bold text-gray-700 text-sm">{option.label}</span>
+                                <div className="text-left min-w-0">
+                                  <span className="font-bold text-gray-700 text-sm block truncate">{option.label}</span>
+                                  {option.subtitle && (
+                                    <span className="text-xs text-gray-400 font-normal block truncate mt-0.5">{option.subtitle}</span>
+                                  )}
+                                </div>
                               </div>
                               <div className="flex items-center gap-2">
                                 {option.badge ? (

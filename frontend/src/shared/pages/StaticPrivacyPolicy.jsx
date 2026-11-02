@@ -1,110 +1,219 @@
+import { useState, useMemo, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FiShield, FiArrowLeft, FiClock } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import {
+  FiShield,
+  FiArrowLeft,
+  FiClock,
+  FiFileText,
+  FiSearch,
+  FiCheckCircle,
+} from "react-icons/fi";
+import {
+  PRIVACY_POLICY_SECTIONS,
+  ROLE_TABS,
+  LAST_UPDATED_DATE,
+} from "../data/kuroAgroLegalData";
 
-const StaticPrivacyPolicy = () => {
+const StaticPrivacyPolicy = ({ defaultRole }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Determine initial role from props, query parameter, or URL path
+  const initialRole = useMemo(() => {
+    if (defaultRole) return defaultRole;
+    const params = new URLSearchParams(location.search);
+    const queryRole = params.get("role");
+    if (queryRole && ROLE_TABS.some((tab) => tab.id === queryRole)) {
+      return queryRole;
+    }
+    if (location.pathname.includes("/delivery/")) return "delivery";
+    if (location.pathname.includes("/vendor/")) return "vendor";
+    return "all";
+  }, [defaultRole, location]);
+
+  const [activeRole, setActiveRole] = useState(initialRole);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    if (initialRole) {
+      setActiveRole(initialRole);
+    }
+  }, [initialRole]);
+
+  // Filter sections by selected role and search query
+  const filteredSections = useMemo(() => {
+    return PRIVACY_POLICY_SECTIONS.filter((section) => {
+      const matchesRole =
+        activeRole === "all" || section.roles.includes(activeRole);
+      if (!matchesRole) return false;
+
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase();
+      const inTitle = section.title.toLowerCase().includes(q);
+      const inBody = section.body.some((p) => p.toLowerCase().includes(q));
+      return inTitle || inBody;
+    });
+  }, [activeRole, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-white text-gray-800 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Back Button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-8 transition-colors duration-200"
-        >
-          <FiArrowLeft className="w-5 h-5" />
-          <span>Back</span>
-        </button>
-
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
-          <div className="inline-flex items-center justify-center p-3 bg-primary-50 rounded-2xl mb-4 border border-primary-100">
-            <FiShield className="w-10 h-10 text-primary-600" />
+    <div className="min-h-screen bg-slate-50 text-slate-800">
+      {/* Top Sticky Header */}
+      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div className="max-w-4xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/"))}
+              className="p-2 sm:p-2.5 rounded-full hover:bg-slate-100 text-slate-700 transition-colors"
+              aria-label="Go Back"
+            >
+              <FiArrowLeft className="w-5 h-5" />
+            </button>
+            <div>
+              <h1 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight flex items-center gap-2">
+                <FiShield className="w-5 h-5 text-emerald-600 shrink-0" />
+                Privacy Policy
+              </h1>
+              <p className="text-xs text-slate-500 font-medium">
+                KuroAgro Agri-Solutions · Updated {LAST_UPDATED_DATE}
+              </p>
+            </div>
           </div>
-          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700">
-            Privacy Policy
-          </h1>
-          <p className="mt-3 text-lg text-gray-600 max-w-2xl mx-auto">
-            Your privacy is important to us. Learn how we collect, use, and safeguard your data.
-          </p>
-          <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-500">
-            <FiClock />
-            <span>Last Updated: July 2026</span>
+
+          <Link
+            to="/terms-and-conditions"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors border border-emerald-200"
+          >
+            <FiFileText className="w-3.5 h-3.5" />
+            Terms & Conditions →
+          </Link>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6">
+        {/* Banner Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl p-5 sm:p-7 border border-slate-200 shadow-sm"
+        >
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 mb-2">
+                <FiCheckCircle className="w-3.5 h-3.5" />
+                DPDP Act, 2023 Compliant
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                How We Collect, Use & Protect Your Data
+              </h2>
+              <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl">
+                We are committed to full data transparency across our multi-role platform.
+                Select your role below to view terms specific to you, or browse the complete policy.
+              </p>
+            </div>
+            <div className="hidden lg:flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3 py-2 rounded-xl border border-slate-200 shrink-0">
+              <FiClock className="w-4 h-4 text-emerald-600" />
+              <span>Effective: {LAST_UPDATED_DATE}</span>
+            </div>
+          </div>
+
+          {/* Role Filter Tabs */}
+          <div className="mt-6 pt-5 border-t border-slate-100">
+            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">
+              Select Role View
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {ROLE_TABS.map((tab) => {
+                const isActive = activeRole === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setActiveRole(tab.id);
+                      setSearchQuery("");
+                    }}
+                    className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+                      isActive
+                        ? "bg-emerald-600 text-white shadow-sm"
+                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Search Filter Bar */}
+          <div className="mt-4 relative">
+            <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search in policy clauses..."
+              className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all text-slate-800"
+            />
           </div>
         </motion.div>
 
-        {/* Content */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white/80 backdrop-blur-md border border-gray-200/80 rounded-2xl p-6 sm:p-10 space-y-8 shadow-sm"
-        >
-          <section className="space-y-3">
-            <div className="flex items-center gap-3">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary-50 text-primary-600 font-semibold border border-primary-100">
-                1
-              </span>
-              <h2 className="text-xl font-bold text-gray-900">Information We Collect</h2>
+        {/* Content Sections */}
+        <div className="space-y-4">
+          {filteredSections.length === 0 ? (
+            <div className="bg-white rounded-2xl p-8 text-center border border-slate-200">
+              <p className="text-slate-500 font-medium">No matching policy sections found.</p>
+              <button
+                onClick={() => setSearchQuery("")}
+                className="mt-3 px-4 py-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 rounded-lg"
+              >
+                Clear Search Filter
+              </button>
             </div>
-            <p className="text-gray-650 leading-relaxed pl-11">
-              We collect information you provide directly to us when creating accounts, updating profiles, placing orders, or contacting support. This may include your name, email address, phone number, address, and payment information.
-            </p>
-          </section>
+          ) : (
+            filteredSections.map((section, idx) => (
+              <motion.div
+                key={section.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.04 }}
+                className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/90 shadow-sm hover:shadow transition-shadow"
+              >
+                <div className="flex items-start gap-3.5">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-extrabold border border-emerald-200 shrink-0 mt-0.5">
+                    {section.badge}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-snug">
+                      {section.title}
+                    </h3>
+                    <div className="mt-3 space-y-2.5">
+                      {section.body.map((paragraph, pIdx) => (
+                        <p
+                          key={pIdx}
+                          className="text-xs sm:text-sm text-slate-650 text-slate-600 leading-relaxed"
+                        >
+                          {paragraph}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))
+          )}
+        </div>
 
-          <section className="space-y-3">
-            <div className="flex items-center gap-3">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary-50 text-primary-600 font-semibold border border-primary-100">
-                2
-              </span>
-              <h2 className="text-xl font-bold text-gray-900">How We Use Your Information</h2>
-            </div>
-            <p className="text-gray-650 leading-relaxed pl-11">
-              We use the collected information to process transactions, maintain and improve our services, communicate promotional offers, prevent fraud, and provide support services to you.
-            </p>
-          </section>
-
-          <section className="space-y-3">
-            <div className="flex items-center gap-3">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary-50 text-primary-600 font-semibold border border-primary-100">
-                3
-              </span>
-              <h2 className="text-xl font-bold text-gray-900">Data Security & Storage</h2>
-            </div>
-            <p className="text-gray-650 leading-relaxed pl-11">
-              We implement industry-standard encryption and security measures to protect your personal data from unauthorized access, alteration, disclosure, or destruction.
-            </p>
-          </section>
-
-          <section className="space-y-3">
-            <div className="flex items-center gap-3">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary-50 text-primary-600 font-semibold border border-primary-100">
-                4
-              </span>
-              <h2 className="text-xl font-bold text-gray-900">Cookies & Tracking</h2>
-            </div>
-            <p className="text-gray-650 leading-relaxed pl-11">
-              We use cookies to enhance your experience, analyze site usage, and personalize content. You can manage your cookie preferences through your browser settings.
-            </p>
-          </section>
-
-          <section className="space-y-3">
-            <div className="flex items-center gap-3">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary-50 text-primary-600 font-semibold border border-primary-100">
-                5
-              </span>
-              <h2 className="text-xl font-bold text-gray-900">Your Rights & Choices</h2>
-            </div>
-            <p className="text-gray-650 leading-relaxed pl-11">
-              You have the right to access, correct, update, or request deletion of your personal information at any time. Please contact our support team to exercise these rights.
-            </p>
-          </section>
-        </motion.div>
+        {/* Footer Navigation Link */}
+        <div className="pt-2 pb-6 text-center">
+          <Link
+            to="/terms-and-conditions"
+            className="inline-flex items-center gap-2 text-sm font-bold text-emerald-700 hover:text-emerald-800 transition-colors py-2 px-4 rounded-xl hover:bg-emerald-50"
+          >
+            <span>Read KuroAgro Terms & Conditions</span>
+            <span>→</span>
+          </Link>
+        </div>
       </div>
     </div>
   );

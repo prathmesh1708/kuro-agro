@@ -456,4 +456,6 @@ export const getSeedStockOverview = () => api.get('/admin/seed-stock');
 
 export const getSurveyorSeedSummary = (id) => api.get(`/admin/surveyors/${id}/seed-summary`);
 
+export const getSanchalakSeedSummary = (id) => api.get(`/admin/sanchalaks/${id}/seed-summary`);
+
 export const getSeedLedger = (params = {}) => api.get('/admin/seed-ledger', { params });

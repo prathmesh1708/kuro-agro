@@ -20,9 +20,13 @@ const seedIssueSchema = new mongoose.Schema(
         dispatch: { type: mongoose.Schema.Types.ObjectId, ref: 'SeedDispatch' },
         ...seedRequestFields(),
 
-        // Locked in when the issue is created, from the rate on the surveyor's stock.
+        // Locked in when the issue is created, from the rates on the surveyor's stock.
+        // The surveyor earns for giving the seed out; the Sanchalak earns for the same verified
+        // distribution happening inside their Kendra. Both are credited once the farmer confirms.
         commissionPerUnit: { type: Number, default: 0, min: 0 },
         commissionAmount: { type: Number, default: 0, min: 0 },
+        sanchalakCommissionPerUnit: { type: Number, default: 0, min: 0 },
+        sanchalakCommissionAmount: { type: Number, default: 0, min: 0 },
 
         surveyorNote: { type: String, trim: true },
         kisanRemark: { type: String, trim: true },

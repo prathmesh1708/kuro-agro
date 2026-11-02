@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useDeliveryAuthStore } from '../store/deliveryStore';
-import { FiUser, FiMail, FiPhone, FiTruck, FiEdit2, FiSave, FiX, FiLogOut } from 'react-icons/fi';
+import { FiUser, FiMail, FiPhone, FiTruck, FiEdit2, FiSave, FiX, FiLogOut, FiShield, FiFileText, FiChevronRight } from 'react-icons/fi';
 import PageTransition from '../../../shared/components/PageTransition';
 import toast from 'react-hot-toast';
 import { formatPrice } from '../../../shared/utils/helpers';
@@ -306,6 +306,46 @@ const DeliveryProfile = () => {
               <p className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800">{formData.vehicleNumber}</p>
             )}
           </div>
+        </motion.div>
+
+        {/* Legal & Compliance */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="bg-white rounded-2xl p-4 shadow-sm space-y-2"
+        >
+          <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">Legal & Policies</h2>
+          <Link
+            to="/delivery/privacy"
+            className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <FiShield className="text-lg" />
+              </div>
+              <div className="text-left">
+                <span className="font-semibold text-gray-800 text-sm block">Privacy Policy</span>
+                <span className="text-xs text-gray-400">Data usage & DPDP Act 2023 safeguards</span>
+              </div>
+            </div>
+            <FiChevronRight className="text-gray-400" />
+          </Link>
+          <Link
+            to="/delivery/terms"
+            className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+                <FiFileText className="text-lg" />
+              </div>
+              <div className="text-left">
+                <span className="font-semibold text-gray-800 text-sm block">Partner Terms & Conditions</span>
+                <span className="text-xs text-gray-400">COD, 4-digit code & delivery rules</span>
+              </div>
+            </div>
+            <FiChevronRight className="text-gray-400" />
+          </Link>
         </motion.div>
 
         {/* Logout Button */}

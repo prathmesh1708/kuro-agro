@@ -24,6 +24,18 @@ const seedItemSchema = new mongoose.Schema(
             max: { type: Number, default: 0, min: 0 },
         },
 
+        // Sanchalak commission in Rs per unit, earned on verified distribution inside their Kendra.
+        // Kept beside `commission` rather than nested under it so existing records need no migration.
+        sanchalakCommission: {
+            perUnit: { type: Number, default: 0, min: 0 },
+            min: { type: Number, default: 0, min: 0 },
+            max: { type: Number, default: 0, min: 0 },
+        },
+
+        // What the commission is paid on, shown as the "Basis of Payment" on the earning model card.
+        basis: { type: String, trim: true },
+        basisHi: { type: String, trim: true },
+
         isActive: { type: Boolean, default: true, index: true },
         sortOrder: { type: Number, default: 0 },
     },

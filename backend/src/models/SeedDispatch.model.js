@@ -5,8 +5,9 @@ import { seedRequestFields } from './shared/seedRequest.js';
 export const SEED_DISPATCH_STATUSES = ['pending', 'received', 'not_received', 'cancelled'];
 
 // Seed admin sends to a Surveyor. The surveyor confirms receipt before it lands in their stock.
-// `commissionPerUnit` is the rate at the moment of dispatch; every issue made from this stock
-// inherits it, so a later rate change never rewrites what the surveyor was promised.
+// `commissionPerUnit` (surveyor) and `sanchalakCommissionPerUnit` (their Kendra) are the rates at
+// the moment of dispatch; every issue made from this stock inherits both, so a later rate change
+// never rewrites what either was promised.
 const seedDispatchSchema = new mongoose.Schema(
     {
         dispatchCode: { type: String, unique: true, uppercase: true, trim: true },
@@ -15,6 +16,7 @@ const seedDispatchSchema = new mongoose.Schema(
         sanchalak: { type: mongoose.Schema.Types.ObjectId, ref: 'Sanchalak', required: true, index: true },
         ...seedRequestFields(),
         commissionPerUnit: { type: Number, default: 0, min: 0 },
+        sanchalakCommissionPerUnit: { type: Number, default: 0, min: 0 },
         adminNote: { type: String, trim: true },
         surveyorRemark: { type: String, trim: true },
         status: { type: String, enum: SEED_DISPATCH_STATUSES, default: 'pending', index: true },

@@ -1,9 +1,14 @@
 import mongoose from 'mongoose';
 import Settings from '../models/Settings.model.js';
 import FarmerRegistration from '../models/FarmerRegistration.model.js';
+import { commissionBand, listSeedItems } from './seedCatalog.service.js';
+import { getSeedCommission } from './seedDistribution.service.js';
 
-// Commission for the field network: a fixed ₹ amount per farmer the admin approves.
-// The amount is copied onto the registration at approval, so later rate changes never rewrite history.
+// Commission for the field network, from two sources:
+//   • a fixed ₹ amount per farmer the admin approves (both roles), and
+//   • ₹ per unit of seed / inputs distributed in the field (see seedDistribution.service.js).
+// Either way the amount is copied onto the record when it is earned, so later rate changes
+// never rewrite history.
 
 const SETTINGS_KEY = 'fieldCommission';
 const DEFAULT_RATES = { surveyorPerFarmer: 0, sanchalakPerFarmer: 0 };
@@ -26,7 +31,36 @@ export const commissionForApproval = async () => {
 };
 
 /**
- * Commission summary for one Surveyor or Sanchalak.
+ * The earning model for a role: every active item they earn commission on, with the agreed rate
+ * or band and what it is paid on.
+ */
+const rateCardFor = async (role) => {
+    const items = await listSeedItems();
+    return items
+        .map((item) => ({
+            id: item._id,
+            name: item.name,
+            nameHi: item.nameHi || '',
+            unit: item.unit,
+            commission: commissionBand(item, role),
+            basis: item.basis || '',
+            basisHi: item.basisHi || '',
+        }))
+        // An item with no agreed rate for this role is not part of their earning model.
+        .filter((row) => row.commission.perUnit > 0 || row.commission.max > 0);
+};
+
+const addUp = (...parts) => ({
+    amount: parts.reduce((sum, part) => sum + (part?.amount || 0), 0),
+    count: parts.reduce((sum, part) => sum + (part?.count || 0), 0),
+});
+
+/**
+ * Everything one Surveyor or Sanchalak has earned, from both sources: the per-farmer registration
+ * commission and the per-unit seed distribution commission, plus their rate card and the combined
+ * total. `earned` / `pending` / `history` stay the registration figures on their own, so callers
+ * can still show the split.
+ *
  * @param {'surveyor'|'sanchalak'} role
  * @param {string} accountId
  */
@@ -58,7 +92,7 @@ export const getCommissionSummary = async (role, accountId) => {
     const rate = rates[rateKey];
     const pendingCount = byStatus.submitted?.count || 0;
 
-    return {
+    const summary = {
         ratePerFarmer: rate,
         earned: { amount: byStatus.approved?.amount || 0, count: byStatus.approved?.count || 0 },
         // Not earned yet: what the farmers awaiting verification would pay at today's rate.
@@ -71,5 +105,16 @@ export const getCommissionSummary = async (role, accountId) => {
             amount: h.commission?.[role] || 0,
             earnedAt: h.reviewedAt,
         })),
+    };
+
+    const [rateCard, seed] = await Promise.all([rateCardFor(role), getSeedCommission(role, accountId)]);
+    return {
+        ...summary,
+        rateCard,
+        seed,
+        total: {
+            earned: addUp(summary.earned, seed.earned),
+            pending: addUp(summary.pending, seed.pending),
+        },
     };
 };
