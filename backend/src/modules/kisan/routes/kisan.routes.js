@@ -24,7 +24,7 @@ const router = Router();
 const kisanAuth = [authenticate, authorize('kisan'), enforceAccountStatus];
 
 // Auth (mobile + OTP)
-router.post('/auth/login/send-otp', otpLimiter, validate(resendOtpSchema), authController.sendLoginOtp);
+router.post('/auth/login/send-otp', authLimiter, otpLimiter, validate(resendOtpSchema), authController.sendLoginOtp);
 router.post('/auth/login/verify-otp', authLimiter, validate(otpSchema), authController.verifyLoginOtp);
 router.post('/auth/refresh', validate(refreshTokenSchema), authController.refresh);
 router.post('/auth/logout', validate(logoutSchema), authController.logout);

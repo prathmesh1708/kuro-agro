@@ -21,8 +21,14 @@ const errorHandler = (err, req, res, next) => {
 
     // Mongoose duplicate key error
     if (err.code === 11000) {
-        const field = Object.keys(err.keyValue)[0];
-        error = new ApiError(409, `${field} already exists.`);
+        const [field, value] = Object.entries(err.keyValue || {})[0] || ['record', undefined];
+        if (value === null || value === undefined) {
+            // A clash on an empty value means an old non-partial unique index is still in the DB.
+            console.error(`[DB] Duplicate empty "${field}" (${err.message}). Run: node src/scripts/migratePhoneAuth.js --apply`);
+            error = new ApiError(500, 'Could not create the account right now. Please contact support.');
+        } else {
+            error = new ApiError(409, `${field} already exists.`);
+        }
     }
 
     // Mongoose validation error

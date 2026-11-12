@@ -4,7 +4,7 @@ import ApiError from '../../../utils/ApiError.js';
 import Kisan from '../../../models/Kisan.model.js';
 import FarmerRegistration from '../../../models/FarmerRegistration.model.js';
 import { generateTokens } from '../../../utils/generateToken.js';
-import { sendOTPWithStatus } from '../../../services/otp.service.js';
+import { sendOTPWithStatus, getOtpCooldownSeconds } from '../../../services/otp.service.js';
 import { persistRefreshSession } from '../../../services/refreshToken.service.js';
 import { ensureKisanForRegistration } from '../../../services/kisan.service.js';
 import {
@@ -56,8 +56,12 @@ const findKisanForLogin = async (phone, select = '') => {
 // POST /api/kisan/auth/login/send-otp
 export const sendLoginOtp = asyncHandler(async (req, res) => {
     const phone = normalizePhone(req.body.phone);
-    const kisan = await findKisanForLogin(phone);
+    const kisan = await findKisanForLogin(phone, '+otpExpiry');
     assertUsable(kisan);
+
+    // Per-number cooldown, so one farmer's phone cannot be flooded with SMS.
+    const wait = getOtpCooldownSeconds(kisan);
+    if (wait > 0) throw new ApiError(429, `Please wait ${wait}s before requesting another OTP.`);
 
     const { delivered } = await sendOTPWithStatus(kisan, 'kisan_login');
     if (!delivered && process.env.NODE_ENV === 'production') {

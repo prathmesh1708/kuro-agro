@@ -317,8 +317,8 @@ const MobileHeader = () => {
 
         {/* Second Row: Tab Navigation */}
         <div className="flex items-center gap-3">
-          <Link to="/home" className="flex-1 py-2 px-3 rounded-full bg-primary-700 border border-primary-800 text-center font-black text-gold-200 text-xs shadow-sm flex items-center justify-center">
-            KuroAgro
+          <Link to="/home" className="flex-1 py-2 px-3 rounded-full bg-primary-700 border border-primary-800 text-center font-black text-gold-200 text-xs shadow-sm whitespace-nowrap flex items-center justify-center">
+            KuroAgro Mart
           </Link>
           <Link to="/categories" className="flex-1 py-2 px-3 rounded-full bg-white border border-gray-200 text-center font-bold text-gray-800 text-xs shadow-sm flex items-center justify-center">
             Categories

@@ -26,9 +26,14 @@ export const authLimiter = rateLimit({
     message: { success: false, message: 'Too many login attempts, please try again in 15 minutes.' },
 });
 
-// OTP resend limiter
+// OTP send limiter (per IP, shared by every OTP-sending route). Only requests that actually
+// sent an OTP count: a rejected attempt (unknown number, validation error) sends no SMS and
+// must not lock the user out. authLimiter still caps total attempts.
 export const otpLimiter = rateLimit({
     windowMs: 60 * 1000, // 1 minute
-    max: 3,
+    max: envInt('OTP_RATE_LIMIT_MAX', isProd ? 3 : 10),
+    skipFailedRequests: true,
+    standardHeaders: true,
+    legacyHeaders: false,
     message: { success: false, message: 'Too many OTP requests, please wait a minute.' },
 });
