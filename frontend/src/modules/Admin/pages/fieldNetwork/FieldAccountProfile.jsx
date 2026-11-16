@@ -1,11 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { FiArrowLeft, FiMail, FiPhone, FiMapPin, FiCalendar, FiHome, FiUser } from 'react-icons/fi';
-import { motion } from 'framer-motion';
+import { FiArrowLeft, FiMail, FiPhone, FiMapPin, FiCalendar, FiHome, FiUser, FiCheck, FiX, FiSlash } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 import Badge from '../../../../shared/components/Badge';
 import { formatPrice } from '../../../../shared/utils/helpers';
 import { formatInr, formatQty } from '../../../../shared/components/Produce/produceFormat';
-import { getSanchalakById, getSurveyorById } from '../../services/adminService';
+import {
+  getSanchalakById,
+  getSurveyorById,
+  updateSanchalakStatus,
+  updateSurveyorStatus,
+} from '../../services/adminService';
 import FieldAccounts from './FieldAccounts';
 import SurveyorSeedSection from './SurveyorSeedSection';
 import SanchalakSeedSection from './SanchalakSeedSection';
@@ -16,6 +22,7 @@ const KIND_CONFIG = {
     label: 'Sanchalak',
     codeField: 'sanchalakCode',
     fetchOne: getSanchalakById,
+    updateStatus: updateSanchalakStatus,
     listPath: '/admin/field-network/sanchalaks',
     childTitle: 'Surveyors',
     childSubtitle: 'Surveyors registered under this Kendra. Open one to see the farmers they brought in.',
@@ -24,6 +31,7 @@ const KIND_CONFIG = {
     label: 'Surveyor',
     codeField: 'surveyorCode',
     fetchOne: getSurveyorById,
+    updateStatus: updateSurveyorStatus,
     listPath: '/admin/field-network/surveyors',
     childTitle: 'Farmers',
     childSubtitle: 'Farmers registered by this surveyor. Open one to view or review the registration.',
@@ -63,6 +71,9 @@ const FieldAccountProfile = ({ kind }) => {
   const location = useLocation();
   const [account, setAccount] = useState(null);
   const [notFound, setNotFound] = useState(false);
+  const [action, setAction] = useState(null);
+  const [reason, setReason] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -83,6 +94,24 @@ const FieldAccountProfile = ({ kind }) => {
 
   // Go back to wherever the admin came from (e.g. the Sanchalak profile); fall back to the list on a direct link.
   const goBack = () => (location.key !== 'default' ? navigate(-1) : navigate(config.listPath));
+
+  const submitAction = async () => {
+    if (action !== 'approved' && !reason.trim()) {
+      toast.error('Please enter a reason.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await config.updateStatus(id, action, reason.trim());
+      toast.success(`${config.label} ${action}.`);
+      setAction(null);
+      load();
+    } catch {
+      // The API client already shows the error message.
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (notFound) {
     return (
@@ -119,12 +148,59 @@ const FieldAccountProfile = ({ kind }) => {
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 break-words">{account.name}</h1>
             <p className="font-mono font-semibold text-gray-600 mt-1">{account[config.codeField]}</p>
           </div>
-          <div className="text-right">
-            <Badge variant={STATUS_BADGE[account.status] || 'info'} className="inline-block">
-              {account.status}
-            </Badge>
+          <div className="flex flex-col sm:items-end gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant={STATUS_BADGE[account.status] || 'info'} className="inline-block">
+                {account.status}
+              </Badge>
+              {account.status === 'pending' && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => { setAction('approved'); setReason(''); }}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-green-50 text-green-700 hover:bg-green-100 transition-colors inline-flex items-center gap-1 shadow-sm"
+                  >
+                    <FiCheck size={14} /> Approve
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setAction('rejected'); setReason(''); }}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100 transition-colors inline-flex items-center gap-1 shadow-sm"
+                  >
+                    <FiX size={14} /> Reject
+                  </button>
+                </>
+              )}
+              {account.status === 'approved' && (
+                <button
+                  type="button"
+                  onClick={() => { setAction('suspended'); setReason(''); }}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-50 text-orange-700 hover:bg-orange-100 transition-colors inline-flex items-center gap-1 shadow-sm"
+                >
+                  <FiSlash size={14} /> Suspend
+                </button>
+              )}
+              {account.status === 'suspended' && (
+                <button
+                  type="button"
+                  onClick={() => { setAction('approved'); setReason(''); }}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-green-50 text-green-700 hover:bg-green-100 transition-colors inline-flex items-center gap-1 shadow-sm"
+                >
+                  <FiCheck size={14} /> Reactivate
+                </button>
+              )}
+              {account.status === 'rejected' && (
+                <button
+                  type="button"
+                  onClick={() => { setAction('approved'); setReason(''); }}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-green-50 text-green-700 hover:bg-green-100 transition-colors inline-flex items-center gap-1 shadow-sm"
+                >
+                  <FiCheck size={14} /> Approve
+                </button>
+              )}
+            </div>
             {account.rejectionReason && account.status !== 'approved' && (
-              <p className="text-xs text-gray-500 mt-2 max-w-[240px]">{account.rejectionReason}</p>
+              <p className="text-xs text-gray-500 max-w-[280px]">{account.rejectionReason}</p>
             )}
           </div>
         </div>
@@ -264,6 +340,73 @@ const FieldAccountProfile = ({ kind }) => {
       ) : (
         <Farmers key={account.id} surveyorId={account.id} embedded onReviewed={load} />
       )}
+
+      <AnimatePresence>
+        {action && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          >
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl"
+            >
+              <h3 className="text-lg font-bold text-gray-800 mb-1 capitalize">
+                {action === 'approved' && account.status === 'suspended' ? 'Reactivate' : action} {config.label}
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                {account.name} · <span className="font-mono">{account[config.codeField]}</span>
+              </p>
+              {action === 'approved' && (
+                <p className="text-sm text-gray-700 mb-4">They will be able to log in and will be notified.</p>
+              )}
+              {action === 'approved' && !account.isPhoneVerified && (
+                <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
+                  ⚠️ Note: The applicant has not completed phone OTP verification. Approving will automatically verify their phone number and activate this account.
+                </div>
+              )}
+              {action !== 'approved' && (
+                <div className="mb-4">
+                  <label htmlFor="modal-reason" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Reason (shown to the {config.label.toLowerCase()})
+                  </label>
+                  <textarea
+                    id="modal-reason"
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    rows={3}
+                    maxLength={500}
+                    placeholder="Enter reason..."
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+              )}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setAction(null)}
+                  disabled={isSubmitting}
+                  className="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 font-semibold text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={submitAction}
+                  disabled={isSubmitting}
+                  className={`flex-1 px-4 py-2.5 rounded-lg font-semibold text-white disabled:opacity-50 ${action === 'approved' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}
+                >
+                  {isSubmitting ? 'Saving…' : 'Confirm'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

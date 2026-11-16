@@ -18,9 +18,18 @@ export const farmerRegistrationSchema = Joi.object({
     block: text().required().label('Block'),
     district: text().required().label('District'),
     mobile: indianMobile.required().label('Mobile'),
-    altMobile: indianMobile.required().label('Alternate mobile').invalid(Joi.ref('mobile')).messages({
-        'any.invalid': 'Alternate mobile must be different from mobile.',
-    }),
+    altMobile: Joi.string()
+        .trim()
+        .allow('', null)
+        .empty('')
+        .pattern(/^[6-9]\d{9}$/)
+        .invalid(Joi.ref('mobile'))
+        .optional()
+        .label('Alternate mobile')
+        .messages({
+            'string.pattern.base': '{#label} must be a valid 10-digit mobile number starting with 6-9.',
+            'any.invalid': 'Alternate mobile must be different from mobile.',
+        }),
     email: Joi.string().trim().email().lowercase().required().label('Email'),
     landTotalAcres: Joi.number().min(0.01).max(100000).precision(2).required().label('Total land'),
     landProposedAcres: Joi.number().min(0.01).max(Joi.ref('landTotalAcres')).precision(2).required().label('Proposed land').messages({

@@ -184,8 +184,14 @@ export const createFieldAuthHandlers = ({
         const wait = getOtpCooldownSeconds(account);
         if (wait > 0) throw new ApiError(429, `Please wait ${wait}s before requesting another OTP.`);
 
-        await sendOTP(account, `${role}_phone_verification`);
-        return res.status(200).json(new ApiResponse(200, null, 'OTP resent to your phone number.'));
+        const otp = await sendOTP(account, `${role}_phone_verification`);
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                { ...(process.env.NODE_ENV !== 'production' && { debugOtp: otp }) },
+                'OTP resent to your phone number.'
+            )
+        );
     });
 
     // POST /auth/login

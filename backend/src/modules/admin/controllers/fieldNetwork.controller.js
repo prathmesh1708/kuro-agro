@@ -110,16 +110,13 @@ const paginate = ({ page = 1, limit = 10 }) => {
  * Clears the refresh session on reject or suspend so the account is signed out on its next refresh.
  */
 const applyStatusChange = async ({ account, status, reason, adminId, label, role }) => {
-    if (!account.isPhoneVerified) {
-        throw new ApiError(400, `This ${label} has not verified their phone number yet.`);
-    }
-
     account.status = status;
     account.rejectionReason = status === 'approved' ? '' : reason;
     account.statusUpdatedBy = adminId;
     account.statusUpdatedAt = new Date();
     if (status === 'approved') {
         account.isActive = true;
+        account.isPhoneVerified = true;
         account.approvedAt = account.approvedAt || new Date();
     } else {
         account.refreshTokenHash = undefined;

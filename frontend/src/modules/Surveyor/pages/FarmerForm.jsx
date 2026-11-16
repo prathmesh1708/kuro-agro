@@ -5,6 +5,7 @@ import { FiArrowLeft, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import FieldPanelLayout from '../../../shared/components/FieldAuth/FieldPanelLayout';
 import {
+  DEFAULT_CROP_OPTIONS,
   FARMING_METHOD_OPTIONS,
   IRRIGATION_OPTIONS,
   LAND_TYPE_OPTIONS,
@@ -47,7 +48,7 @@ const FarmerForm = () => {
   const [existing, setExisting] = useState(null);
   const [isLoadingExisting, setIsLoadingExisting] = useState(isEdit);
   const [submitted, setSubmitted] = useState(null);
-  const [cropOptions, setCropOptions] = useState([]);
+  const [cropOptions, setCropOptions] = useState(DEFAULT_CROP_OPTIONS);
 
   const {
     register,
@@ -60,8 +61,19 @@ const FarmerForm = () => {
 
   useEffect(() => {
     getCropOptions()
-      .then((response) => setCropOptions(response?.data?.produce || []))
-      .catch(() => {});
+      .then((response) => {
+        const fetched = response?.data?.produce || response?.data || response?.produce || [];
+        if (Array.isArray(fetched) && fetched.length > 0) {
+          const fetchedNames = new Set(fetched.map((p) => (p?.name || '').toLowerCase()));
+          const extraDefaults = DEFAULT_CROP_OPTIONS.filter(
+            (d) => !fetchedNames.has((d?.name || '').toLowerCase())
+          );
+          setCropOptions([...fetched, ...extraDefaults]);
+        }
+      })
+      .catch((err) => {
+        console.warn('Could not load extra produce options from server:', err);
+      });
   }, []);
 
   const mobile = watch('mobile');
@@ -236,16 +248,23 @@ const FarmerForm = () => {
                   className={inputClass(errors.mobile)}
                 />
               </Field>
-              <Field label="Alternate Mobile / वैकल्पिक मोबाइल" error={errors.altMobile}>
+              <Field label="Alternate Mobile / वैकल्पिक मोबाइल (Optional)" error={errors.altMobile}>
                 <input
                   type="tel"
                   inputMode="numeric"
                   maxLength={10}
                   onInput={digitsOnly(10)}
                   {...register('altMobile', {
-                    required: 'Alternate mobile is required',
-                    pattern: MOBILE_PATTERN,
-                    validate: (value) => value !== mobile || 'Must be different from mobile',
+                    validate: (value) => {
+                      if (!value || !value.trim()) return true;
+                      if (!/^[6-9]\d{9}$/.test(value.trim())) {
+                        return 'Enter a 10-digit mobile number starting with 6-9';
+                      }
+                      if (value.trim() === mobile) {
+                        return 'Must be different from mobile';
+                      }
+                      return true;
+                    },
                   })}
                   className={inputClass(errors.altMobile)}
                 />

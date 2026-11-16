@@ -137,9 +137,8 @@ const FieldAccounts = ({ kind, sanchalakId, embedded = false, onStatusChanged })
         e.stopPropagation();
         openAction(row, status);
       }}
-      disabled={!row.isPhoneVerified}
-      title={row.isPhoneVerified ? undefined : 'Phone number not verified yet'}
-      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed ${tone}`}
+      title={row.isPhoneVerified ? undefined : 'Phone not verified yet by applicant (approving will verify it)'}
+      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${tone}`}
     >
       {status === 'approved' && row.status === 'suspended' ? 'Reactivate' : ACTION_LABELS[status]}
     </button>
@@ -378,6 +377,11 @@ const FieldAccounts = ({ kind, sanchalakId, embedded = false, onStatusChanged })
               </p>
               {action.status === 'approved' && (
                 <p className="text-sm text-gray-700 mb-4">They will be able to log in and will be notified.</p>
+              )}
+              {action.status === 'approved' && !action.row.isPhoneVerified && (
+                <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
+                  ⚠️ Note: The applicant has not completed phone OTP verification. Approving will automatically verify and activate their account.
+                </div>
               )}
               {needsReason && (
                 <div className="mb-4">

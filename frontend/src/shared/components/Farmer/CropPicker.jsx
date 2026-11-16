@@ -12,8 +12,8 @@ const CropPicker = ({ value = [], onChange, options = [], hasError = false }) =>
   const [selected, setSelected] = useState('');
   const [otherName, setOtherName] = useState('');
 
-  const chosen = new Set(value.map((c) => c.name.toLowerCase()));
-  const available = options.filter((o) => !chosen.has(o.name.toLowerCase()));
+  const chosen = new Set(value.map((c) => (c?.name || '').toLowerCase()));
+  const available = options.filter((o) => o?.name && !chosen.has(o.name.toLowerCase()));
 
   const add = (crop) => {
     if (!crop.name || chosen.has(crop.name.toLowerCase())) return;
@@ -26,8 +26,11 @@ const CropPicker = ({ value = [], onChange, options = [], hasError = false }) =>
       setSelected(OTHER);
       return;
     }
-    const option = options.find((o) => o.id === next);
-    if (option) add({ produce: option.id, name: option.name });
+    const option = options.find((o) => (o.id && String(o.id) === next) || o.name === next);
+    if (option) {
+      const isMongoId = option.id && /^[a-f\d]{24}$/i.test(String(option.id));
+      add({ ...(isMongoId && { produce: String(option.id) }), name: option.name });
+    }
     setSelected('');
   };
 
@@ -36,7 +39,12 @@ const CropPicker = ({ value = [], onChange, options = [], hasError = false }) =>
     if (name.length < 2) return;
     // A typed name that is already on the list is linked to it.
     const option = options.find((o) => o.name.toLowerCase() === name.toLowerCase());
-    add(option ? { produce: option.id, name: option.name } : { name });
+    if (option) {
+      const isMongoId = option.id && /^[a-f\d]{24}$/i.test(String(option.id));
+      add({ ...(isMongoId && { produce: String(option.id) }), name: option.name });
+    } else {
+      add({ name });
+    }
     setOtherName('');
     setSelected('');
   };
@@ -66,7 +74,7 @@ const CropPicker = ({ value = [], onChange, options = [], hasError = false }) =>
       <select value={selected} onChange={handleSelect} className={`w-full px-4 py-3 rounded-xl border-2 ${border} focus:outline-none transition-colors text-base bg-white`}>
         <option value="">{value.length ? 'Add another crop / और फसल जोड़ें' : 'Select crop / फसल चुनें'}</option>
         {available.map((o) => (
-          <option key={o.id} value={o.id}>{o.nameHi ? `${o.name} / ${o.nameHi}` : o.name}</option>
+          <option key={o.id || o.name} value={o.id || o.name}>{o.nameHi ? `${o.name} / ${o.nameHi}` : o.name}</option>
         ))}
         <option value={OTHER}>Other — type name / अन्य</option>
       </select>

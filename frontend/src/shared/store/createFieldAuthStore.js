@@ -46,7 +46,8 @@ export const createFieldAuthStore = ({ prefix, accessKey, refreshKey, persistKey
           }),
 
         resendOtp: async (phone) => {
-          await api.post(`${prefix}/auth/resend-otp`, { phone });
+          const response = await api.post(`${prefix}/auth/resend-otp`, { phone });
+          return response?.data;
         },
 
         startSession: (response) => {

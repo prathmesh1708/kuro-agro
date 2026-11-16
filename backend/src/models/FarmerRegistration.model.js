@@ -26,7 +26,7 @@ const farmerRegistrationSchema = new mongoose.Schema(
         block: { type: String, required: true, trim: true },
         district: { type: String, required: true, trim: true },
         mobile: { type: String, required: true, trim: true, index: true },
-        altMobile: { type: String, required: true, trim: true },
+        altMobile: { type: String, trim: true },
         email: { type: String, required: true, lowercase: true, trim: true },
 
         // Land details

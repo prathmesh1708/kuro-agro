@@ -75,20 +75,31 @@ export const sendSMS = async ({ phone, otp }) => {
  */
 export function sendSMSIndiaHub({ apiKey, phone, otp, message }) {
     return new Promise((resolve, reject) => {
-        const senderId = process.env.SMS_INDIA_HUB_SENDER_ID || '';
+        const senderId = process.env.SMS_INDIA_HUB_SENDER_ID || 'BGADEC';
         const entityId = process.env.SMS_INDIA_HUB_ENTITY_ID || '';
-        const templateId = process.env.SMS_INDIA_HUB_TEMPLATE_ID || '';
+        const templateId = process.env.SMS_INDIA_HUB_DLT_TEMPLATE_ID || process.env.SMS_INDIA_HUB_TEMPLATE_ID || '';
         const channel = process.env.SMS_INDIA_HUB_CHANNEL || '2'; // 2 = Transactional / OTP
         const route = process.env.SMS_INDIA_HUB_ROUTE || '1'; // Default route
-        const baseUrl = process.env.SMS_INDIA_HUB_BASE_URL || 'https://cloud.smsindiahub.in/api/mt/SendSMS';
+        const gwid = process.env.SMS_INDIA_HUB_GWID || '2';
+        const baseUrl = process.env.SMS_INDIA_HUB_URL || process.env.SMS_INDIA_HUB_BASE_URL || 'http://cloud.smsindiahub.in/vendorsms/pushsms.aspx';
 
-        // Prepare message text (support DLT template string with {#var#}, ##var##, {{otp}} placeholders)
+        // Prepare message text (support DLT template string with ${appName}, ${otp}, {#var#}, ##var##, {{otp}} placeholders)
         let text = message;
         if (process.env.SMS_INDIA_HUB_TEMPLATE_TEXT) {
-            const template = process.env.SMS_INDIA_HUB_TEMPLATE_TEXT;
+            let template = process.env.SMS_INDIA_HUB_TEMPLATE_TEXT;
             const appName = process.env.FROM_NAME || 'KuroAgro';
 
-            // Find all variable placeholder patterns: {#var#}, {#var1#}, ##var##, etc.
+            // First handle explicit named placeholders
+            template = template
+                .replace(/\$\{appName\}/gi, appName)
+                .replace(/\$\{otp\}/gi, otp)
+                .replace(/\{\{appName\}\}/gi, appName)
+                .replace(/\{appName\}/gi, appName)
+                .replace(/\{\{otp\}\}/gi, otp)
+                .replace(/\{otp\}/gi, otp)
+                .replace(/\{%OTP%\}/gi, otp);
+
+            // Handle positional DLT placeholders: {#var#}, ##var##, etc.
             const varPattern = /({#var\d*#}|##var##|{{var\d*}}|{#val\d*#})/gi;
             const matches = template.match(varPattern);
 
@@ -102,29 +113,37 @@ export function sendSMSIndiaHub({ apiKey, phone, otp, message }) {
             } else if (matches && matches.length === 1) {
                 text = template.replace(varPattern, otp);
             } else {
-                text = template
-                    .replace(/{#var#}/gi, otp)
-                    .replace(/##var##/gi, otp)
-                    .replace(/{{otp}}/gi, otp)
-                    .replace(/{otp}/gi, otp)
-                    .replace(/{%OTP%}/gi, otp);
+                text = template;
             }
         }
 
         const url = new URL(baseUrl);
-        url.searchParams.set('APIKey', apiKey);
-        if (senderId) url.searchParams.set('senderid', senderId);
-        url.searchParams.set('channel', channel);
-        url.searchParams.set('DCS', '0');
-        url.searchParams.set('flashsms', '0');
-        
-        // Indian 10-digit or 91-prefixed number
         const targetNumber = phone.length === 10 ? `91${phone}` : phone;
-        url.searchParams.set('number', targetNumber);
-        url.searchParams.set('text', text);
-        if (route) url.searchParams.set('route', route);
-        if (entityId) url.searchParams.set('EntityId', entityId);
-        if (templateId) url.searchParams.set('dlttemplateid', templateId);
+        const isPushSms = url.pathname.includes('pushsms.aspx');
+
+        if (isPushSms) {
+            // SMS India Hub vendor pushsms.aspx API
+            url.searchParams.set('APIKey', apiKey);
+            url.searchParams.set('msisdn', targetNumber);
+            if (senderId) url.searchParams.set('sid', senderId);
+            url.searchParams.set('msg', text);
+            url.searchParams.set('fl', '0');
+            url.searchParams.set('gwid', gwid);
+            if (templateId) url.searchParams.set('dlttemplateid', templateId);
+            if (entityId) url.searchParams.set('EntityId', entityId);
+        } else {
+            // SMS India Hub REST SendSMS API
+            url.searchParams.set('APIKey', apiKey);
+            if (senderId) url.searchParams.set('senderid', senderId);
+            url.searchParams.set('channel', channel);
+            url.searchParams.set('DCS', '0');
+            url.searchParams.set('flashsms', '0');
+            url.searchParams.set('number', targetNumber);
+            url.searchParams.set('text', text);
+            if (route) url.searchParams.set('route', route);
+            if (entityId) url.searchParams.set('EntityId', entityId);
+            if (templateId) url.searchParams.set('dlttemplateid', templateId);
+        }
 
         const isHttps = url.protocol === 'https:';
         const client = isHttps ? https : http;

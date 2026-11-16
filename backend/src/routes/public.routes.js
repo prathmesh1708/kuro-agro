@@ -689,6 +689,13 @@ router.get('/orders/track/:id', asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200, order, 'Order tracking info.'));
 }));
 
+// GET /api/produce (public produce list for forms)
+router.get('/produce', asyncHandler(async (req, res) => {
+    const { listProduce } = await import('../services/produce.service.js');
+    const produce = await listProduce();
+    res.status(200).json(new ApiResponse(200, { produce: produce.map(({ _id, name, nameHi }) => ({ id: _id, name, nameHi })) }, 'Produce fetched.'));
+}));
+
 // Legacy support: GET /api/:id (only ObjectId-like values to avoid swallowing unknown routes)
 router.get('/:id([a-fA-F0-9]{24})', getProductDetail);
 

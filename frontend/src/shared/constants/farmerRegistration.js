@@ -15,6 +15,24 @@ export const IRRIGATION_OPTIONS = [
 
 export const FARMING_METHOD_OPTIONS = [{ value: 'natural', label: 'Natural Farming / प्राकृतिक खेती' }];
 
+export const DEFAULT_CROP_OPTIONS = [
+  { id: '6acdff579910d4e28c947754', name: 'Rice', nameHi: 'चावल' },
+  { id: '6acdff579910d4e28c947755', name: 'Paddy', nameHi: 'धान' },
+  { id: '6acdff579910d4e28c947756', name: 'Wheat', nameHi: 'गेहूं' },
+  { id: '6acdff579910d4e28c947757', name: 'Jowar', nameHi: 'ज्वार' },
+  { id: '6acdff579910d4e28c947758', name: 'Bajra', nameHi: 'बाजरा' },
+  { id: '6acdff579910d4e28c947759', name: 'Maize', nameHi: 'मक्का' },
+  { id: '6acdff579910d4e28c94775a', name: 'Soybean', nameHi: 'सोयाबीन' },
+  { id: '6acdff579910d4e28c94775b', name: 'Chana', nameHi: 'चना' },
+  { id: '6acdff579910d4e28c94775c', name: 'Tur (Arhar)', nameHi: 'अरहर' },
+  { id: '6acdff579910d4e28c94775d', name: 'Moong', nameHi: 'मूंग' },
+  { id: '6acdff579910d4e28c94775e', name: 'Urad', nameHi: 'उड़द' },
+  { id: '6acdff579910d4e28c94775f', name: 'Mustard', nameHi: 'सरसों' },
+  { id: '6acdff579910d4e28c947760', name: 'Groundnut', nameHi: 'मूंगफली' },
+  { name: 'Sugarcane', nameHi: 'गन्ना' },
+  { name: 'Cotton', nameHi: 'कपास' },
+];
+
 export const optionLabel = (options, value) => options.find((o) => o.value === value)?.label || value || '—';
 
 export const REGISTRATION_STATUS_META = {
