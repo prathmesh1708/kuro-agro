@@ -95,6 +95,9 @@ export const updateProduct = (id, data) =>
 export const deleteProduct = (id) =>
     api.delete(`/admin/products/${id}`);
 
+export const reactivateProduct = (id) =>
+    api.patch(`/admin/products/${id}/reactivate`);
+
 export const getProductReviewAnalytics = (id) =>
     api.get(`/admin/products/${id}/review-analytics`);
 

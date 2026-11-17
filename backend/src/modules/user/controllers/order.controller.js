@@ -252,7 +252,7 @@ export const placeOrder = asyncHandler(async (req, res) => {
             'commissionRate storeName shippingEnabled defaultShippingRate freeShippingThreshold'
         );
         if (!product) throw new ApiError(404, `Product not found: ${item.productId}`);
-        if (product.isReviewRemoved) {
+        if (product.isReviewRemoved || product.isActive === false) {
             throw new ApiError(400, `"${product.name}" is currently unavailable for purchase.`);
         }
         if (product.stock === 'out_of_stock') throw new ApiError(400, `${product.name} is out of stock.`);

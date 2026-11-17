@@ -6,6 +6,12 @@ import Category from '../../../models/Category.model.js';
 import Brand from '../../../models/Brand.model.js';
 import Settings from '../../../models/Settings.model.js';
 import { slugify } from '../../../utils/slugify.js';
+import {
+    REVIEW_REMOVAL_RULES,
+    computeReviewStats,
+    countedReviewFilter,
+    getRemovalEligibilityMap,
+} from '../../../utils/reviewHealth.js';
 
 const sanitizeFaqs = (faqs) => {
     if (!Array.isArray(faqs)) return [];
@@ -270,7 +276,19 @@ export const getAllProducts = asyncHandler(async (req, res) => {
         .skip(skip)
         .limit(numericLimit);
     const total = await Product.countDocuments(filter);
-    res.status(200).json(new ApiResponse(200, { products, total, page: numericPage, pages: Math.ceil(total / numericLimit) }, 'Products fetched.'));
+
+    // Tell the admin UI which products qualify for "remove due to poor reviews",
+    // so the action can be disabled up front instead of failing with a 400.
+    const eligibility = await getRemovalEligibilityMap(
+        Product.db.model('Review'),
+        products.map((p) => p._id)
+    );
+    const productsWithEligibility = products.map((p) => ({
+        ...p.toJSON(),
+        reviewRemovalEligible: eligibility.get(String(p._id)) === true,
+    }));
+
+    res.status(200).json(new ApiResponse(200, { products: productsWithEligibility, total, page: numericPage, pages: Math.ceil(total / numericLimit) }, 'Products fetched.'));
 });
 
 // GET /api/admin/products/:id
@@ -291,81 +309,40 @@ export const getProductReviewAnalytics = asyncHandler(async (req, res) => {
     if (!product) throw new ApiError(404, 'Product not found.');
 
     const ReviewModel = Product.db.model('Review');
-    const reviews = await ReviewModel.find({ productId, isApproved: true, isHidden: { $ne: true } }).lean();
-
-    const totalReviews = reviews.length;
-    const ratingDistribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    let ratingSum = 0;
-
-    reviews.forEach((r) => {
-        const rating = Math.min(5, Math.max(1, Math.round(r.rating || 0)));
-        ratingDistribution[rating] = (ratingDistribution[rating] || 0) + 1;
-        ratingSum += r.rating;
-    });
-
-    const averageRating = totalReviews > 0 ? Number((ratingSum / totalReviews).toFixed(2)) : 0;
-    
-    // Ratings 1 and 2 are considered negative.
-    const negativeReviewsCount = ratingDistribution[1] + ratingDistribution[2];
-    const positiveReviewsCount = ratingDistribution[3] + ratingDistribution[4] + ratingDistribution[5];
-
-    const negativeReviewPercentage = totalReviews > 0 ? Number(((negativeReviewsCount / totalReviews) * 100).toFixed(2)) : 0;
-    const positiveReviewPercentage = totalReviews > 0 ? Number(((positiveReviewsCount / totalReviews) * 100).toFixed(2)) : 0;
-
-    let reviewHealth = 'Average';
-    if (averageRating >= 4.5) reviewHealth = 'Excellent';
-    else if (averageRating >= 4.0) reviewHealth = 'Good';
-    else if (averageRating >= 3.0) reviewHealth = 'Average';
-    else if (averageRating >= 2.5) reviewHealth = 'Poor';
-    else reviewHealth = 'Critical';
+    const reviews = await ReviewModel.find(countedReviewFilter(productId)).select('rating').lean();
+    const stats = computeReviewStats(reviews);
 
     res.status(200).json(
         new ApiResponse(200, {
-            averageRating,
-            totalReviews,
-            totalRatings: totalReviews,
-            ratingDistribution,
-            positiveReviewPercentage,
-            negativeReviewPercentage,
-            reviewHealth,
+            averageRating: Number(stats.averageRating.toFixed(2)),
+            totalReviews: stats.totalReviews,
+            totalRatings: stats.totalReviews,
+            ratingDistribution: stats.ratingDistribution,
+            positiveReviewPercentage: Number(stats.positiveReviewPercentage.toFixed(2)),
+            negativeReviewPercentage: Number(stats.negativeReviewPercentage.toFixed(2)),
+            reviewHealth: stats.reviewHealth,
+            eligibleForRemoval: stats.eligibleForRemoval,
+            removalRules: REVIEW_REMOVAL_RULES,
         }, 'Review analytics fetched.')
     );
 });
 
 // PATCH /api/admin/products/:id/review-remove
+// Moderation action: hides a product from customers because of poor reviews.
+// This is NOT product deletion — see DELETE /api/admin/products/:id for that.
 export const removeProductByReview = asyncHandler(async (req, res) => {
     const { reason } = req.body;
     const product = await Product.findById(req.params.id);
     if (!product) throw new ApiError(404, 'Product not found.');
 
     const ReviewModel = Product.db.model('Review');
-    const reviews = await ReviewModel.find({ productId: product._id, isApproved: true, isHidden: { $ne: true } }).lean();
+    const reviews = await ReviewModel.find(countedReviewFilter(product._id)).select('rating').lean();
+    const { averageRating, negativeReviewPercentage, reviewHealth, eligibleForRemoval } = computeReviewStats(reviews);
 
-    const totalReviews = reviews.length;
-    const ratingDistribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    let ratingSum = 0;
-    reviews.forEach((r) => {
-        const rating = Math.min(5, Math.max(1, Math.round(r.rating || 0)));
-        ratingDistribution[rating] = (ratingDistribution[rating] || 0) + 1;
-        ratingSum += r.rating;
-    });
-
-    const averageRating = totalReviews > 0 ? ratingSum / totalReviews : 0;
-    const negativeReviewsCount = ratingDistribution[1] + ratingDistribution[2];
-    const negativeReviewPercentage = totalReviews > 0 ? (negativeReviewsCount / totalReviews) * 100 : 0;
-
-    // Check conditions: Average Rating < 2.5 OR Negative Reviews > 60%, AND Minimum Reviews >= 15
-    const isUnderThreshold = averageRating < 2.5 || negativeReviewPercentage > 60;
-    if (totalReviews < 15 || !isUnderThreshold) {
-        throw new ApiError(400, 'Product does not meet the criteria for manual review removal (minimum 15 reviews, and average rating < 2.5 or > 60% negative reviews).');
+    if (!eligibleForRemoval) {
+        const { minReviews, maxAverageRating, minNegativePercentage } = REVIEW_REMOVAL_RULES;
+        throw new ApiError(400, `Product does not meet the criteria for manual review removal (minimum ${minReviews} reviews, and average rating < ${maxAverageRating} or > ${minNegativePercentage}% negative reviews).`);
     }
-
-    let reviewHealth = 'Average';
-    if (averageRating >= 4.5) reviewHealth = 'Excellent';
-    else if (averageRating >= 4.0) reviewHealth = 'Good';
-    else if (averageRating >= 3.0) reviewHealth = 'Average';
-    else if (averageRating >= 2.5) reviewHealth = 'Poor';
-    else reviewHealth = 'Critical';
 
     product.isReviewRemoved = true;
     product.removedReason = reason;
@@ -517,6 +494,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
 });
 
 // DELETE /api/admin/products/:id
+// Soft delete: hides the product everywhere (public routes filter isActive: true).
 export const deleteProduct = asyncHandler(async (req, res) => {
     const product = await Product.findByIdAndUpdate(
         req.params.id,
@@ -524,7 +502,20 @@ export const deleteProduct = asyncHandler(async (req, res) => {
         { new: true, runValidators: true }
     );
     if (!product) throw new ApiError(404, 'Product not found.');
-    res.status(200).json(new ApiResponse(200, null, 'Product disabled.'));
+    res.status(200).json(new ApiResponse(200, null, 'Product deleted.'));
+});
+
+// PATCH /api/admin/products/:id/reactivate
+// Undo a (soft) delete. Deletes are soft so orders, returns and reviews
+// that reference the product keep working.
+export const reactivateProduct = asyncHandler(async (req, res) => {
+    const product = await Product.findByIdAndUpdate(
+        req.params.id,
+        { isActive: true },
+        { new: true, runValidators: true }
+    );
+    if (!product) throw new ApiError(404, 'Product not found.');
+    res.status(200).json(new ApiResponse(200, product, 'Product restored.'));
 });
 
 // GET /api/admin/products/tax-pricing-rules

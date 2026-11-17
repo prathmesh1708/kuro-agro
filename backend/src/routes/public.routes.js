@@ -317,7 +317,8 @@ router.get('/similar/:id', asyncHandler(async (req, res) => {
 
 const getProductDetail = asyncHandler(async (req, res) => {
     const product = await Product.findById(req.params.id).populate('categoryId', 'name').populate('brandId', 'name logo').populate('vendorId', 'storeName storeLogo rating');
-    if (!product) throw new ApiError(404, 'Product not found.');
+    // Soft-deleted products (isActive: false) must not be reachable by direct link either.
+    if (!product || product.isActive === false) throw new ApiError(404, 'Product not found.');
     if (product.isReviewRemoved) {
         throw new ApiError(400, 'This product is currently unavailable.');
     }

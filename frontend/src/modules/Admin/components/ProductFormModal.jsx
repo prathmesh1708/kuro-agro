@@ -1670,7 +1670,7 @@ const ProductFormModal = ({ isOpen, onClose, productId, onSuccess }) => {
                         </div>
                       ) : (
                         <>
-                          {(analytics.averageRating < 2.5 || analytics.negativeReviewPercentage > 60) && analytics.totalReviews >= 15 && (
+                          {analytics.eligibleForRemoval && (
                             <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                               <div>
                                 <h4 className="text-yellow-800 font-bold text-sm">This product has poor customer feedback.</h4>

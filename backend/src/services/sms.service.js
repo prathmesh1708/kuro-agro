@@ -19,11 +19,14 @@ export const sendSMS = async ({ phone, otp }) => {
     let smsSent = false;
 
     // 1. Try SMS India Hub if configured (primary Indian gateway if set)
-    if (provider === 'smsindiahub' || provider === 'sms_india_hub' || process.env.SMS_INDIA_HUB_API_KEY) {
-        const apiKey = process.env.SMS_INDIA_HUB_API_KEY;
-        if (apiKey) {
+    const hubUser = process.env.SMS_INDIA_HUB_USERNAME;
+    const hubPassword = process.env.SMS_INDIA_HUB_PASSWORD;
+    const hubApiKey = process.env.SMS_INDIA_HUB_API_KEY;
+    const hasHubAuth = Boolean((hubUser && hubPassword) || hubApiKey);
+    if (provider === 'smsindiahub' || provider === 'sms_india_hub' || hasHubAuth) {
+        if (hasHubAuth) {
             try {
-                await sendSMSIndiaHub({ apiKey, phone: normalizedPhone, otp, message: defaultMessage });
+                await sendSMSIndiaHub({ apiKey: hubApiKey, user: hubUser, password: hubPassword, phone: normalizedPhone, otp, message: defaultMessage });
                 smsSent = true;
                 console.log(`[SMS] SMS India Hub sent successfully to +91${normalizedPhone}`);
             } catch (err) {
@@ -73,9 +76,9 @@ export const sendSMS = async ({ phone, otp }) => {
 /**
  * SMS India Hub API integration (DLT Compliant SMS Gateway)
  */
-export function sendSMSIndiaHub({ apiKey, phone, otp, message }) {
+export function sendSMSIndiaHub({ apiKey, user, password, phone, otp, message }) {
     return new Promise((resolve, reject) => {
-        const senderId = process.env.SMS_INDIA_HUB_SENDER_ID || 'BGADEC';
+        const senderId = process.env.SMS_INDIA_HUB_SENDER_ID || 'BGADPL';
         const entityId = process.env.SMS_INDIA_HUB_ENTITY_ID || '';
         const templateId = process.env.SMS_INDIA_HUB_DLT_TEMPLATE_ID || process.env.SMS_INDIA_HUB_TEMPLATE_ID || '';
         const channel = process.env.SMS_INDIA_HUB_CHANNEL || '2'; // 2 = Transactional / OTP
@@ -104,11 +107,17 @@ export function sendSMSIndiaHub({ apiKey, phone, otp, message }) {
             const matches = template.match(varPattern);
 
             if (matches && matches.length > 1) {
-                // Multi-variable template: 1st var is app/brand name, subsequent var is OTP
+                // Multi-variable template: 1st var is the app/brand name, the LAST var is the OTP,
+                // and any vars in between get SMS_INDIA_HUB_POWERED_BY (e.g. "Welcome to ##var##,
+                // powered by ##var##. Your OTP for registration ##var##...").
+                const middle = process.env.SMS_INDIA_HUB_POWERED_BY || appName;
+                const total = matches.length;
                 let varIndex = 0;
                 text = template.replace(varPattern, () => {
                     varIndex++;
-                    return varIndex === 1 ? appName : otp;
+                    if (varIndex === 1) return appName;
+                    if (varIndex === total) return otp;
+                    return middle;
                 });
             } else if (matches && matches.length === 1) {
                 text = template.replace(varPattern, otp);
@@ -122,8 +131,13 @@ export function sendSMSIndiaHub({ apiKey, phone, otp, message }) {
         const isPushSms = url.pathname.includes('pushsms.aspx');
 
         if (isPushSms) {
-            // SMS India Hub vendor pushsms.aspx API
-            url.searchParams.set('APIKey', apiKey);
+            // SMS India Hub vendor pushsms.aspx API (username/password preferred, else APIKey)
+            if (user && password) {
+                url.searchParams.set('user', user);
+                url.searchParams.set('password', password);
+            } else {
+                url.searchParams.set('APIKey', apiKey);
+            }
             url.searchParams.set('msisdn', targetNumber);
             if (senderId) url.searchParams.set('sid', senderId);
             url.searchParams.set('msg', text);
@@ -133,7 +147,12 @@ export function sendSMSIndiaHub({ apiKey, phone, otp, message }) {
             if (entityId) url.searchParams.set('EntityId', entityId);
         } else {
             // SMS India Hub REST SendSMS API
-            url.searchParams.set('APIKey', apiKey);
+            if (user && password) {
+                url.searchParams.set('user', user);
+                url.searchParams.set('password', password);
+            } else {
+                url.searchParams.set('APIKey', apiKey);
+            }
             if (senderId) url.searchParams.set('senderid', senderId);
             url.searchParams.set('channel', channel);
             url.searchParams.set('DCS', '0');
@@ -160,7 +179,9 @@ export function sendSMSIndiaHub({ apiKey, phone, otp, message }) {
                         }
                         resolve(parsed);
                     } catch {
-                        if (body.toLowerCase().includes('error') || body.toLowerCase().includes('invalid')) {
+                        // pushsms.aspx replies in plain text, e.g. "Failed#Invalid Login" / "Failed#mobile numbers not valid"
+                        const lower = body.trim().toLowerCase();
+                        if (lower.startsWith('failed') || lower.includes('error') || lower.includes('invalid') || lower.includes('not valid')) {
                             return reject(new Error(`SMS India Hub response: ${body}`));
                         }
                         resolve(body);
@@ -169,6 +190,10 @@ export function sendSMSIndiaHub({ apiKey, phone, otp, message }) {
                     reject(new Error(`SMS India Hub responded status ${res.statusCode}: ${body}`));
                 }
             });
+        });
+
+        req.setTimeout(10000, () => {
+            req.destroy(new Error('SMS India Hub request timed out after 10s'));
         });
 
         req.on('error', (err) => reject(err));

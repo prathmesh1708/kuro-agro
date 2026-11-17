@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { FiSearch, FiEdit, FiTrash2, FiPlus, FiRefreshCw } from "react-icons/fi";
+import { FiSearch, FiEdit, FiTrash2, FiPlus, FiRefreshCw, FiEyeOff, FiRotateCcw } from "react-icons/fi";
 import { motion } from "framer-motion";
 import DataTable from "../../components/DataTable";
 import ExportButton from "../../components/ExportButton";
@@ -11,7 +11,7 @@ import { formatPrice } from "../../../../shared/utils/helpers";
 
 import { useCategoryStore } from "../../../../shared/store/categoryStore";
 import { useBrandStore } from "../../../../shared/store/brandStore";
-import { getAllProducts, deleteProduct, removeProductByReview, restoreProductByReview } from "../../services/adminService";
+import { getAllProducts, deleteProduct, reactivateProduct, removeProductByReview, restoreProductByReview } from "../../services/adminService";
 import toast from "react-hot-toast";
 
 const ManageProducts = () => {
@@ -23,6 +23,7 @@ const ManageProducts = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedBrand, setSelectedBrand] = useState("all");
   const [selectedSeller, setSelectedSeller] = useState("all");
+  const [showDeleted, setShowDeleted] = useState(false);
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
     productId: null,
@@ -40,8 +41,11 @@ const ManageProducts = () => {
   useEffect(() => {
     initCategories();
     initBrands();
-    loadProducts();
   }, []);
+
+  useEffect(() => {
+    loadProducts();
+  }, [showDeleted]);
 
   const loadProducts = async () => {
     try {
@@ -50,7 +54,7 @@ const ManageProducts = () => {
       const products = [];
 
       do {
-        const response = await getAllProducts({ page: currentPage, limit: 100 });
+        const response = await getAllProducts({ page: currentPage, limit: 100, includeInactive: showDeleted });
         const pageProducts = Array.isArray(response.data)
           ? response.data
           : (response.data?.products || []);
@@ -165,6 +169,9 @@ const ManageProducts = () => {
       label: "Status",
       sortable: true,
       render: (value, row) => {
+        if (row.isActive === false) {
+          return <Badge variant="error">DELETED</Badge>;
+        }
         if (row.isReviewRemoved) {
           return (
             <Badge variant="error">
@@ -202,34 +209,71 @@ const ManageProducts = () => {
           >
             <FiEdit />
           </button>
-          {row.isReviewRemoved ? (
+          {row.isActive === false ? (
             <button
               onClick={async (e) => {
                 e.stopPropagation();
                 try {
-                  await restoreProductByReview(row.id);
-                  toast.success("Product restored successfully");
+                  await reactivateProduct(row.id);
+                  toast.success("Product restored");
                   loadProducts();
                 } catch (err) {
                   // Handled in axios interceptor
                 }
               }}
               className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-              title="Restore Visibility"
+              title="Restore Deleted Product"
             >
-              <FiRefreshCw />
+              <FiRotateCcw />
             </button>
           ) : (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setRemovalModal({ isOpen: true, productId: row.id });
-              }}
-              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-              title="Remove Visibility"
-            >
-              <FiTrash2 />
-            </button>
+            <>
+              {row.isReviewRemoved ? (
+                <button
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    try {
+                      await restoreProductByReview(row.id);
+                      toast.success("Product restored successfully");
+                      loadProducts();
+                    } catch (err) {
+                      // Handled in axios interceptor
+                    }
+                  }}
+                  className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                  title="Restore Visibility"
+                >
+                  <FiRefreshCw />
+                </button>
+              ) : (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!row.reviewRemovalEligible) return;
+                    setRemovalModal({ isOpen: true, productId: row.id });
+                  }}
+                  disabled={!row.reviewRemovalEligible}
+                  className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors disabled:text-gray-300 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                  title={
+                    row.reviewRemovalEligible
+                      ? "Hide due to poor reviews"
+                      : "Hide due to poor reviews (needs 15+ reviews with avg rating < 2.5 or > 60% negative)"
+                  }
+                >
+                  <FiEyeOff />
+                </button>
+              )}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDeleteModal({ isOpen: true, productId: row.id });
+                }}
+                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                title="Delete Product"
+              >
+                <FiTrash2 />
+              </button>
+            </>
           )}
         </div>
       ),
@@ -251,9 +295,9 @@ const ManageProducts = () => {
   const confirmDelete = async () => {
     try {
       await deleteProduct(deleteModal.productId);
-      setProducts(products.filter((p) => p.id !== deleteModal.productId));
       setDeleteModal({ isOpen: false, productId: null });
       toast.success("Product deleted successfully");
+      loadProducts();
     } catch (error) {
       setDeleteModal({ isOpen: false, productId: null });
     }
@@ -344,6 +388,16 @@ const ManageProducts = () => {
 
 
 
+            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none whitespace-nowrap">
+              <input
+                type="checkbox"
+                checked={showDeleted}
+                onChange={(e) => setShowDeleted(e.target.checked)}
+                className="w-4 h-4 accent-primary-600"
+              />
+              Show deleted
+            </label>
+
             <div className="w-full sm:w-auto">
               <ExportButton
                 data={filteredProducts}
@@ -380,7 +434,7 @@ const ManageProducts = () => {
         onClose={() => setDeleteModal({ isOpen: false, productId: null })}
         onConfirm={confirmDelete}
         title="Delete Product?"
-        message="Are you sure you want to delete this product? This action cannot be undone."
+        message='This product will be removed from the store. Existing orders keep their history, and you can restore it later using "Show deleted".'
         confirmText="Delete"
         cancelText="Cancel"
         type="danger"

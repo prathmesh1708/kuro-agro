@@ -170,6 +170,7 @@ router.put('/products/tax-pricing-rules', ...adminAuth, validate(taxPricingRules
 
 router.put('/products/:id', ...adminAuth, validate(updateProductSchema), catalogController.updateProduct);
 router.delete('/products/:id', ...adminAuth, catalogController.deleteProduct);
+router.patch('/products/:id/reactivate', ...adminAuth, catalogController.reactivateProduct);
 
 // ─── Categories ───────────────────────────────────────────────────────────────
 router.get('/categories', ...adminAuth, catalogController.getAllCategories);
