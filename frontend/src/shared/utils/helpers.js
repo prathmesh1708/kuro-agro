@@ -93,11 +93,15 @@ export const getPlaceholderImage = (
         fill="${textColor}" 
         text-anchor="middle" 
         dominant-baseline="middle"
-      >${text}</text>
+      >${String(text ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")}</text>
     </svg>
   `.trim();
 
-  return `data:image/svg+xml;base64,${btoa(svg)}`;
+  // URI-encode instead of btoa: btoa throws on non-Latin1 text (Hindi, emoji, ₹, etc.)
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 };
 
 /**

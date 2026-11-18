@@ -121,16 +121,22 @@ export const useCategoryStore = create(
         try {
           // Sequentially delete for now, or updating backend to support bulk delete would be better
           // But to stick to constraints and existing service, we'll map
-          await Promise.all(ids.map(id => deleteCategory(id)));
+          // allSettled: one blocked category (409) must not hide the ones that did get deleted
+          const results = await Promise.allSettled(ids.map(id => deleteCategory(id)));
+          const deletedIds = ids
+            .filter((_, i) => results[i].status === 'fulfilled')
+            .map(String);
 
           set((state) => ({
             categories: state.categories.filter(
-              (cat) => !ids.map(String).includes(String(cat.id))
+              (cat) => !deletedIds.includes(String(cat.id))
             ),
             isLoading: false
           }));
-          toast.success(`${ids.length} categories deleted successfully`);
-          return true;
+          if (deletedIds.length > 0) {
+            toast.success(`${deletedIds.length} of ${ids.length} categories deleted`);
+          }
+          return deletedIds.length === ids.length;
         } catch (error) {
           set({ isLoading: false });
           return false;

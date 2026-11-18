@@ -99,39 +99,19 @@ const resolveVariantPrice = (product, selectedVariant) => {
     return basePrice;
 };
 
+// Attaches the effective GST rate / HSN to each product WITHOUT changing any price.
+// Storefront prices must equal what the admin entered; GST is applied once, at checkout
+// (see calculateOrderGst in services/gst.service.js), based on the product's taxIncluded flag.
 const enrichProductsWithGst = async (products) => {
     if (!products) return products;
-    const { getEffectiveGstRate, calculateGst } = await import('../services/gst.service.js');
+    const { getEffectiveGstRate } = await import('../services/gst.service.js');
     const isArray = Array.isArray(products);
     const list = isArray ? products : [products];
     const enriched = await Promise.all(list.map(async (p) => {
         const productObj = typeof p.toObject === 'function' ? p.toObject() : p;
         const effective = await getEffectiveGstRate(productObj._id || productObj.id, productObj.categoryId?._id || productObj.categoryId);
-        if (!productObj.taxIncluded) {
-            const calculations = calculateGst(productObj.price, effective.rate, false);
-            productObj.price = calculations.totalPrice;
-            if (productObj.originalPrice) {
-                const calculationsOriginal = calculateGst(productObj.originalPrice, effective.rate, false);
-                productObj.originalPrice = calculationsOriginal.totalPrice;
-            }
-            productObj.taxIncluded = true;
-        }
-        
-        // Also adjust variants if they exist
-        if (productObj.variants && productObj.variants.prices) {
-            let pricesMap = productObj.variants.prices;
-            const entries = pricesMap instanceof Map 
-                ? Array.from(pricesMap.entries()) 
-                : Object.entries(pricesMap || {});
-            
-            const newPrices = {};
-            for (const [key, value] of entries) {
-                const calcVal = calculateGst(Number(value) || 0, effective.rate, false);
-                newPrices[key] = calcVal.totalPrice;
-            }
-            productObj.variants.prices = newPrices;
-        }
-        
+        productObj.taxRate = effective.rate;
+        if (!productObj.hsnCode && effective.hsnCode) productObj.hsnCode = effective.hsnCode;
         return productObj;
     }));
     return isArray ? enriched : enriched[0];

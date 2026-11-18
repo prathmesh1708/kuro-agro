@@ -886,6 +886,12 @@ const ProductFormModal = ({ isOpen, onClose, productId, onSuccess }) => {
                           step="0.01"
                           className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                         />
+                        <p className="mt-1 text-xs text-gray-500">
+                          Customers see exactly this price in the store.{" "}
+                          {formData.taxIncluded
+                            ? "GST is already included in it."
+                            : "GST is added on top at checkout."}
+                        </p>
                       </div>
 
                       <div>

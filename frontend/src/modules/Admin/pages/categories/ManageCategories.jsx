@@ -7,7 +7,6 @@ import CategoryTree from '../../components/Categories/CategoryTree';
 import ExportButton from '../../components/ExportButton';
 import Pagination from '../../components/Pagination';
 import AnimatedSelect from '../../components/AnimatedSelect';
-import toast from 'react-hot-toast';
 
 const ManageCategories = () => {
   const {
@@ -81,8 +80,9 @@ const ManageCategories = () => {
 
   const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this category?')) {
+      // The store shows the success toast only if the API call succeeds;
+      // failures (e.g. 409 "has products") are toasted by the api interceptor.
       deleteCategory(id);
-      toast.success('Category deleted');
     }
   };
 

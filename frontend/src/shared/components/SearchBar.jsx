@@ -5,6 +5,7 @@ import { FiSearch, FiClock, FiTrendingUp } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getCatalogProducts } from '../../modules/UserApp/data/catalogData';
 import api from '../utils/api';
+import { formatPrice } from '../utils/helpers';
 
 const RECENT_SEARCHES_KEY = 'recent-searches';
 const MAX_RECENT_SEARCHES = 5;
@@ -265,7 +266,7 @@ const SearchBar = () => {
                   />
                   <div className="flex-1 text-left">
                     <p className="text-sm font-semibold text-gray-800">{suggestion.name}</p>
-                    <p className="text-xs text-gray-600">${suggestion.price.toFixed(2)}</p>
+                    <p className="text-xs text-gray-600">{formatPrice(suggestion.price)}</p>
                   </div>
                 </button>
               ))}

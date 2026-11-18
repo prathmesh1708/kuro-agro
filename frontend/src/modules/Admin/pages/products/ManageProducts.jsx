@@ -10,18 +10,15 @@ import AnimatedSelect from "../../components/AnimatedSelect";
 import { formatPrice } from "../../../../shared/utils/helpers";
 
 import { useCategoryStore } from "../../../../shared/store/categoryStore";
-import { useBrandStore } from "../../../../shared/store/brandStore";
 import { getAllProducts, deleteProduct, reactivateProduct, removeProductByReview, restoreProductByReview } from "../../services/adminService";
 import toast from "react-hot-toast";
 
 const ManageProducts = () => {
   const [products, setProducts] = useState([]);
   const { categories, initialize: initCategories } = useCategoryStore();
-  const { brands, initialize: initBrands } = useBrandStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedBrand, setSelectedBrand] = useState("all");
   const [selectedSeller, setSelectedSeller] = useState("all");
   const [showDeleted, setShowDeleted] = useState(false);
   const [deleteModal, setDeleteModal] = useState({
@@ -40,7 +37,6 @@ const ManageProducts = () => {
 
   useEffect(() => {
     initCategories();
-    initBrands();
   }, []);
 
   useEffect(() => {
@@ -95,12 +91,6 @@ const ManageProducts = () => {
       );
     }
 
-    if (selectedBrand !== "all") {
-      filtered = filtered.filter(
-        (product) => String(product.brandId?._id || product.brandId) === String(selectedBrand)
-      );
-    }
-
     if (selectedSeller !== "all") {
       filtered = filtered.filter(
         (product) => String(product.vendorId?._id || product.vendorId) === String(selectedSeller)
@@ -108,7 +98,7 @@ const ManageProducts = () => {
     }
 
     return filtered;
-  }, [products, searchQuery, selectedStatus, selectedCategory, selectedBrand, selectedSeller]);
+  }, [products, searchQuery, selectedStatus, selectedCategory, selectedSeller]);
 
   // Distinct sellers derived from the loaded products
   const sellerOptions = useMemo(() => {
@@ -365,17 +355,6 @@ const ManageProducts = () => {
               className="w-full sm:w-auto min-w-[160px]"
             />
 
-            <AnimatedSelect
-              value={selectedBrand}
-              onChange={(e) => setSelectedBrand(e.target.value)}
-              options={[
-                { value: "all", label: "All Brands" },
-                ...brands
-                  .filter((brand) => brand.isActive !== false)
-                  .map((brand) => ({ value: String(brand.id), label: brand.name })),
-              ]}
-              className="w-full sm:w-auto min-w-[160px]"
-            />
             <AnimatedSelect
               value={selectedSeller}
               onChange={(e) => setSelectedSeller(e.target.value)}
