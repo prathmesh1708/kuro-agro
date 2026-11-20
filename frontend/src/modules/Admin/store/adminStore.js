@@ -2,7 +2,9 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { adminLogin as apiLogin } from '../services/adminService';
 import api from '../../../shared/utils/api';
-import { registerFCMToken } from '../../../services/pushNotificationService';
+// Firebase is loaded on demand so it stays out of the initial page bundle.
+const registerFCMToken = (...args) =>
+  import('../../../services/pushNotificationService').then((m) => m.registerFCMToken(...args));
 
 export const useAdminAuthStore = create(
   persist(

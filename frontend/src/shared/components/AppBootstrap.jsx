@@ -37,11 +37,27 @@ const normalizeBrand = (raw) => ({
   id: raw?._id || raw?.id,
 });
 
+// Writes the list to localStorage and reports whether the stored data actually changed.
+const writeCache = (key, list) => {
+  try {
+    const next = JSON.stringify(list);
+    if (localStorage.getItem(key) === next) return false;
+    localStorage.setItem(key, next);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+// Only sync once per page load (StrictMode mounts effects twice in development).
+let hasSynced = false;
+
 const AppBootstrap = () => {
   useEffect(() => {
-    let cancelled = false;
+    if (hasSynced) return undefined;
 
     const syncCatalog = async () => {
+      hasSynced = true;
       try {
         const [productsRes, vendorsRes, brandsRes] = await Promise.allSettled([
           api.get("/products", { params: { page: 1, limit: 500 } }),
@@ -49,34 +65,32 @@ const AppBootstrap = () => {
           api.get("/brands/all"),
         ]);
 
-        let updated = false;
+        let changed = false;
 
-        if (productsRes.status === "fulfilled" && !cancelled) {
+        if (productsRes.status === "fulfilled") {
           const payload = productsRes.value?.data;
           const list = Array.isArray(payload?.products)
             ? payload.products.map(normalizeProduct)
             : [];
-          localStorage.setItem(PRODUCTS_CACHE_KEY, JSON.stringify(list));
-          updated = true;
+          changed = writeCache(PRODUCTS_CACHE_KEY, list) || changed;
         }
 
-        if (vendorsRes.status === "fulfilled" && !cancelled) {
+        if (vendorsRes.status === "fulfilled") {
           const payload = vendorsRes.value?.data;
           const list = Array.isArray(payload?.vendors)
             ? payload.vendors.map(normalizeVendor)
             : [];
-          localStorage.setItem(VENDORS_CACHE_KEY, JSON.stringify(list));
-          updated = true;
+          changed = writeCache(VENDORS_CACHE_KEY, list) || changed;
         }
 
-        if (brandsRes.status === "fulfilled" && !cancelled) {
+        if (brandsRes.status === "fulfilled") {
           const payload = brandsRes.value?.data;
           const list = Array.isArray(payload) ? payload.map(normalizeBrand) : [];
-          localStorage.setItem(BRANDS_CACHE_KEY, JSON.stringify(list));
-          updated = true;
+          changed = writeCache(BRANDS_CACHE_KEY, list) || changed;
         }
 
-        if (updated && !cancelled) {
+        // Pages re-render from the cache on this event, so only fire it when data changed.
+        if (changed) {
           window.dispatchEvent(new Event("catalog-cache-updated"));
         }
       } catch {
@@ -84,10 +98,13 @@ const AppBootstrap = () => {
       }
     };
 
-    syncCatalog();
-    return () => {
-      cancelled = true;
-    };
+    // Let the current page load its own data first; sync the full catalog when idle.
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(syncCatalog, { timeout: 3000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = setTimeout(syncCatalog, 1500);
+    return () => clearTimeout(id);
   }, []);
 
   return null;

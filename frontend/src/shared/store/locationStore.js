@@ -35,6 +35,19 @@ const getInitialState = () => {
 
 const initialState = getInitialState();
 
+// Auto-detected locations are reused for this long before asking GPS/Nominatim again.
+const LOCATION_TTL_MS = 30 * 60 * 1000;
+let locationRequestInFlight = false;
+
+const hasFreshSavedLocation = () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem('user-current-location') || 'null');
+    return Boolean(saved?.locationName && saved?.fetchedAt && Date.now() - saved.fetchedAt < LOCATION_TTL_MS);
+  } catch {
+    return false;
+  }
+};
+
 export const useLocationStore = create((set, get) => ({
   locationName: initialState.locationName,
   latitude: initialState.latitude,
@@ -103,6 +116,10 @@ export const useLocationStore = create((set, get) => ({
       return;
     }
 
+    // Header components on mobile and desktop both call this on mount; only one lookup should run.
+    if (locationRequestInFlight) return;
+    if (!force && (get().hasFetched || hasFreshSavedLocation())) return;
+
     if (!navigator.geolocation) {
       set({
         error: 'Geolocation is not supported by your browser',
@@ -113,9 +130,11 @@ export const useLocationStore = create((set, get) => ({
     }
 
     set({ isLoading: true, error: null });
+    locationRequestInFlight = true;
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
+        locationRequestInFlight = false;
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
 
@@ -194,6 +213,7 @@ export const useLocationStore = create((set, get) => ({
                 pincode: addr.postcode || '',
                 isManualSelection: false,
                 selectedAddressId: null,
+                fetchedAt: Date.now(),
               })
             );
             return;
@@ -215,6 +235,7 @@ export const useLocationStore = create((set, get) => ({
         });
       },
       (err) => {
+        locationRequestInFlight = false;
         console.warn('Geolocation error:', err.message);
         const currentName = get().locationName;
         const fallback = currentName && currentName !== 'Fetching location...' ? currentName : 'Select Location';
@@ -225,9 +246,10 @@ export const useLocationStore = create((set, get) => ({
         });
       },
       {
-        enableHighAccuracy: true,
+        // A neighbourhood-level label doesn't need GPS precision; network location is much faster.
+        enableHighAccuracy: false,
         timeout: 10000,
-        maximumAge: 60000,
+        maximumAge: 10 * 60 * 1000,
       }
     );
   },

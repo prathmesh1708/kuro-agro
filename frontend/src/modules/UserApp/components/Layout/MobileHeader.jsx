@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { createPortal } from "react-dom";
 import {
   FiShoppingBag,
@@ -16,7 +16,10 @@ const appLogo = {
   alt: "KuroAgro"
 };
 import { motion } from "framer-motion";
-import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+// The Lottie player is large and only used for the add-to-cart animation, so load it on demand.
+const DotLottieReact = lazy(() =>
+  import("@lottiefiles/dotlottie-react").then((m) => ({ default: m.DotLottieReact }))
+);
 
 // Category gradient mapping - Very subtle pastel colors
 const categoryGradients = {
@@ -202,12 +205,14 @@ const MobileHeader = () => {
         setShowCartAnimation(false);
       }}>
       <div className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center">
-        <DotLottieReact
-          src="https://lottie.host/083a2680-e854-4006-a50b-674276be82cd/oQMRcuZUkS.lottie"
-          autoplay
-          loop={false}
-          style={{ width: "100%", height: "100%" }}
-        />
+        <Suspense fallback={null}>
+          <DotLottieReact
+            src="https://lottie.host/083a2680-e854-4006-a50b-674276be82cd/oQMRcuZUkS.lottie"
+            autoplay
+            loop={false}
+            style={{ width: "100%", height: "100%" }}
+          />
+        </Suspense>
       </div>
     </motion.div>
   ) : null;

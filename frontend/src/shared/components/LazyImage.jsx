@@ -10,6 +10,14 @@ const toImageClassName = (className = "") =>
     .filter((cls) => cls && !WRAPPER_ONLY_CLASS.test(cls))
     .join(" ");
 
+// Ask Cloudinary for an auto-format (WebP/AVIF), auto-quality, size-capped version of the image.
+// Original uploads are often several MB; this typically cuts them by 70-90% with no visible loss.
+const CLOUDINARY_UPLOAD = /^(https?:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(?!.*\b(?:f_|q_)auto)/;
+export const optimizeImageUrl = (url, width = 800) => {
+  if (typeof url !== "string" || !CLOUDINARY_UPLOAD.test(url)) return url;
+  return url.replace(CLOUDINARY_UPLOAD, `$1f_auto,q_auto,c_limit,w_${width}/`);
+};
+
 const LazyImage = ({
   src,
   alt,
@@ -18,26 +26,37 @@ const LazyImage = ({
   placeholderWidth = 200,
   placeholderHeight = 200,
   placeholderText,
+  // Width (px) requested from Cloudinary. 400 suits cards at 2x pixel density; pass more for big images.
+  imageWidth = 400,
+  // Above-the-fold images (e.g. first hero slide) skip lazy loading and download at high priority.
+  priority = false,
+  // Load straight away at normal priority (e.g. carousel slides hidden off to the side, which
+  // the viewport observer would otherwise only fetch when the slide rotates into view).
+  eager = false,
   ...props
 }) => {
-  const [imageSrc, setImageSrc] = useState(null);
+  const [imageSrc, setImageSrc] = useState(() => (priority || eager ? optimizeImageUrl(src, imageWidth) : null));
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [fallbackSrc, setFallbackSrc] = useState(null);
   const imgRef = useRef(null);
 
   useEffect(() => {
+    if (priority || eager) {
+      setImageSrc(optimizeImageUrl(src, imageWidth));
+      return undefined;
+    }
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setImageSrc(src);
+            setImageSrc(optimizeImageUrl(src, imageWidth));
             observer.disconnect();
           }
         });
       },
       {
-        rootMargin: "50px", // Start loading 50px before the image enters viewport
+        rootMargin: "300px", // Start loading a bit before the image scrolls into view
         threshold: 0.01,
       }
     );
@@ -52,7 +71,7 @@ const LazyImage = ({
       }
       observer.disconnect();
     };
-  }, [src]);
+  }, [src, imageWidth, priority, eager]);
 
   const handleLoad = () => {
     setIsLoaded(true);
@@ -99,7 +118,9 @@ const LazyImage = ({
           } ${toImageClassName(className)}`}
           onLoad={handleLoad}
           onError={handleError}
-          loading="lazy"
+          loading={priority || eager ? "eager" : "lazy"}
+          fetchpriority={priority ? "high" : "auto"}
+          decoding="async"
           {...props}
         />
       )}

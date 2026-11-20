@@ -25,12 +25,12 @@ export default defineConfig({
     chunkSizeWarningLimit: 1200,
     rollupOptions: {
       output: {
+        // Only the always-needed core goes in a shared chunk. Heavy libraries (charts,
+        // firebase, lottie, gsap, swiper) are split automatically and load with the pages
+        // that use them, instead of being forced into the first page load.
         manualChunks(id) {
-          if (id.includes("node_modules")) {
-            return "vendor";
-          }
-          if (id.includes("src/modules/Admin")) {
-            return "admin-portal";
+          if (/node_modules\/(react|react-dom|scheduler|react-router|react-router-dom|@remix-run)\//.test(id)) {
+            return "react-vendor";
           }
         },
       },

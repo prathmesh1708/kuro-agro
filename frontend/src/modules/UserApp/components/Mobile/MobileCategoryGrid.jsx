@@ -54,6 +54,7 @@ const MobileCategoryGrid = () => {
                 <LazyImage
                   src={category.image || getCategoryFallbackImage(category.name)}
                   alt={category.name}
+                  imageWidth={240}
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.target.src = getCategoryFallbackImage(category.name);

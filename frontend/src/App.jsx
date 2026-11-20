@@ -5,219 +5,225 @@ import {
   Navigate,
 } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { useEffect } from "react";
-import { initializePushNotifications, setupForegroundNotificationHandler } from "./services/pushNotificationService";
+import { useEffect, lazy, Suspense } from "react";
 
 import CartDrawer from "./shared/components/Cart/CartDrawer";
 import ProtectedRoute from "./shared/components/Auth/ProtectedRoute";
 import ErrorBoundary from "./shared/components/ErrorBoundary/ErrorBoundary";
-import AdminLogin from "./modules/Admin/pages/Login";
-import AdminProtectedRoute from "./modules/Admin/components/AdminProtectedRoute";
-import AdminLayout from "./modules/Admin/components/Layout/AdminLayout";
-import Dashboard from "./modules/Admin/pages/Dashboard";
-import Products from "./modules/Admin/pages/Products";
-import ProductForm from "./modules/Admin/pages/ProductForm";
-import AdminOrders from "./modules/Admin/pages/Orders";
-import OrderDetail from "./modules/Admin/pages/OrderDetail";
-import ReturnRequests from "./modules/Admin/pages/ReturnRequests";
-import ReturnRequestDetail from "./modules/Admin/pages/ReturnRequestDetail";
-import Categories from "./modules/Admin/pages/Categories";
-import Customers from "./modules/Admin/pages/Customers";
+const AdminLogin = lazy(() => import("./modules/Admin/pages/Login"));
+const AdminProtectedRoute = lazy(() => import("./modules/Admin/components/AdminProtectedRoute"));
+const AdminLayout = lazy(() => import("./modules/Admin/components/Layout/AdminLayout"));
+const Dashboard = lazy(() => import("./modules/Admin/pages/Dashboard"));
+const Products = lazy(() => import("./modules/Admin/pages/Products"));
+const ProductForm = lazy(() => import("./modules/Admin/pages/ProductForm"));
+const AdminOrders = lazy(() => import("./modules/Admin/pages/Orders"));
+const OrderDetail = lazy(() => import("./modules/Admin/pages/OrderDetail"));
+const ReturnRequests = lazy(() => import("./modules/Admin/pages/ReturnRequests"));
+const ReturnRequestDetail = lazy(() => import("./modules/Admin/pages/ReturnRequestDetail"));
+const Categories = lazy(() => import("./modules/Admin/pages/Categories"));
+const Customers = lazy(() => import("./modules/Admin/pages/Customers"));
 
-import Campaigns from "./modules/Admin/pages/Campaigns";
-import Banners from "./modules/Admin/pages/Banners";
-import Reviews from "./modules/Admin/pages/Reviews";
-import Analytics from "./modules/Admin/pages/Analytics";
-import Content from "./modules/Admin/pages/Content";
-import Settings from "./modules/Admin/pages/Settings";
-import More from "./modules/Admin/pages/More";
-import PromoCodes from "./modules/Admin/pages/PromoCodes";
+const Campaigns = lazy(() => import("./modules/Admin/pages/Campaigns"));
+const Banners = lazy(() => import("./modules/Admin/pages/Banners"));
+const Reviews = lazy(() => import("./modules/Admin/pages/Reviews"));
+const Analytics = lazy(() => import("./modules/Admin/pages/Analytics"));
+const Content = lazy(() => import("./modules/Admin/pages/Content"));
+const Settings = lazy(() => import("./modules/Admin/pages/Settings"));
+const More = lazy(() => import("./modules/Admin/pages/More"));
+const PromoCodes = lazy(() => import("./modules/Admin/pages/PromoCodes"));
 // Orders child pages
-import AllOrders from "./modules/Admin/pages/orders/AllOrders";
-import OrderTracking from "./modules/Admin/pages/orders/OrderTracking";
+const AllOrders = lazy(() => import("./modules/Admin/pages/orders/AllOrders"));
+const OrderTracking = lazy(() => import("./modules/Admin/pages/orders/OrderTracking"));
 
-import Invoice from "./modules/Admin/pages/orders/Invoice";
+const Invoice = lazy(() => import("./modules/Admin/pages/orders/Invoice"));
 // Products child pages
-import ManageProducts from "./modules/Admin/pages/products/ManageProducts";
-import ProductRatings from "./modules/Admin/pages/products/ProductRatings";
+const ManageProducts = lazy(() => import("./modules/Admin/pages/products/ManageProducts"));
+const ProductRatings = lazy(() => import("./modules/Admin/pages/products/ProductRatings"));
 
 // Categories child pages
-import ManageCategories from "./modules/Admin/pages/categories/ManageCategories";
-import CategoryOrder from "./modules/Admin/pages/categories/CategoryOrder";
+const ManageCategories = lazy(() => import("./modules/Admin/pages/categories/ManageCategories"));
+const CategoryOrder = lazy(() => import("./modules/Admin/pages/categories/CategoryOrder"));
 // Customers child pages
-import ViewCustomers from "./modules/Admin/pages/customers/ViewCustomers";
-import CustomerAddresses from "./modules/Admin/pages/customers/Addresses";
-import Transactions from "./modules/Admin/pages/customers/Transactions";
-import CustomerDetailPage from "./modules/Admin/pages/customers/CustomerDetailPage";
+const ViewCustomers = lazy(() => import("./modules/Admin/pages/customers/ViewCustomers"));
+const CustomerAddresses = lazy(() => import("./modules/Admin/pages/customers/Addresses"));
+const Transactions = lazy(() => import("./modules/Admin/pages/customers/Transactions"));
+const CustomerDetailPage = lazy(() => import("./modules/Admin/pages/customers/CustomerDetailPage"));
 // Delivery Management child pages
-import DeliveryBoys from "./modules/Admin/pages/delivery/DeliveryBoys";
-import CashCollection from "./modules/Admin/pages/delivery/CashCollection";
-import AssignDelivery from "./modules/Admin/pages/delivery/AssignDelivery";
+const DeliveryBoys = lazy(() => import("./modules/Admin/pages/delivery/DeliveryBoys"));
+const CashCollection = lazy(() => import("./modules/Admin/pages/delivery/CashCollection"));
+const AssignDelivery = lazy(() => import("./modules/Admin/pages/delivery/AssignDelivery"));
 // Vendors child pages
-import Vendors from "./modules/Admin/pages/Vendors";
-import ManageVendors from "./modules/Admin/pages/vendors/ManageVendors";
-import PendingApprovals from "./modules/Admin/pages/vendors/PendingApprovals";
-import PayoutManagement from "./modules/Admin/pages/vendors/PayoutManagement";
-import VendorDetail from "./modules/Admin/pages/vendors/VendorDetail";
-import CommissionRates from "./modules/Admin/pages/vendors/CommissionRates";
-import AdminVendorAnalytics from "./modules/Admin/pages/vendors/VendorAnalytics";
+const Vendors = lazy(() => import("./modules/Admin/pages/Vendors"));
+const ManageVendors = lazy(() => import("./modules/Admin/pages/vendors/ManageVendors"));
+const PendingApprovals = lazy(() => import("./modules/Admin/pages/vendors/PendingApprovals"));
+const PayoutManagement = lazy(() => import("./modules/Admin/pages/vendors/PayoutManagement"));
+const VendorDetail = lazy(() => import("./modules/Admin/pages/vendors/VendorDetail"));
+const CommissionRates = lazy(() => import("./modules/Admin/pages/vendors/CommissionRates"));
+const AdminVendorAnalytics = lazy(() => import("./modules/Admin/pages/vendors/VendorAnalytics"));
 
 // Offers & Sliders child pages
-import HomeSliders from "./modules/Admin/pages/offers/HomeSliders";
-import FestivalOffers from "./modules/Admin/pages/offers/FestivalOffers";
+const HomeSliders = lazy(() => import("./modules/Admin/pages/offers/HomeSliders"));
+const FestivalOffers = lazy(() => import("./modules/Admin/pages/offers/FestivalOffers"));
 // Notifications child pages
-import PushNotifications from "./modules/Admin/pages/notifications/PushNotifications";
-import CustomMessages from "./modules/Admin/pages/notifications/CustomMessages";
-import AllNotifications from "./modules/Admin/pages/notifications/AllNotifications";
+const PushNotifications = lazy(() => import("./modules/Admin/pages/notifications/PushNotifications"));
+const CustomMessages = lazy(() => import("./modules/Admin/pages/notifications/CustomMessages"));
+const AllNotifications = lazy(() => import("./modules/Admin/pages/notifications/AllNotifications"));
 // Support Desk child pages
-import LiveChat from "./modules/Admin/pages/support/LiveChat";
-import TicketTypes from "./modules/Admin/pages/support/TicketTypes";
-import Tickets from "./modules/Admin/pages/support/Tickets";
+const LiveChat = lazy(() => import("./modules/Admin/pages/support/LiveChat"));
+const TicketTypes = lazy(() => import("./modules/Admin/pages/support/TicketTypes"));
+const Tickets = lazy(() => import("./modules/Admin/pages/support/Tickets"));
 // Reports child pages
-import SalesReport from "./modules/Admin/pages/reports/SalesReport";
-import InventoryReport from "./modules/Admin/pages/reports/InventoryReport";
+const SalesReport = lazy(() => import("./modules/Admin/pages/reports/SalesReport"));
+const InventoryReport = lazy(() => import("./modules/Admin/pages/reports/InventoryReport"));
 // Consolidated Settings pages
-import GeneralSettings from "./modules/Admin/pages/settings/GeneralSettings";
-import PaymentShippingSettings from "./modules/Admin/pages/settings/PaymentShippingSettings";
-import OrdersCustomersSettings from "./modules/Admin/pages/settings/OrdersCustomersSettings";
-import ProductsInventorySettings from "./modules/Admin/pages/settings/ProductsInventorySettings";
-import ContentFeaturesSettings from "./modules/Admin/pages/settings/ContentFeaturesSettings";
-import NotificationsSEOSettings from "./modules/Admin/pages/settings/NotificationsSEOSettings";
+const GeneralSettings = lazy(() => import("./modules/Admin/pages/settings/GeneralSettings"));
+const PaymentShippingSettings = lazy(() => import("./modules/Admin/pages/settings/PaymentShippingSettings"));
+const OrdersCustomersSettings = lazy(() => import("./modules/Admin/pages/settings/OrdersCustomersSettings"));
+const ProductsInventorySettings = lazy(() => import("./modules/Admin/pages/settings/ProductsInventorySettings"));
+const ContentFeaturesSettings = lazy(() => import("./modules/Admin/pages/settings/ContentFeaturesSettings"));
+const NotificationsSEOSettings = lazy(() => import("./modules/Admin/pages/settings/NotificationsSEOSettings"));
 // Policies child pages
-import PrivacyPolicy from "./modules/Admin/pages/policies/PrivacyPolicy";
-import RefundPolicy from "./modules/Admin/pages/policies/RefundPolicy";
-import TermsConditions from "./modules/Admin/pages/policies/TermsConditions";
+const PrivacyPolicy = lazy(() => import("./modules/Admin/pages/policies/PrivacyPolicy"));
+const RefundPolicy = lazy(() => import("./modules/Admin/pages/policies/RefundPolicy"));
+const TermsConditions = lazy(() => import("./modules/Admin/pages/policies/TermsConditions"));
 import RouteWrapper from "./shared/components/RouteWrapper";
 import ScrollToTop from "./shared/components/ScrollToTop";
 import AppBootstrap from "./shared/components/AppBootstrap";
 
 // Mobile App Routes
 import MobileHome from "./modules/UserApp/pages/Home";
-import MobileProductDetail from "./modules/UserApp/pages/ProductDetail";
-import MobileSeller from "./modules/UserApp/pages/Seller";
-import MobileStores from "./modules/UserApp/pages/Stores";
-import MobileCategory from "./modules/UserApp/pages/Category";
-import MobileBrand from "./modules/UserApp/pages/Brand";
-import MobileCategories from "./modules/UserApp/pages/categories";
-import MobileCheckout from "./modules/UserApp/pages/Checkout";
-import MobileSearch from "./modules/UserApp/pages/Search";
-import MobileLogin from "./modules/UserApp/pages/Login";
-import MobileRegister from "./modules/UserApp/pages/Register";
-import MobileVerification from "./modules/UserApp/pages/Verification";
-import MobileForgotPassword from "./modules/UserApp/pages/ForgotPassword";
-import MobileResetPassword from "./modules/UserApp/pages/ResetPassword";
-import MobileProfile from "./modules/UserApp/pages/Profile";
-import UserNotifications from "./modules/UserApp/pages/Notifications";
-import MobileOrders from "./modules/UserApp/pages/Orders";
-import MobileOrderDetail from "./modules/UserApp/pages/OrderDetail";
-import MobileAddresses from "./modules/UserApp/pages/Addresses";
-import MobileWishlist from "./modules/UserApp/pages/Wishlist";
-import MobileOffers from "./modules/UserApp/pages/Offers";
-import MobileDailyDeals from "./modules/UserApp/pages/DailyDeals";
-import MobileFlashSale from "./modules/UserApp/pages/FlashSale";
-import MobileNewArrivals from "./modules/UserApp/pages/NewArrivals";
-import MobileCampaignSale from "./modules/UserApp/pages/CampaignSale";
-import MobileTrackOrder from "./modules/UserApp/pages/TrackOrder";
-import MobileOrderConfirmation from "./modules/UserApp/pages/OrderConfirmation";
-import ComingSoon from "./modules/UserApp/pages/ComingSoon";
+const MobileProductDetail = lazy(() => import("./modules/UserApp/pages/ProductDetail"));
+const MobileSeller = lazy(() => import("./modules/UserApp/pages/Seller"));
+const MobileStores = lazy(() => import("./modules/UserApp/pages/Stores"));
+const MobileCategory = lazy(() => import("./modules/UserApp/pages/Category"));
+const MobileBrand = lazy(() => import("./modules/UserApp/pages/Brand"));
+const MobileCategories = lazy(() => import("./modules/UserApp/pages/categories"));
+const MobileCheckout = lazy(() => import("./modules/UserApp/pages/Checkout"));
+const MobileSearch = lazy(() => import("./modules/UserApp/pages/Search"));
+const MobileLogin = lazy(() => import("./modules/UserApp/pages/Login"));
+const MobileRegister = lazy(() => import("./modules/UserApp/pages/Register"));
+const MobileVerification = lazy(() => import("./modules/UserApp/pages/Verification"));
+const MobileForgotPassword = lazy(() => import("./modules/UserApp/pages/ForgotPassword"));
+const MobileResetPassword = lazy(() => import("./modules/UserApp/pages/ResetPassword"));
+const MobileProfile = lazy(() => import("./modules/UserApp/pages/Profile"));
+const UserNotifications = lazy(() => import("./modules/UserApp/pages/Notifications"));
+const MobileOrders = lazy(() => import("./modules/UserApp/pages/Orders"));
+const MobileOrderDetail = lazy(() => import("./modules/UserApp/pages/OrderDetail"));
+const MobileAddresses = lazy(() => import("./modules/UserApp/pages/Addresses"));
+const MobileWishlist = lazy(() => import("./modules/UserApp/pages/Wishlist"));
+const MobileOffers = lazy(() => import("./modules/UserApp/pages/Offers"));
+const MobileDailyDeals = lazy(() => import("./modules/UserApp/pages/DailyDeals"));
+const MobileFlashSale = lazy(() => import("./modules/UserApp/pages/FlashSale"));
+const MobileNewArrivals = lazy(() => import("./modules/UserApp/pages/NewArrivals"));
+const MobileCampaignSale = lazy(() => import("./modules/UserApp/pages/CampaignSale"));
+const MobileTrackOrder = lazy(() => import("./modules/UserApp/pages/TrackOrder"));
+const MobileOrderConfirmation = lazy(() => import("./modules/UserApp/pages/OrderConfirmation"));
+const ComingSoon = lazy(() => import("./modules/UserApp/pages/ComingSoon"));
 // Field Network Routes (Sanchalak / Surveyor)
-import FieldAccounts from "./modules/Admin/pages/fieldNetwork/FieldAccounts";
-import FieldCommissionRates from "./modules/Admin/pages/fieldNetwork/CommissionRates";
-import AdminFarmers from "./modules/Admin/pages/fieldNetwork/Farmers";
-import ProcurementRequests from "./modules/Admin/pages/procurement/ProcurementRequests";
-import ProcuredStock from "./modules/Admin/pages/procurement/ProcuredStock";
-import ProduceList from "./modules/Admin/pages/procurement/ProduceList";
-import SeedItems from "./modules/Admin/pages/seeds/SeedItems";
-import SeedDispatches from "./modules/Admin/pages/seeds/SeedDispatches";
-import SeedRemittances from "./modules/Admin/pages/seeds/SeedRemittances";
-import FieldAccountProfile from "./modules/Admin/pages/fieldNetwork/FieldAccountProfile";
-import SanchalakProtectedRoute from "./modules/Sanchalak/components/SanchalakProtectedRoute";
-import SanchalakDashboard from "./modules/Sanchalak/pages/Dashboard";
-import SanchalakFarmers from "./modules/Sanchalak/pages/Farmers";
-import SanchalakFarmerDetail from "./modules/Sanchalak/pages/FarmerDetail";
-import SanchalakProfile from "./modules/Sanchalak/pages/Profile";
-import SanchalakSurveyorDetail from "./modules/Sanchalak/pages/SurveyorDetail";
-import SanchalakSurveyors from "./modules/Sanchalak/pages/Surveyors";
-import SanchalakPurchases from "./modules/Sanchalak/pages/Purchases";
-import SanchalakPurchaseDetail from "./modules/Sanchalak/pages/PurchaseDetail";
-import SanchalakWarehouse from "./modules/Sanchalak/pages/Warehouse";
-import SanchalakSellToAdmin from "./modules/Sanchalak/pages/SellToAdmin";
-import SanchalakSales from "./modules/Sanchalak/pages/Sales";
-import SanchalakSaleDetail from "./modules/Sanchalak/pages/SaleDetail";
-import SanchalakSeedGiven from "./modules/Sanchalak/pages/SeedGiven";
-import KisanProtectedRoute from "./modules/Kisan/components/KisanProtectedRoute";
-import KisanDashboard from "./modules/Kisan/pages/Dashboard";
-import KisanSell from "./modules/Kisan/pages/Sell";
-import KisanRequests from "./modules/Kisan/pages/Requests";
-import KisanRequestDetail from "./modules/Kisan/pages/RequestDetail";
-import KisanProfile from "./modules/Kisan/pages/Profile";
-import KisanSeedRequests from "./modules/Kisan/pages/SeedRequests";
-import KisanSeedRequestDetail from "./modules/Kisan/pages/SeedRequestDetail";
-import SurveyorProtectedRoute from "./modules/Surveyor/components/SurveyorProtectedRoute";
-import SurveyorDashboard from "./modules/Surveyor/pages/Dashboard";
-import SurveyorFarmers from "./modules/Surveyor/pages/Farmers";
-import SurveyorFarmerForm from "./modules/Surveyor/pages/FarmerForm";
-import SurveyorProfile from "./modules/Surveyor/pages/Profile";
-import SurveyorFarmerDetail from "./modules/Surveyor/pages/FarmerDetail";
-import SurveyorSeeds from "./modules/Surveyor/pages/Seeds";
-import SurveyorIssueSeed from "./modules/Surveyor/pages/IssueSeed";
-import SurveyorSeedIssues from "./modules/Surveyor/pages/SeedIssues";
-import SurveyorSeedIssueDetail from "./modules/Surveyor/pages/SeedIssueDetail";
-import SurveyorSeedAccount from "./modules/Surveyor/pages/SeedAccount";
+const FieldAccounts = lazy(() => import("./modules/Admin/pages/fieldNetwork/FieldAccounts"));
+const FieldCommissionRates = lazy(() => import("./modules/Admin/pages/fieldNetwork/CommissionRates"));
+const AdminFarmers = lazy(() => import("./modules/Admin/pages/fieldNetwork/Farmers"));
+const ProcurementRequests = lazy(() => import("./modules/Admin/pages/procurement/ProcurementRequests"));
+const ProcuredStock = lazy(() => import("./modules/Admin/pages/procurement/ProcuredStock"));
+const ProduceList = lazy(() => import("./modules/Admin/pages/procurement/ProduceList"));
+const SeedItems = lazy(() => import("./modules/Admin/pages/seeds/SeedItems"));
+const SeedDispatches = lazy(() => import("./modules/Admin/pages/seeds/SeedDispatches"));
+const SeedRemittances = lazy(() => import("./modules/Admin/pages/seeds/SeedRemittances"));
+const FieldAccountProfile = lazy(() => import("./modules/Admin/pages/fieldNetwork/FieldAccountProfile"));
+const SanchalakProtectedRoute = lazy(() => import("./modules/Sanchalak/components/SanchalakProtectedRoute"));
+const SanchalakDashboard = lazy(() => import("./modules/Sanchalak/pages/Dashboard"));
+const SanchalakFarmers = lazy(() => import("./modules/Sanchalak/pages/Farmers"));
+const SanchalakFarmerDetail = lazy(() => import("./modules/Sanchalak/pages/FarmerDetail"));
+const SanchalakProfile = lazy(() => import("./modules/Sanchalak/pages/Profile"));
+const SanchalakSurveyorDetail = lazy(() => import("./modules/Sanchalak/pages/SurveyorDetail"));
+const SanchalakSurveyors = lazy(() => import("./modules/Sanchalak/pages/Surveyors"));
+const SanchalakPurchases = lazy(() => import("./modules/Sanchalak/pages/Purchases"));
+const SanchalakPurchaseDetail = lazy(() => import("./modules/Sanchalak/pages/PurchaseDetail"));
+const SanchalakWarehouse = lazy(() => import("./modules/Sanchalak/pages/Warehouse"));
+const SanchalakSellToAdmin = lazy(() => import("./modules/Sanchalak/pages/SellToAdmin"));
+const SanchalakSales = lazy(() => import("./modules/Sanchalak/pages/Sales"));
+const SanchalakSaleDetail = lazy(() => import("./modules/Sanchalak/pages/SaleDetail"));
+const SanchalakSeedGiven = lazy(() => import("./modules/Sanchalak/pages/SeedGiven"));
+const KisanProtectedRoute = lazy(() => import("./modules/Kisan/components/KisanProtectedRoute"));
+const KisanDashboard = lazy(() => import("./modules/Kisan/pages/Dashboard"));
+const KisanSell = lazy(() => import("./modules/Kisan/pages/Sell"));
+const KisanRequests = lazy(() => import("./modules/Kisan/pages/Requests"));
+const KisanRequestDetail = lazy(() => import("./modules/Kisan/pages/RequestDetail"));
+const KisanProfile = lazy(() => import("./modules/Kisan/pages/Profile"));
+const KisanSeedRequests = lazy(() => import("./modules/Kisan/pages/SeedRequests"));
+const KisanSeedRequestDetail = lazy(() => import("./modules/Kisan/pages/SeedRequestDetail"));
+const SurveyorProtectedRoute = lazy(() => import("./modules/Surveyor/components/SurveyorProtectedRoute"));
+const SurveyorDashboard = lazy(() => import("./modules/Surveyor/pages/Dashboard"));
+const SurveyorFarmers = lazy(() => import("./modules/Surveyor/pages/Farmers"));
+const SurveyorFarmerForm = lazy(() => import("./modules/Surveyor/pages/FarmerForm"));
+const SurveyorProfile = lazy(() => import("./modules/Surveyor/pages/Profile"));
+const SurveyorFarmerDetail = lazy(() => import("./modules/Surveyor/pages/FarmerDetail"));
+const SurveyorSeeds = lazy(() => import("./modules/Surveyor/pages/Seeds"));
+const SurveyorIssueSeed = lazy(() => import("./modules/Surveyor/pages/IssueSeed"));
+const SurveyorSeedIssues = lazy(() => import("./modules/Surveyor/pages/SeedIssues"));
+const SurveyorSeedIssueDetail = lazy(() => import("./modules/Surveyor/pages/SeedIssueDetail"));
+const SurveyorSeedAccount = lazy(() => import("./modules/Surveyor/pages/SeedAccount"));
 // Delivery Routes
-import DeliveryLogin from "./modules/Delivery/pages/Login";
-import DeliveryRegister from "./modules/Delivery/pages/Register";
-import DeliveryForgotPassword from "./modules/Delivery/pages/ForgotPassword";
-import DeliveryResetPassword from "./modules/Delivery/pages/ResetPassword";
-import DeliveryProtectedRoute from "./modules/Delivery/components/DeliveryProtectedRoute";
-import DeliveryLayout from "./modules/Delivery/components/Layout/DeliveryLayout";
-import DeliveryDashboard from "./modules/Delivery/pages/Dashboard";
-import DeliveryOrders from "./modules/Delivery/pages/Orders";
-import DeliveryOrderDetail from "./modules/Delivery/pages/OrderDetail";
-import DeliveryProfile from "./modules/Delivery/pages/Profile";
-import DeliveryNotifications from "./modules/Delivery/pages/Notifications";
+const DeliveryLogin = lazy(() => import("./modules/Delivery/pages/Login"));
+const DeliveryRegister = lazy(() => import("./modules/Delivery/pages/Register"));
+const DeliveryForgotPassword = lazy(() => import("./modules/Delivery/pages/ForgotPassword"));
+const DeliveryResetPassword = lazy(() => import("./modules/Delivery/pages/ResetPassword"));
+const DeliveryProtectedRoute = lazy(() => import("./modules/Delivery/components/DeliveryProtectedRoute"));
+const DeliveryLayout = lazy(() => import("./modules/Delivery/components/Layout/DeliveryLayout"));
+const DeliveryDashboard = lazy(() => import("./modules/Delivery/pages/Dashboard"));
+const DeliveryOrders = lazy(() => import("./modules/Delivery/pages/Orders"));
+const DeliveryOrderDetail = lazy(() => import("./modules/Delivery/pages/OrderDetail"));
+const DeliveryProfile = lazy(() => import("./modules/Delivery/pages/Profile"));
+const DeliveryNotifications = lazy(() => import("./modules/Delivery/pages/Notifications"));
 // Vendor Routes
-import VendorLogin from "./modules/Vendor/pages/Login";
-import VendorRegister from "./modules/Vendor/pages/Register";
-import VendorVerification from "./modules/Vendor/pages/Verification";
-import VendorForgotPassword from "./modules/Vendor/pages/ForgotPassword";
-import VendorResetPassword from "./modules/Vendor/pages/ResetPassword";
-import VendorProtectedRoute from "./modules/Vendor/components/VendorProtectedRoute";
-import VendorLayout from "./modules/Vendor/components/Layout/VendorLayout";
-import VendorDashboard from "./modules/Vendor/pages/Dashboard";
-import VendorProducts from "./modules/Vendor/pages/Products";
-import VendorManageProducts from "./modules/Vendor/pages/products/ManageProducts";
-import VendorAddProduct from "./modules/Vendor/pages/products/AddProduct";
-import VendorBulkUpload from "./modules/Vendor/pages/products/VendorBulkUpload";
-import VendorProductForm from "./modules/Vendor/pages/products/ProductForm";
-import VendorOrders from "./modules/Vendor/pages/Orders";
-import VendorAllOrders from "./modules/Vendor/pages/orders/AllOrders";
-import VendorOrderTracking from "./modules/Vendor/pages/orders/OrderTracking";
-import VendorOrderDetail from "./modules/Vendor/pages/orders/OrderDetail";
-import VendorAnalytics from "./modules/Vendor/pages/Analytics";
-import VendorEarnings from "./modules/Vendor/pages/Earnings";
-import VendorPaymentSettlements from "./modules/Vendor/pages/PaymentSettlements";
-import VendorSettings from "./modules/Vendor/pages/Settings";
-import VendorStockManagement from "./modules/Vendor/pages/StockManagement";
-import VendorWalletHistory from "./modules/Vendor/pages/WalletHistory";
-import VendorChat from "./modules/Vendor/pages/Chat";
-import VendorReturnRequests from "./modules/Vendor/pages/ReturnRequests";
-import VendorReturnRequestDetail from "./modules/Vendor/pages/returns/ReturnRequestDetail";
-import VendorProductReviews from "./modules/Vendor/pages/ProductReviews";
-import VendorShippingManagement from "./modules/Vendor/pages/ShippingManagement";
-import VendorCustomers from "./modules/Vendor/pages/Customers";
-import VendorCustomerDetail from "./modules/Vendor/pages/CustomerDetail";
-import VendorInventoryReports from "./modules/Vendor/pages/InventoryReports";
-import VendorPerformanceMetrics from "./modules/Vendor/pages/PerformanceMetrics";
-import VendorDocuments from "./modules/Vendor/pages/Documents";
-import VendorNotifications from "./modules/Vendor/pages/Notifications";
-import VendorSupportTickets from "./modules/Vendor/pages/SupportTickets";
-import VendorPickupLocations from "./modules/Vendor/pages/PickupLocations";
-import VendorReports from "./modules/Vendor/pages/Reports";
-import VendorLanguageSettings from "./modules/Vendor/pages/LanguageSettings";
-import StaticPrivacyPolicy from "./shared/pages/StaticPrivacyPolicy";
-import StaticTermsConditions from "./shared/pages/StaticTermsConditions";
-import StaticSupport from "./shared/pages/StaticSupport";
+const VendorLogin = lazy(() => import("./modules/Vendor/pages/Login"));
+const VendorRegister = lazy(() => import("./modules/Vendor/pages/Register"));
+const VendorVerification = lazy(() => import("./modules/Vendor/pages/Verification"));
+const VendorForgotPassword = lazy(() => import("./modules/Vendor/pages/ForgotPassword"));
+const VendorResetPassword = lazy(() => import("./modules/Vendor/pages/ResetPassword"));
+const VendorProtectedRoute = lazy(() => import("./modules/Vendor/components/VendorProtectedRoute"));
+const VendorLayout = lazy(() => import("./modules/Vendor/components/Layout/VendorLayout"));
+const VendorDashboard = lazy(() => import("./modules/Vendor/pages/Dashboard"));
+const VendorProducts = lazy(() => import("./modules/Vendor/pages/Products"));
+const VendorManageProducts = lazy(() => import("./modules/Vendor/pages/products/ManageProducts"));
+const VendorAddProduct = lazy(() => import("./modules/Vendor/pages/products/AddProduct"));
+const VendorBulkUpload = lazy(() => import("./modules/Vendor/pages/products/VendorBulkUpload"));
+const VendorProductForm = lazy(() => import("./modules/Vendor/pages/products/ProductForm"));
+const VendorOrders = lazy(() => import("./modules/Vendor/pages/Orders"));
+const VendorAllOrders = lazy(() => import("./modules/Vendor/pages/orders/AllOrders"));
+const VendorOrderTracking = lazy(() => import("./modules/Vendor/pages/orders/OrderTracking"));
+const VendorOrderDetail = lazy(() => import("./modules/Vendor/pages/orders/OrderDetail"));
+const VendorAnalytics = lazy(() => import("./modules/Vendor/pages/Analytics"));
+const VendorEarnings = lazy(() => import("./modules/Vendor/pages/Earnings"));
+const VendorPaymentSettlements = lazy(() => import("./modules/Vendor/pages/PaymentSettlements"));
+const VendorSettings = lazy(() => import("./modules/Vendor/pages/Settings"));
+const VendorStockManagement = lazy(() => import("./modules/Vendor/pages/StockManagement"));
+const VendorWalletHistory = lazy(() => import("./modules/Vendor/pages/WalletHistory"));
+const VendorChat = lazy(() => import("./modules/Vendor/pages/Chat"));
+const VendorReturnRequests = lazy(() => import("./modules/Vendor/pages/ReturnRequests"));
+const VendorReturnRequestDetail = lazy(() => import("./modules/Vendor/pages/returns/ReturnRequestDetail"));
+const VendorProductReviews = lazy(() => import("./modules/Vendor/pages/ProductReviews"));
+const VendorShippingManagement = lazy(() => import("./modules/Vendor/pages/ShippingManagement"));
+const VendorCustomers = lazy(() => import("./modules/Vendor/pages/Customers"));
+const VendorCustomerDetail = lazy(() => import("./modules/Vendor/pages/CustomerDetail"));
+const VendorInventoryReports = lazy(() => import("./modules/Vendor/pages/InventoryReports"));
+const VendorPerformanceMetrics = lazy(() => import("./modules/Vendor/pages/PerformanceMetrics"));
+const VendorDocuments = lazy(() => import("./modules/Vendor/pages/Documents"));
+const VendorNotifications = lazy(() => import("./modules/Vendor/pages/Notifications"));
+const VendorSupportTickets = lazy(() => import("./modules/Vendor/pages/SupportTickets"));
+const VendorPickupLocations = lazy(() => import("./modules/Vendor/pages/PickupLocations"));
+const VendorReports = lazy(() => import("./modules/Vendor/pages/Reports"));
+const VendorLanguageSettings = lazy(() => import("./modules/Vendor/pages/LanguageSettings"));
+const StaticPrivacyPolicy = lazy(() => import("./shared/pages/StaticPrivacyPolicy"));
+const StaticTermsConditions = lazy(() => import("./shared/pages/StaticTermsConditions"));
+const StaticSupport = lazy(() => import("./shared/pages/StaticSupport"));
+
+// Lightweight placeholder shown while a lazily-loaded page chunk downloads.
+const RouteFallback = () => (
+  <div className="flex min-h-[60vh] w-full items-center justify-center">
+    <div className="h-9 w-9 animate-spin rounded-full border-4 border-gray-200 border-t-green-600" />
+  </div>
+);
 
 // Inner component that has access to useLocation
 const AppRoutes = () => {
@@ -840,10 +846,22 @@ const AppRoutes = () => {
 
 function App() {
   useEffect(() => {
-    initializePushNotifications();
-    setupForegroundNotificationHandler((payload) => {
-      console.log('App received foreground notification:', payload);
-    });
+    // Defer Firebase/push setup until the browser is idle so it never blocks first paint.
+    const start = () =>
+      import("./services/pushNotificationService").then(
+        ({ initializePushNotifications, setupForegroundNotificationHandler }) => {
+          initializePushNotifications();
+          setupForegroundNotificationHandler((payload) => {
+            console.log("App received foreground notification:", payload);
+          });
+        }
+      );
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(start, { timeout: 4000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = setTimeout(start, 2000);
+    return () => clearTimeout(id);
   }, []);
 
   return (
@@ -855,7 +873,9 @@ function App() {
         }}>
         <AppBootstrap />
         <ScrollToTop />
-        <AppRoutes />
+        <Suspense fallback={<RouteFallback />}>
+          <AppRoutes />
+        </Suspense>
         <CartDrawer />
         <Toaster
           position="top-right"

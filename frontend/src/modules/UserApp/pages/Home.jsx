@@ -581,6 +581,9 @@ const MobileHome = () => {
                           <LazyImage
                             src={slide.image}
                             alt={slide.title || `Slide ${index + 1}`}
+                            imageWidth={1600}
+                            priority={index === 0}
+                            eager={index !== 0}
                             className="w-full h-full object-cover pointer-events-none select-none"
                             draggable={false}
                             onError={(e) => {
@@ -647,6 +650,7 @@ const MobileHome = () => {
                   <LazyImage
                     src={(sideBanner || DEFAULT_SIDE_BANNER).image}
                     alt={(sideBanner || DEFAULT_SIDE_BANNER).title}
+                    imageWidth={800}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     onError={(e) => {
                       e.target.src = getPlaceholderImage(400, 400, "KuroAgro");

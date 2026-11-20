@@ -68,6 +68,8 @@ const ImageGallery = ({ images, productName = "Product", children }) => {
             <LazyImage
               src={imageArray[selectedIndex]}
               alt={`${productName} - Image ${selectedIndex + 1}`}
+              imageWidth={1000}
+              priority
               className="w-full h-full object-contain mix-blend-multiply"
               onError={(e) => {
                 e.target.src = defaultPlaceholder;
@@ -114,6 +116,7 @@ const ImageGallery = ({ images, productName = "Product", children }) => {
                 <LazyImage
                   src={image}
                   alt={`${productName} thumbnail ${index + 1}`}
+                  imageWidth={200}
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.target.src = getPlaceholderImage(100, 100, "Thumbnail");
